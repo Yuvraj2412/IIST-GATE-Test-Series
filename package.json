@@ -20,12 +20,11 @@
     "axios": "^1.7.7",
     "canvas-confetti": "^1.9.3",
     "chart.js": "^4.4.7",
-    "crypto": "^1.0.1",
     "framer-motion": "^11.11.15",
     "imagekit": "^6.0.0",
     "imagekitio-react": "^4.2.0",
     "katex": "^0.16.18",
-    "next": "15.0.1",
+    "next": "^15.5.29",
     "next-nprogress-bar": "^2.3.15",
     "nodemailer": "^6.9.16",
     "razorpay": "^2.9.5",
@@ -41,7 +40,7 @@
   },
   "devDependencies": {
     "eslint": "^8",
-    "eslint-config-next": "15.0.1",
+    "eslint-config-next": "^15.5.29",
     "postcss": "^8",
     "tailwindcss": "^3.4.1"
   }
