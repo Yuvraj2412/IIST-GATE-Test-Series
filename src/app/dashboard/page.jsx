@@ -1,876 +1,576 @@
-"use client"
+"use client";
 import Navbar from "@/components/Navbar.jsx";
 import Footer from "@/components/Footer";
 import { useAuthState, signOut } from "@/libs/supabase/authClient";
 import toast from "react-hot-toast";
-
-import { useRouter } from 'next/navigation';
-import { useEffect, useState } from "react";
-import style from '@/components/styles/dashboardCSS.module.css';
+import { useRouter } from "next/navigation";
+import { useEffect, useState, useCallback } from "react";
 import Loader from "@/components/Loader";
 import Link from "next/link";
 import { motion } from "framer-motion";
 
+const STANDARD_BRANCHES = ["ECE", "Aerospace", "Mechanical", "Physics"];
+
 const getBranchName = (branch) => {
-    switch (branch) {
-        case "ECE":
-            return "Electronics and Communication Engineering - ECE";
-        case "Aerospace":
-            return "Aerospace Engineering";
-        case "Mechanical":
-            return "Mechanical Engineering";
-        default:
-            return branch;
-    }
+  switch (branch) {
+    case "ECE":
+      return "Electronics and Communication Engineering - ECE";
+    case "Aerospace":
+      return "Aerospace Engineering";
+    case "Mechanical":
+      return "Mechanical Engineering";
+    default:
+      return branch || "Not Specified";
+  }
 };
 
-
-
 export default function Dashboard() {
-    const [userDetails, setUserDetails] = useState(null);
-    const router = useRouter();
-    const [user, authLoading] = useAuthState();
-    const [userRole, setUserRole] = useState(null);
-    const [currOption, setCurrOption] = useState('account');
+  const [userDetails, setUserDetails] = useState(null);
+  const router = useRouter();
+  const [user, authLoading] = useAuthState();
+  const [userRole, setUserRole] = useState(null);
+  const [currOption, setCurrOption] = useState("account");
 
-    const [name, setName] = useState("");
-    const [mobileNumber, setMobileNumber] = useState("");
-    const [collegeName, setCollegeName] = useState("");
-    const [selectedBranch, setSelectedBranch] = useState('');
-    const [uid, setUid] = useState('');
-    const [isFirstLoad, setIsFirstLoad] = useState(true);
-    const [category, setCategory] = useState(null);
-    const [question, setQuestion] = useState("");
-    const [answer, setAnswer] = useState("");
-    const [otherBranch, setOtherBranch] = useState('');
-    const [registeredTests, setRegisteredTests] = useState([]);
+  const [name, setName] = useState("");
+  const [mobileNumber, setMobileNumber] = useState("");
+  const [collegeName, setCollegeName] = useState("");
+  const [selectedBranch, setSelectedBranch] = useState("");
+  const [otherBranch, setOtherBranch] = useState("");
+  const [uid, setUid] = useState("");
+  const [category, setCategory] = useState("General");
+  const [question, setQuestion] = useState("");
+  const [answer, setAnswer] = useState("");
+  const [registeredTests, setRegisteredTests] = useState([]);
 
-
-    const getUser = async (id) => {
-        try {
-            const res = await fetch("/api/getUser", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify({ userId: id }),
-            });
-            const resjson = await res.json();
-            if (res.status === 200 && resjson.user) {
-                setUserDetails(resjson.user);
-                setUserRole(resjson.user.role);
-                setUid(resjson.user.userId);
-                setName(resjson.user.name || "");
-                setCollegeName(resjson.user.college || "");
-                setMobileNumber(resjson.user.mobile ? String(resjson.user.mobile) : "");
-                setSelectedBranch(resjson.user.branch || "");
-                setRegisteredTests(resjson.user.registeredTests || []);
-            } else if (resjson.msg === "No user found") {
-                router.push("/sign-up?oauth=google");
-            } else {
-                toast.error("Failed to get user details.")
-            }
-        } catch (error) {
-            console.error("Error fetching user details:", error);
+  const getUser = useCallback(
+    async (id) => {
+      try {
+        const res = await fetch("/api/getUser", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ userId: id }),
+        });
+        const resjson = await res.json();
+        if (res.status === 200 && resjson.user) {
+          const u = resjson.user;
+          setUserDetails(u);
+          setUserRole(u.role);
+          setUid(u.userId);
+          setName(u.name || "");
+          setCollegeName(u.college || "");
+          setMobileNumber(u.mobile ? String(u.mobile) : "");
+          if (u.branch && !STANDARD_BRANCHES.includes(u.branch)) {
+            setSelectedBranch("other");
+            setOtherBranch(u.branch);
+          } else {
+            setSelectedBranch(u.branch || "");
+            setOtherBranch("");
+          }
+          setRegisteredTests(u.registeredTests || []);
+        } else if (resjson.msg === "No user found") {
+          router.push("/sign-up?oauth=google");
+        } else {
+          toast.error("Failed to get user details.");
         }
-    };
+      } catch (error) {
+        console.error("Error fetching user details:", error);
+      }
+    },
+    [router]
+  );
 
+  useEffect(() => {
+    if (user) {
+      getUser(user.uid);
+    } else if (!authLoading) {
+      router.push("/sign-in");
+    }
+  }, [user, authLoading, router, getUser]);
 
+  const addFAQ = async () => {
+    if (!question.trim() || !answer.trim()) {
+      toast.error("Question and answer are required.");
+      return;
+    }
+    const loadingToastId = toast.loading("Creating FAQ...");
+    try {
+      const response = await fetch("/api/faqs/createFAQ", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          question,
+          answer,
+          category,
+          createdByEmail: userDetails.email,
+        }),
+      });
 
-    const addFAQ = async () => {
-        // Show loading toast
-        const loadingToastId = toast.loading("Creating FAQ...");
+      if (response.ok) {
+        toast.success("FAQ created successfully!", { id: loadingToastId });
+        setAnswer("");
+        setQuestion("");
+        setCategory("General");
+      } else {
+        toast.error("Failed to create FAQ", { id: loadingToastId });
+      }
+    } catch (error) {
+      toast.error("Error creating FAQ: " + error.message, { id: loadingToastId });
+    }
+  };
 
-        try {
-            const response = await fetch("/api/faqs/createFAQ", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify({
-                    question,
-                    answer,
-                    category,
-                    createdByEmail: userDetails.email,
-                }),
-            });
-
-            if (response.ok) {
-                const data = await response.json();
-                // Show success toast
-                toast.success("FAQ created successfully!", {
-                    id: loadingToastId, // Replace loading toast with success
-                });
-                setAnswer('');
-                setQuestion('');
-                setCategory(null);
-                return data; // Optionally return data if needed
-            } else {
-                // Show error toast
-                toast.error("Failed to create FAQ: " + response.statusText, {
-                    id: loadingToastId, // Replace loading toast with error
-                });
-                console.error("Failed to create FAQ:", response.statusText);
-            }
-        } catch (error) {
-            // Show error toast
-            toast.error("Error in addFAQ function: " + error.message, {
-                id: loadingToastId, // Replace loading toast with error
-            });
-            console.error("Error in addFAQ function:", error);
-        }
+  const updateuserInfo = async () => {
+    const finalBranch = selectedBranch === "other" ? otherBranch.trim() : selectedBranch.trim();
+    if (!name.trim() || !collegeName.trim() || !finalBranch || !/^\d{10}$/.test(mobileNumber.trim())) {
+      toast.error("Please enter valid name, 10-digit mobile, branch, and college.");
+      return;
     }
 
-
-
-    const updateuserInfo = async () => {
-        const k = toast.loading("Updating info, please wait");
-        const postReqData = {
-            uid: uid,
-            name: name,
-            mobile: mobileNumber,
-            branch: selectedBranch === 'other' ? otherBranch : selectedBranch,
-            college: collegeName
-        }
-        try {
-            const res = await fetch("/api/updateUserInfo", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify(postReqData),
-            });
-            const resjson = await res.json();
-            toast.dismiss(k);
-            if (res.status === 200) {
-                toast.success("Details updated.")
-                setCurrOption('account');
-            } else if (res.status === 201) {
-                toast.error("Could not update, please try again.");
-            } else {
-                toast.error(resjson.msg || "Something went wrong.")
-            }
-        } catch (error) {
-            toast.dismiss(k);
-            console.error("Error:", error);
-        }
+    const k = toast.loading("Updating info...");
+    try {
+      const res = await fetch("/api/updateUserInfo", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          uid,
+          name: name.trim(),
+          mobile: mobileNumber.trim(),
+          branch: finalBranch,
+          college: collegeName.trim(),
+        }),
+      });
+      const resjson = await res.json();
+      toast.dismiss(k);
+      if (res.status === 200) {
+        toast.success("Profile updated.");
+        await getUser(user.uid);
+        setCurrOption("account");
+      } else {
+        toast.error(resjson.msg || "Could not update, please try again.");
+      }
+    } catch {
+      toast.dismiss(k);
+      toast.error("Failed to update details.");
     }
+  };
 
+  const isAdmin = userRole === "testAdmin" || userRole === "admin";
 
-    useEffect(() => {
-        if (user) {
-            getUser(user.uid);
-            setIsFirstLoad(false);
-        } else if (!authLoading) {
-            router.push("/sign-in");
-        }
-    }, [user, authLoading, router]);
+  return (
+    <div className="min-h-screen flex flex-col bg-slate-50 topSection">
+      <Navbar />
 
-    useEffect(() => {
-        if (!isFirstLoad && user) {
-            getUser(user.uid);
-        }
+      <main className="flex-1 max-w-screen-xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 lg:py-12">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-start">
+          {/* Sidebar */}
+          <aside className="lg:col-span-3 space-y-4">
+            <div className="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden">
+              <div className="cosmicHeader px-5 py-4 text-white">
+                <p className="text-[11px] uppercase tracking-widest text-amber-300 font-bold">
+                  IGTS · Dhanak &apos;27
+                </p>
+                <h2 className="text-xl font-extrabold mt-0.5">Candidate Portal</h2>
+              </div>
 
-    }, [currOption]);
-
-    const handleBranchChange = (e) => {
-        setSelectedBranch(e.target.value);
-    };
-
-
-
-    function AccountSection() {
-        return (
-            <div className={`bg-white font-bold rounded-2xl shadow-lg  border border-black ${style.fonttAverta}`}>
-                <div className={`bg-[#1E91D6] rounded-t-2xl pt-5 pb-4 px-4`}>
-                    <div className={`flex gap-2 md:px-2`}>
-                        <svg xmlns="http://www.w3.org/2000/svg" height="30px" viewBox="0 -960 960 960" width="30px" fill="#FFFFFF"><path d="M234-276q51-39 114-61.5T480-360q69 0 132 22.5T726-276q35-41 54.5-93T800-480q0-133-93.5-226.5T480-800q-133 0-226.5 93.5T160-480q0 59 19.5 111t54.5 93Zm246-164q-59 0-99.5-40.5T340-580q0-59 40.5-99.5T480-720q59 0 99.5 40.5T620-580q0 59-40.5 99.5T480-440Zm0 360q-83 0-156-31.5T197-197q-54-54-85.5-127T80-480q0-83 31.5-156T197-763q54-54 127-85.5T480-880q83 0 156 31.5T763-763q54 54 85.5 127T880-480q0 83-31.5 156T763-197q-54 54-127 85.5T480-80Zm0-80q53 0 100-15.5t86-44.5q-39-29-86-44.5T480-280q-53 0-100 15.5T294-220q39 29 86 44.5T480-160Zm0-360q26 0 43-17t17-43q0-26-17-43t-43-17q-26 0-43 17t-17 43q0 26 17 43t43 17Zm0-60Zm0 360Z" /></svg>
-                        <h1 className="text-2xl font-semibold text-white">Account Information</h1>
-                    </div>
-                </div>
-                {userDetails ?
-                    <div>
-                        <div className={`md:py-4 py-6 px-6`}>
-                            <div className={`flex justify-center items-center my-0 md:my-10`}>
-                                <div className="w-full grid grid-cols-1 lg:grid-cols-2 justify-center items-center gap-6 lg:gap-8 lg:mx-8">
-                                    {/* Profile Card */}
-                                    <div className="flex flex-col justify-center items-center border border-gray-300 bg-gray-50 rounded-xl shadow-md p-5 lg:p-6 h-full w-full">
-                                        <img
-                                            className="w-24 h-24 shadow-lg rounded-full border-[3px] border-[#0072bb] object-cover"
-                                            src="/images/profile.png"
-                                            alt="Profile picture"
-                                        />
-                                        <div className="text-center mt-4 space-y-1">
-                                            <p className={`text-2xl font-semibold text-gray-800`}>{userDetails.name}</p>
-                                            <p className="text-md text-gray-600">{userDetails.email}</p>
-                                            <p className="text-md text-gray-600">+91 {userDetails.mobile}</p>
-                                        </div>
-                                    </div>
-
-                                    {/* Details Section */}
-                                    <div className="flex flex-col gap-6 p-5 lg:p-10 h-full w-full bg-white border border-gray-200 rounded-lg shadow-md">
-                                        <div className="flex flex-col items-center text-center gap-2">
-                                            <span className="text-lg font-semibold text-[#0056a3]">Branch</span>
-                                            <p className="text-base text-gray-800">{getBranchName(userDetails.branch)}</p>
-                                        </div>
-                                        <div className="flex flex-col items-center text-center gap-2">
-                                            <span className="text-lg font-semibold text-[#0056a3]">College</span>
-                                            <p className="text-base text-gray-800">{userDetails.college}</p>
-                                        </div>
-                                    </div>
-
-                                </div>
-
-                            </div>
-
-                        </div>
-                        <div className={`bg-[#1E91D6] px-4 flex items-center h-8 rounded-b-2xl`}>
-                            <p className={`${style.fonttAverta} text-white text-sm`}>To update your info, <button onClick={() => { setCurrOption('settings'); }} className={`bg-none underline`}>Click Here.</button></p>
-
-                        </div>
-                    </div>
-                    :
-                    <div className={`md:py-4 py-6 px-6`}>
-                        <div className={`grid justify-center items-center my-0 md:my-10`}>
-                            <div className={``}><Loader /></div>
-
-                        </div>
-                    </div>}
-
-            </div>)
-    }
-
-    function Registrations() {
-
-        return (
-
-            <div className={`bg-white font-bold flex flex-col justify-between rounded-2xl shadow-lg  border border-black ${style.fonttAverta}`}>
-                <div className={`bg-[#1E91D6] rounded-t-2xl pt-5 pb-4 px-4`}>
-                    <div className={`flex gap-2 md:px-2`}>
-                        <svg xmlns="http://www.w3.org/2000/svg" height="30px" viewBox="0 -960 960 960" width="30px" fill="#FFFFFF"><path d="M160-80q-33 0-56.5-23.5T80-160v-440q0-33 23.5-56.5T160-680h200v-120q0-33 23.5-56.5T440-880h80q33 0 56.5 23.5T600-800v120h200q33 0 56.5 23.5T880-600v440q0 33-23.5 56.5T800-80H160Zm0-80h640v-440H600q0 33-23.5 56.5T520-520h-80q-33 0-56.5-23.5T360-600H160v440Zm80-80h240v-18q0-17-9.5-31.5T444-312q-20-9-40.5-13.5T360-330q-23 0-43.5 4.5T276-312q-17 8-26.5 22.5T240-258v18Zm320-60h160v-60H560v60Zm-200-60q25 0 42.5-17.5T420-420q0-25-17.5-42.5T360-480q-25 0-42.5 17.5T300-420q0 25 17.5 42.5T360-360Zm200-60h160v-60H560v60ZM440-600h80v-200h-80v200Zm40 220Z" /></svg>
-                        <h1 className="text-2xl font-semibold text-white">Registrations</h1>
-                    </div>
-                </div>
-                {userDetails ?
-                    <div>
-                        {registeredTests.length == 0 &&
-                            <div className={`md:py-4 py-6 px-6`}>
-                                <div className={`grid lg:flex justify-center items-center md:my-10 w-full mx-auto`}>
-                                    <div className={`flex flex-col justify-center items-center`}>
-                                        <div className="flex flex-col p-6 gap-2 w-full rounded-2xl bg-white border border-gray-400 shadow-lg items-center max-w-sm mx-auto">
-                                            <div className={`text-center`}>
-                                                <p className={`${style.fonttAverta} text-sm font-bold`}>
-                                                    You do not have any registrations.
-                                                </p>
-                                                <p className={`${style.fonttAverta} text-sm font-bold pt-1`}>
-                                                    Please <Link className={`text-[#1e91d6] hover:underline`} href={'tests'}>register</Link> for the test
-                                                </p>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        }
-
-                        {registeredTests &&
-                            registeredTests.map((registration, index) => (
-                                <div key={registration._id} className={`flex-col lg:flex lg:flex-wrap mx-4 md:mx-10 mt-8 mb-2`}>
-                                    <div className="flex-col justify-center items-center bg-white border border-gray-400 shadow-lg rounded-xl p-5 lg:p-6 h-full w-full mb-4">
-                                        <div className="text-left space-y-4 w-full">
-                                            <h3 className="text-xl md:text-2xl lg:text-3xl font-semibold text-black">
-                                                GATE Mock for {registration.test
-                                                    ? registration.test.split(',')[0].includes('Electronics and Communication Engineering')
-                                                        ? 'Electronics and Communication Engineering' // Replace with 'ECE' if the name includes Electronics and Communication Engineering
-                                                        : registration.test.split(',')[0]
-                                                    : "Test Name Not Available"}
-                                            </h3>
-                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-2 md:gap-8">
-                                                <div className={`space-y-2`}>
-                                                    <p className="text-md text-gray-600">
-                                                        <strong className={`text-[#4d2deb]`}>Package:</strong> {registration.test ? registration.test.split(',')[1] : "Package Not Available"}
-                                                    </p>
-                                                    <p className="text-md text-gray-600">
-                                                        <strong className={`text-[#4d2deb]`}>Name:</strong> {registration.userId.name}
-                                                    </p>
-                                                    <p className="text-md text-gray-600">
-                                                        <strong className={`text-[#4d2deb]`}>Email:</strong> {registration.userId.email}
-                                                    </p>
-                                                </div>
-                                                <div className={`space-y-2`}>
-                                                    <p className="text-md text-gray-600 flex gap-1">
-                                                        <strong className={`text-[#4d2deb]`}>Payment Status: </strong> <strong>{registration.payment.status === 'paid' && 'Paid'}</strong> <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960" width="20px" fill="#008000"><path d="m424-296 282-282-56-56-226 226-114-114-56 56 170 170Zm56 216q-83 0-156-31.5T197-197q-54-54-85.5-127T80-480q0-83 31.5-156T197-763q54-54 127-85.5T480-880q83 0 156 31.5T763-763q54 54 85.5 127T880-480q0 83-31.5 156T763-197q-54 54-127 85.5T480-80Zm0-80q134 0 227-93t93-227q0-134-93-227t-227-93q-134 0-227 93t-93 227q0 134 93 227t227 93Zm0-320Z" /></svg>
-                                                    </p>
-                                                    <p className="text-md text-gray-600">
-                                                        <strong className={`text-[#4d2deb]`}>Amount:</strong> Rs. {registration.payment.amount} /-
-                                                    </p>
-                                                    <p className="text-md text-gray-600">
-                                                        <strong className={`text-[#4d2deb]`}>PID:</strong> {registration.pid}
-                                                    </p>
-                                                </div>
-                                            </div>
-                                        </div>
-
-                                    </div>
-                                </div>
-                            ))
-                        }
-
-                        <div className={`bg-[#1E91D6] px-4 flex items-center h-8 rounded-b-2xl`}>
-                            <p className={`${style.fonttAverta} text-white text-sm`}>Facing issues?, Please <Link href={'/contact-us'} className={`bg-none underline`}>Contact us.</Link></p>
-                        </div>
-                    </div> :
-                    <div className={`md:py-4 py-6 px-6`}>
-                        <div className={`grid justify-center items-center my-0 md:my-10`}>
-                            <div className={``}><Loader /></div>
-                        </div>
-                    </div>
-                }
-
-            </div>)
-    }
-
-    function ResultSection() {
-        return (
-            <div className={`bg-white font-bold rounded-2xl shadow-lg  border border-black ${style.fonttAverta}`}>
-                <div className={`bg-[#1E91D6] rounded-t-2xl pt-5 pb-4 px-4`}>
-                    <div className={`flex gap-2 md:px-2`}>
-                        <svg xmlns="http://www.w3.org/2000/svg" height="30px" viewBox="0 -960 960 960" width="30px" fill="#ffffff"><path d="M320-480v-80h320v80H320Zm0-160v-80h320v80H320Zm-80 240h300q29 0 54 12.5t42 35.5l84 110v-558H240v400Zm0 240h442L573-303q-6-8-14.5-12.5T540-320H240v160Zm480 80H240q-33 0-56.5-23.5T160-160v-640q0-33 23.5-56.5T240-880h480q33 0 56.5 23.5T800-800v640q0 33-23.5 56.5T720-80Zm-480-80v-640 640Zm0-160v-80 80Z" /></svg>
-                        <h1 className="text-2xl font-semibold text-white">Results</h1>
-                    </div>
-                </div>
-                {userDetails ?
-                    <div>
-                        <div className={`md:py-4 py-6 px-6`}>
-                            <div className={`grid justify-center items-center md:my-10`}>
-                                <div className={`flex flex-col justify-center items-center`}>
-                                    <div className="flex flex-col p-6 gap-2 w-full rounded-2xl bg-white border border-gray-400 shadow-lg items-center max-w-sm mx-auto">
-                                        <div className={`text-center`}>
-                                            <p className={`${style.fonttAverta} text-sm font-bold`}>
-                                                Results will be displayed within 48 hours after you attempt the test.
-                                            </p>
-                                        </div>
-
-                                    </div>
-
-                                </div>
-                            </div>
-
-                        </div>
-                        <div className={`bg-[#1E91D6] px-4 flex items-center h-8 rounded-b-2xl`}>
-                            <p className={`${style.fonttAverta} text-white text-sm`}>Facing issues?, Please <Link href={'/contact-us'} className={`bg-none underline`}>Contact us.</Link></p>
-
-                        </div>
-                    </div> :
-                    <div className={`md:py-4 py-6 px-6`}>
-                        <div className={`grid justify-center items-center my-0 md:my-10`}>
-                            <div className={``}><Loader /></div>
-                        </div>
-                    </div>}
-            </div>)
-    }
-
-
-    return (
-        <div>
-            <div className={`topSection min-h-screen pb-20`}>
-                <Navbar />
-                <motion.div
-                    className="flex justify-center p-5 md:px-20 md:py-6 lg:p-0"
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                    transition={{ duration: 0.7 }}
+              <div className="p-4 space-y-2">
+                <Link
+                  href="/registered-tests"
+                  className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-full font-bold text-sm text-white bg-gradient-to-r from-[#4f46e5] to-[#674cee] hover:from-[#4338ca] hover:to-[#5b3fe3] shadow-sm transition"
                 >
-                    {/* Main Grid Container */}
-                    <div className="mt-2 md:mt-8 lg:mt-16 flex flex-col lg:flex-row gap-8 lg:gap-6 w-full max-w-5xl lg:max-w-7xl">
+                  Your Live Tests →
+                </Link>
 
-                        <div className={`lg:w-3/12 `}>
-                            {/* Floating Navigation Panel */}
-                            <div className={`px-5`}>
-                                <div className="hidden lg:flex bg-white border-[#0072bb] border-2 text-white rounded-xl shadow-2xl md:sticky top-10 self-start flex-col justify-between">
-                                    <div>
-                                        <div className={`rounded-xl hover:cursor-pointer mt-6 mx-3 flex px-2 pt-3 pb-2 items-center bg-[#1E91D6] py-3`}>
-                                            <h2 className={`text-2xl flex gap-2 pl-1 font-bold text-white ${style.fonttAverta}`}>
-                                                <svg xmlns="http://www.w3.org/2000/svg" className={`mt-[2.5px]`} height="26px" viewBox="0 -960 960 960" width="26px" fill="#ffffff"><path d="m226-559 78 33q14-28 29-54t33-52l-56-11-84 84Zm142 83 114 113q42-16 90-49t90-75q70-70 109.5-155.5T806-800q-72-5-158 34.5T492-656q-42 42-75 90t-49 90Zm178-65q-23-23-23-56.5t23-56.5q23-23 57-23t57 23q23 23 23 56.5T660-541q-23 23-57 23t-57-23Zm19 321 84-84-11-56q-26 18-52 32.5T532-299l33 79Zm313-653q19 121-23.5 235.5T708-419l20 99q4 20-2 39t-20 33L538-80l-84-197-171-171-197-84 167-168q14-14 33.5-20t39.5-2l99 20q104-104 218-147t235-24ZM157-321q35-35 85.5-35.5T328-322q35 35 34.5 85.5T327-151q-25 25-83.5 43T82-76q14-103 32-161.5t43-83.5Zm57 56q-10 10-20 36.5T180-175q27-4 53.5-13.5T270-208q12-12 13-29t-11-29q-12-12-29-11.5T214-265Z" /></svg><span className={``}>Dashboard</span></h2>
-                                        </div>
-                                        <div className={`px-5 pb-5 pt-5`}>
-                                            <nav>
-                                                <ul className="space-y-4 flex flex-col justify-center">
-                                                    <li>
-                                                        <Link
-                                                            href='/registered-tests'
-                                                            className={`hover:bg-[#0072bb] bg-[#1e91d6] focus:ring-4 focus:ring-blue-300 transition duration-1000 w-full flex gap-2 ${style.fonttAverta} text-white font-semibold px-3 py-2 rounded-md`}>
-                                                            <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#ffffff"><path d="M224-878h78l135 360h-75l-30-86H194l-30 86H89l135-360Zm5 402q42 0 71 29t29 71q0 20-7.5 38.5T300-305l-15 14 28 28 57-56 57 57-56 56 56 57-57 56-56-56-42 42q-15 15-34 22.5T198-77q-42 0-70-29.5T100-178q0-20 8-38.5t22-32.5l42-42-14-14q-14-14-22-32t-8-38q0-42 29.5-71.5T229-476Zm0 242-43 42q-3 3-4 6.5t-1 7.5q0 8 5.5 14t13.5 6q4 0 7.5-1.5t6.5-4.5l43-42-28-28Zm-1-162q-8 0-13.5 6t-5.5 14q0 4 1 7.5t4 6.5l15 14 13-13q3-3 4.5-6.5t1.5-7.5q0-8-6-14.5t-14-6.5Zm33-404-46 134h96l-46-134h-4Zm438-105q8 13 13.5 27t9.5 28l-43 13h201v80h-67q-11 33-28.5 62.5T744-640q27 16 56 26.5t60 18.5l-19 77q-43-11-83.5-27T680-586q-37 24-77.5 40.5T519-518l-18-77q30-8 59-18.5t56-26.5q-23-25-40.5-54.5T548-757h-68v-80h176q-3-13-8-25.5T638-887l61-18Zm104 444 57 56L549-94l-57-56 311-311Zm-223 23q25 0 42.5 17.5T640-378q0 25-17.5 42.5T580-318q-25 0-42.5-17.5T520-378q0-25 17.5-42.5T580-438Zm53-319q8 19 20 36t27 32q15-15 27-32t21-36h-95Zm147 519q25 0 42.5 17.5T840-178q0 25-17.5 42.5T780-118q-25 0-42.5-17.5T720-178q0-25 17.5-42.5T780-238Z" /></svg>
-                                                            Your Tests
-                                                        </Link>
-                                                    </li>
-                                                    <li>
-                                                        <button
-                                                            onClick={() => {
-                                                                setCurrOption('account');
-                                                            }}
-                                                            className={`${currOption === "account" ? "bg-[#e9eef2]" : ""} hover:bg-[#e9eef2] w-full flex gap-2 ${style.fonttAverta} text-[#3c4852] font-semibold px-3 py-2 block rounded-lg`}><svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#3c4852"><path d="M234-276q51-39 114-61.5T480-360q69 0 132 22.5T726-276q35-41 54.5-93T800-480q0-133-93.5-226.5T480-800q-133 0-226.5 93.5T160-480q0 59 19.5 111t54.5 93Zm246-164q-59 0-99.5-40.5T340-580q0-59 40.5-99.5T480-720q59 0 99.5 40.5T620-580q0 59-40.5 99.5T480-440Zm0 360q-83 0-156-31.5T197-197q-54-54-85.5-127T80-480q0-83 31.5-156T197-763q54-54 127-85.5T480-880q83 0 156 31.5T763-763q54 54 85.5 127T880-480q0 83-31.5 156T763-197q-54 54-127 85.5T480-80Zm0-80q53 0 100-15.5t86-44.5q-39-29-86-44.5T480-280q-53 0-100 15.5T294-220q39 29 86 44.5T480-160Zm0-360q26 0 43-17t17-43q0-26-17-43t-43-17q-26 0-43 17t-17 43q0 26 17 43t43 17Zm0-60Zm0 360Z" /></svg>
-                                                            Profile</button>
-                                                    </li>
-                                                    <li>
-                                                        <button
-                                                            onClick={() => {
-                                                                setCurrOption('registrations');
-                                                            }}
-                                                            className={`${currOption === "registrations" ? "bg-[#e9eef2]" : ""} hover:bg-[#e9eef2] w-full flex gap-2 ${style.fonttAverta} text-[#3c4852] font-semibold px-3 py-2 block rounded-lg`}><svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#3c4852"><path d="M160-80q-33 0-56.5-23.5T80-160v-440q0-33 23.5-56.5T160-680h200v-120q0-33 23.5-56.5T440-880h80q33 0 56.5 23.5T600-800v120h200q33 0 56.5 23.5T880-600v440q0 33-23.5 56.5T800-80H160Zm0-80h640v-440H600q0 33-23.5 56.5T520-520h-80q-33 0-56.5-23.5T360-600H160v440Zm80-80h240v-18q0-17-9.5-31.5T444-312q-20-9-40.5-13.5T360-330q-23 0-43.5 4.5T276-312q-17 8-26.5 22.5T240-258v18Zm320-60h160v-60H560v60Zm-200-60q25 0 42.5-17.5T420-420q0-25-17.5-42.5T360-480q-25 0-42.5 17.5T300-420q0 25 17.5 42.5T360-360Zm200-60h160v-60H560v60ZM440-600h80v-200h-80v200Zm40 220Z" /></svg>
-                                                            Registrations</button>
-                                                    </li>
-                                                    <li>
-                                                        <button
-                                                            onClick={() => {
-                                                                router.push('/dashboard/results');
-                                                            }}
-                                                            className={`${currOption === "results" ? "bg-[#e9eef2]" : ""} hover:bg-[#e9eef2] w-full flex gap-2 ${style.fonttAverta} text-[#3c4852] font-semibold px-3 py-2 block rounded-lg`}>
-                                                            <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#3c4852"><path d="M320-480v-80h320v80H320Zm0-160v-80h320v80H320Zm-80 240h300q29 0 54 12.5t42 35.5l84 110v-558H240v400Zm0 240h442L573-303q-6-8-14.5-12.5T540-320H240v160Zm480 80H240q-33 0-56.5-23.5T160-160v-640q0-33 23.5-56.5T240-880h480q33 0 56.5 23.5T800-800v640q0 33-23.5 56.5T720-80Zm-480-80v-640 640Zm0-160v-80 80Z" /></svg>
-                                                            Results
-                                                        </button>
-                                                    </li>
-                                                    {(userRole === "testAdmin" || userRole === "admin") &&
-                                                        <li>
-                                                            <button
-                                                                onClick={() => {
-                                                                    setCurrOption('addFaq');
-                                                                }}
-                                                                className={`${currOption === "addFaq" ? "bg-[#e9eef2]" : ""} hover:bg-[#e9eef2] w-full flex gap-2 ${style.fonttAverta} text-[#3c4852] font-semibold px-3 py-2 block rounded-lg`}>
-                                                                <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#3c4852"><path d="M560-360q17 0 29.5-12.5T602-402q0-17-12.5-29.5T560-444q-17 0-29.5 12.5T518-402q0 17 12.5 29.5T560-360Zm-30-128h60q0-29 6-42.5t28-35.5q30-30 40-48.5t10-43.5q0-45-31.5-73.5T560-760q-41 0-71.5 23T446-676l54 22q9-25 24.5-37.5T560-704q24 0 39 13.5t15 36.5q0 14-8 26.5T578-596q-33 29-40.5 45.5T530-488ZM320-240q-33 0-56.5-23.5T240-320v-480q0-33 23.5-56.5T320-880h480q33 0 56.5 23.5T880-800v480q0 33-23.5 56.5T800-240H320Zm0-80h480v-480H320v480ZM160-80q-33 0-56.5-23.5T80-160v-560h80v560h560v80H160Zm160-720v480-480Z" /></svg>
-                                                                Add FAQs</button>
-                                                        </li>
-                                                    }
-                                                    {(userRole === "testAdmin" || userRole === "admin") &&
-                                                        <li>
-                                                            <Link
-                                                                href={'/addQuestion'}
-                                                                className={`hover:bg-[#e9eef2] w-full flex gap-2 ${style.fonttAverta} text-[#3c4852] font-semibold px-3 py-2 block rounded-lg`}>
-                                                                <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#3c4852"><path d="M560-360q17 0 29.5-12.5T602-402q0-17-12.5-29.5T560-444q-17 0-29.5 12.5T518-402q0 17 12.5 29.5T560-360Zm-30-128h60q0-29 6-42.5t28-35.5q30-30 40-48.5t10-43.5q0-45-31.5-73.5T560-760q-41 0-71.5 23T446-676l54 22q9-25 24.5-37.5T560-704q24 0 39 13.5t15 36.5q0 14-8 26.5T578-596q-33 29-40.5 45.5T530-488ZM320-240q-33 0-56.5-23.5T240-320v-480q0-33 23.5-56.5T320-880h480q33 0 56.5 23.5T880-800v480q0 33-23.5 56.5T800-240H320Zm0-80h480v-480H320v480ZM160-80q-33 0-56.5-23.5T80-160v-560h80v560h560v80H160Zm160-720v480-480Z" /></svg>
-                                                                Add Questions</Link>
-                                                        </li>
-                                                    }
-                                                    {(userRole === "testAdmin" || userRole === "admin") &&
-                                                        <li>
-                                                            <Link
-                                                                href={'/previewQuestion'}
-                                                                className={`hover:bg-[#e9eef2] w-full flex gap-2 ${style.fonttAverta} text-[#3c4852] font-semibold px-3 py-2 block rounded-lg`}>
-                                                                <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#3c4852"><path d="M200-120q-33 0-56.5-23.5T120-200v-560q0-33 23.5-56.5T200-840h560q33 0 56.5 23.5T840-760v560q0 33-23.5 56.5T760-120H200Zm0-80h560v-480H200v480Zm280-80q-82 0-146.5-44.5T240-440q29-71 93.5-115.5T480-600q82 0 146.5 44.5T720-440q-29 71-93.5 115.5T480-280Zm0-60q56 0 102-26.5t72-73.5q-26-47-72-73.5T480-540q-56 0-102 26.5T306-440q26 47 72 73.5T480-340Zm0-100Zm0 60q25 0 42.5-17.5T540-440q0-25-17.5-42.5T480-500q-25 0-42.5 17.5T420-440q0 25 17.5 42.5T480-380Z" /></svg>
-                                                                Preview Questions</Link>
-                                                        </li>
-                                                    }
-                                                    {(userRole === "testAdmin" || userRole === "admin") &&
-                                                        <li>
-                                                            <Link
-                                                                href={'/editQuestion'}
-                                                                className={`hover:bg-[#e9eef2] w-full flex gap-2 ${style.fonttAverta} text-[#3c4852] font-semibold px-3 py-2 block rounded-lg`}>
-                                                                <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#3c4852"><path d="M200-120q-33 0-56.5-23.5T120-200v-560q0-33 23.5-56.5T200-840h357l-80 80H200v560h560v-278l80-80v358q0 33-23.5 56.5T760-120H200Zm280-360ZM360-360v-170l367-367q12-12 27-18t30-6q16 0 30.5 6t26.5 18l56 57q11 12 17 26.5t6 29.5q0 15-5.5 29.5T897-728L530-360H360Zm481-424-56-56 56 56ZM440-440h56l232-232-28-28-29-28-231 231v57Zm260-260-29-28 29 28 28 28-28-28Z" /></svg>
-                                                                Edit Questions</Link>
-                                                        </li>
-                                                    }
-                                                    {(userRole === "testAdmin" || userRole === "admin") &&
-                                                        <li>
-                                                            <Link
-                                                                href={'/deleteQuestion'}
-                                                                className={`hover:bg-[#e9eef2] w-full flex gap-2 ${style.fonttAverta} text-[#3c4852] font-semibold px-3 py-2 block rounded-lg`}>
-                                                                <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#3c4852"><path d="m376-300 104-104 104 104 56-56-104-104 104-104-56-56-104 104-104-104-56 56 104 104-104 104 56 56Zm-96 180q-33 0-56.5-23.5T200-200v-520h-40v-80h200v-40h240v40h200v80h-40v520q0 33-23.5 56.5T680-120H280Zm400-600H280v520h400v-520Zm-400 0v520-520Z" /></svg>
-                                                                Delete Questions</Link>
-                                                        </li>
-                                                    }
-                                                    <li>
-                                                        <button
-                                                            onClick={() => {
-                                                                setCurrOption('settings');
-                                                            }}
-                                                            className={`${currOption === "settings" ? "bg-[#e9eef2]" : ""} hover:bg-[#e9eef2] w-full flex gap-2 ${style.fonttAverta} text-[#3c4852] font-semibold px-3 py-2 block rounded-lg`}>
-                                                            <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#3c4852"><path d="M400-480q-66 0-113-47t-47-113q0-66 47-113t113-47q66 0 113 47t47 113q0 66-47 113t-113 47ZM80-160v-112q0-33 17-62t47-44q51-26 115-44t141-18h14q6 0 12 2-8 18-13.5 37.5T404-360h-4q-71 0-127.5 18T180-306q-9 5-14.5 14t-5.5 20v32h252q6 21 16 41.5t22 38.5H80Zm560 40-12-60q-12-5-22.5-10.5T584-204l-58 18-40-68 46-40q-2-14-2-26t2-26l-46-40 40-68 58 18q11-8 21.5-13.5T628-460l12-60h80l12 60q12 5 22.5 11t21.5 15l58-20 40 70-46 40q2 12 2 25t-2 25l46 40-40 68-58-18q-11 8-21.5 13.5T732-180l-12 60h-80Zm40-120q33 0 56.5-23.5T760-320q0-33-23.5-56.5T680-400q-33 0-56.5 23.5T600-320q0 33 23.5 56.5T680-240ZM400-560q33 0 56.5-23.5T480-640q0-33-23.5-56.5T400-720q-33 0-56.5 23.5T320-640q0 33 23.5 56.5T400-560Zm0-80Zm12 400Z" /></svg>
-                                                            Update Profile</button>
-                                                    </li>
+                <div className="grid grid-cols-2 lg:grid-cols-1 gap-1.5 pt-2">
+                  {[
+                    { id: "account", label: "Profile" },
+                    { id: "registrations", label: "Registrations" },
+                    { id: "settings", label: "Update Profile" },
+                  ].map((item) => (
+                    <button
+                      key={item.id}
+                      type="button"
+                      onClick={() => setCurrOption(item.id)}
+                      className={`w-full text-left px-3.5 py-2.5 rounded-xl text-sm font-semibold transition ${
+                        currOption === item.id
+                          ? "bg-indigo-50 text-indigo-700"
+                          : "text-slate-700 hover:bg-slate-100"
+                      }`}
+                    >
+                      {item.label}
+                    </button>
+                  ))}
 
-                                                </ul>
-                                            </nav>
-                                        </div>
-                                    </div>
-                                    <div className={`px-5 pt-20 pb-4`}>
-                                        <button
-                                            onClick={async () => {
-                                                await signOut();
-                                                window.location.href = "/sign-in";
-                                            }} className={`hover:bg-[#e9eef2] flex gap-2 ${style.fonttAverta} text-[#3c4852] font-semibold w-full text-left px-3 py-2 block rounded-lg`}><svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#3c4852"><path d="M200-120q-33 0-56.5-23.5T120-200v-560q0-33 23.5-56.5T200-840h280v80H200v560h280v80H200Zm440-160-55-58 102-102H360v-80h327L585-622l55-58 200 200-200 200Z" /></svg>
-                                            Logout</button>
-                                    </div>
-                                </div>
-                            </div>
-                            {/* Floating Navigation Panel for mobile screens */}
-                            <div className="flex bg-white border-[#0072bb] border-2 text-white rounded-xl shadow-2xl flex-row items-center justify-evenly p-2 lg:hidden">
-                                <nav className="grid grid-cols-2 gap-2 justify-center items-center w-full">
-                                    <button
-                                        className={`w-full`}
-                                    >
-                                        <Link
-                                            href='/registered-tests'
-                                            className={`hover:bg-[#0072bb] bg-[#1e91d6] text-sm focus:ring-4 focus:ring-blue-300 transition duration-1000 w-full flex gap-2 ${style.fonttAverta} text-white font-semibold px-3 py-2 rounded-md`}>
-                                            <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960" width="20px" fill="#ffffff"><path d="M224-878h78l135 360h-75l-30-86H194l-30 86H89l135-360Zm5 402q42 0 71 29t29 71q0 20-7.5 38.5T300-305l-15 14 28 28 57-56 57 57-56 56 56 57-57 56-56-56-42 42q-15 15-34 22.5T198-77q-42 0-70-29.5T100-178q0-20 8-38.5t22-32.5l42-42-14-14q-14-14-22-32t-8-38q0-42 29.5-71.5T229-476Zm0 242-43 42q-3 3-4 6.5t-1 7.5q0 8 5.5 14t13.5 6q4 0 7.5-1.5t6.5-4.5l43-42-28-28Zm-1-162q-8 0-13.5 6t-5.5 14q0 4 1 7.5t4 6.5l15 14 13-13q3-3 4.5-6.5t1.5-7.5q0-8-6-14.5t-14-6.5Zm33-404-46 134h96l-46-134h-4Zm438-105q8 13 13.5 27t9.5 28l-43 13h201v80h-67q-11 33-28.5 62.5T744-640q27 16 56 26.5t60 18.5l-19 77q-43-11-83.5-27T680-586q-37 24-77.5 40.5T519-518l-18-77q30-8 59-18.5t56-26.5q-23-25-40.5-54.5T548-757h-68v-80h176q-3-13-8-25.5T638-887l61-18Zm104 444 57 56L549-94l-57-56 311-311Zm-223 23q25 0 42.5 17.5T640-378q0 25-17.5 42.5T580-318q-25 0-42.5-17.5T520-378q0-25 17.5-42.5T580-438Zm53-319q8 19 20 36t27 32q15-15 27-32t21-36h-95Zm147 519q25 0 42.5 17.5T840-178q0 25-17.5 42.5T780-118q-25 0-42.5-17.5T720-178q0-25 17.5-42.5T780-238Z" /></svg>
-                                            Your Tests
-                                        </Link>
-                                    </button>
-                                    <button
-                                        onClick={() => setCurrOption('account')}
-                                        className={`shadow-md text-sm sm:text-md flex items-center gap-2 text-[#3c4852] font-semibold p-2 rounded-lg ${currOption === 'account' ? 'bg-[#e9eef2]' : ''}`}>
-                                        <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960" width="20px" fill="#3c4852"><path d="M234-276q51-39 114-61.5T480-360q69 0 132 22.5T726-276q35-41 54.5-93T800-480q0-133-93.5-226.5T480-800q-133 0-226.5 93.5T160-480q0 59 19.5 111t54.5 93Zm246-164q-59 0-99.5-40.5T340-580q0-59 40.5-99.5T480-720q59 0 99.5 40.5T620-580q0 59-40.5 99.5T480-440Zm0 360q-83 0-156-31.5T197-197q-54-54-85.5-127T80-480q0-83 31.5-156T197-763q54-54 127-85.5T480-880q83 0 156 31.5T763-763q54 54 85.5 127T880-480q0 83-31.5 156T763-197q-54 54-127 85.5T480-80Zm0-80q53 0 100-15.5t86-44.5q-39-29-86-44.5T480-280q-53 0-100 15.5T294-220q39 29 86 44.5T480-160Zm0-360q26 0 43-17t17-43q0-26-17-43t-43-17q-26 0-43 17t-17 43q0 26 17 43t43 17Zm0-60Zm0 360Z" /></svg>
-                                        Profile
-                                    </button>
-                                    <button
-                                        onClick={() => setCurrOption('registrations')}
-                                        className={`shadow-md text-sm sm:text-md flex items-center gap-2 text-[#3c4852] font-semibold p-2 rounded-lg ${currOption === 'registrations' ? 'bg-[#e9eef2]' : ''}`}>
-                                        <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960" width="20px" fill="#3c4852"><path d="M160-80q-33 0-56.5-23.5T80-160v-440q0-33 23.5-56.5T160-680h200v-120q0-33 23.5-56.5T440-880h80q33 0 56.5 23.5T600-800v120h200q33 0 56.5 23.5T880-600v440q0 33-23.5 56.5T800-80H160Zm0-80h640v-440H600q0 33-23.5 56.5T520-520h-80q-33 0-56.5-23.5T360-600H160v440Zm80-80h240v-18q0-17-9.5-31.5T444-312q-20-9-40.5-13.5T360-330q-23 0-43.5 4.5T276-312q-17 8-26.5 22.5T240-258v18Zm320-60h160v-60H560v60Zm-200-60q25 0 42.5-17.5T420-420q0-25-17.5-42.5T360-480q-25 0-42.5 17.5T300-420q0 25 17.5 42.5T360-360Zm200-60h160v-60H560v60ZM440-600h80v-200h-80v200Zm40 220Z" /></svg>
-                                        Registrations
-                                    </button>
-                                    <button
-                                        onClick={() => router.push('/dashboard/results')}
-                                        className={`shadow-md text-sm sm:text-md flex items-center gap-2 text-[#3c4852] font-semibold p-2 rounded-lg ${currOption === 'results' ? 'bg-[#e9eef2]' : ''}`}>
-                                        <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960" width="20px" fill="#3c4852"><path d="M320-480v-80h320v80H320Zm0-160v-80h320v80H320Zm-80 240h300q29 0 54 12.5t42 35.5l84 110v-558H240v400Zm0 240h442L573-303q-6-8-14.5-12.5T540-320H240v160Zm480 80H240q-33 0-56.5-23.5T160-160v-640q0-33 23.5-56.5T240-880h480q33 0 56.5 23.5T800-800v640q0 33-23.5 56.5T720-80Zm-480-80v-640 640Zm0-160v-80 80Z" /></svg>
-                                        Results
-                                    </button>
-                                    {(userRole === "testAdmin" || userRole === "admin") &&
-                                        <button
-                                            onClick={() => {
-                                                setCurrOption('addFaq');
-                                            }}
-                                            className={`shadow-md text-sm sm:text-md flex items-center gap-2 text-[#3c4852] font-semibold p-2 rounded-lg ${currOption === 'addFaq' ? 'bg-[#e9eef2]' : ''}`}>
-                                            <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960" width="20px" fill="#3c4852"><path d="M560-360q17 0 29.5-12.5T602-402q0-17-12.5-29.5T560-444q-17 0-29.5 12.5T518-402q0 17 12.5 29.5T560-360Zm-30-128h60q0-29 6-42.5t28-35.5q30-30 40-48.5t10-43.5q0-45-31.5-73.5T560-760q-41 0-71.5 23T446-676l54 22q9-25 24.5-37.5T560-704q24 0 39 13.5t15 36.5q0 14-8 26.5T578-596q-33 29-40.5 45.5T530-488ZM320-240q-33 0-56.5-23.5T240-320v-480q0-33 23.5-56.5T320-880h480q33 0 56.5 23.5T880-800v480q0 33-23.5 56.5T800-240H320Zm0-80h480v-480H320v480ZM160-80q-33 0-56.5-23.5T80-160v-560h80v560h560v80H160Zm160-720v480-480Z" /></svg>
-                                            Add FAQs</button>
+                  <Link
+                    href="/dashboard/results"
+                    className="w-full text-left px-3.5 py-2.5 rounded-xl text-sm font-semibold text-slate-700 hover:bg-slate-100 transition block"
+                  >
+                    Results &amp; Reports
+                  </Link>
 
-                                    }
-                                    {(userRole === "testAdmin" || userRole === "admin") &&
-                                        <button>
-                                            <Link
-                                                href={'/addQuestion'}
-                                                className={`shadow-md text-sm sm:text-md flex items-center gap-2 text-[#3c4852] font-semibold p-2 rounded-lg ${currOption === '' ? 'bg-[#e9eef2]' : ''}`}>
-                                                <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960" width="20px" fill="#3c4852"><path d="M560-360q17 0 29.5-12.5T602-402q0-17-12.5-29.5T560-444q-17 0-29.5 12.5T518-402q0 17 12.5 29.5T560-360Zm-30-128h60q0-29 6-42.5t28-35.5q30-30 40-48.5t10-43.5q0-45-31.5-73.5T560-760q-41 0-71.5 23T446-676l54 22q9-25 24.5-37.5T560-704q24 0 39 13.5t15 36.5q0 14-8 26.5T578-596q-33 29-40.5 45.5T530-488ZM320-240q-33 0-56.5-23.5T240-320v-480q0-33 23.5-56.5T320-880h480q33 0 56.5 23.5T880-800v480q0 33-23.5 56.5T800-240H320Zm0-80h480v-480H320v480ZM160-80q-33 0-56.5-23.5T80-160v-560h80v560h560v80H160Zm160-720v480-480Z" /></svg>
-                                                Add Ques</Link>
-                                        </button>
-                                    }
-                                    {(userRole === "testAdmin" || userRole === "admin") &&
-                                        <button>
-                                            <Link
-                                                href={'/previewQuestion'}
-                                                className={`shadow-md text-sm sm:text-md flex items-center gap-2 text-[#3c4852] font-semibold p-2 rounded-lg ${currOption === '' ? 'bg-[#e9eef2]' : ''}`}>
-                                                <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960" width="20px" fill="#3c4852"><path d="M200-120q-33 0-56.5-23.5T120-200v-560q0-33 23.5-56.5T200-840h560q33 0 56.5 23.5T840-760v560q0 33-23.5 56.5T760-120H200Zm0-80h560v-480H200v480Zm280-80q-82 0-146.5-44.5T240-440q29-71 93.5-115.5T480-600q82 0 146.5 44.5T720-440q-29 71-93.5 115.5T480-280Zm0-60q56 0 102-26.5t72-73.5q-26-47-72-73.5T480-540q-56 0-102 26.5T306-440q26 47 72 73.5T480-340Zm0-100Zm0 60q25 0 42.5-17.5T540-440q0-25-17.5-42.5T480-500q-25 0-42.5 17.5T420-440q0 25 17.5 42.5T480-380Z" /></svg>
-                                                Check Ques</Link>
-                                        </button>
-                                    }
-                                    {(userRole === "testAdmin" || userRole === "admin") &&
-                                        <button>
-                                            <Link
-                                                href={'/editQuestion'}
-                                                className={`shadow-md text-sm sm:text-md flex items-center gap-2 text-[#3c4852] font-semibold p-2 rounded-lg ${currOption === '' ? 'bg-[#e9eef2]' : ''}`}>
-                                                <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960" width="20px" fill="#3c4852"><path d="M200-120q-33 0-56.5-23.5T120-200v-560q0-33 23.5-56.5T200-840h357l-80 80H200v560h560v-278l80-80v358q0 33-23.5 56.5T760-120H200Zm280-360ZM360-360v-170l367-367q12-12 27-18t30-6q16 0 30.5 6t26.5 18l56 57q11 12 17 26.5t6 29.5q0 15-5.5 29.5T897-728L530-360H360Zm481-424-56-56 56 56ZM440-440h56l232-232-28-28-29-28-231 231v57Zm260-260-29-28 29 28 28 28-28-28Z" /></svg>
-                                                Edit Ques</Link>
-                                        </button>
-                                    }
-                                    {(userRole === "testAdmin" || userRole === "admin") &&
-                                        <button>
-                                            <Link
-                                                href={'/deleteQuestion'}
-                                                className={`shadow-md text-sm sm:text-md flex items-center gap-2 text-[#3c4852] font-semibold p-2 rounded-lg ${currOption === '' ? 'bg-[#e9eef2]' : ''}`}>
-                                                <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960" width="20px" fill="#3c4852"><path d="m376-300 104-104 104 104 56-56-104-104 104-104-56-56-104 104-104-104-56 56 104 104-104 104 56 56Zm-96 180q-33 0-56.5-23.5T200-200v-520h-40v-80h200v-40h240v40h200v80h-40v520q0 33-23.5 56.5T680-120H280Zm400-600H280v520h400v-520Zm-400 0v520-520Z" /></svg>
-                                                Delete Ques</Link>
-                                        </button>
-                                    }
-                                    <button
-                                        onClick={() => setCurrOption('settings')}
-                                        className={`shadow-md text-sm sm:text-md flex items-center gap-2 text-[#3c4852] font-semibold p-2 rounded-lg ${currOption === 'settings' ? 'bg-[#e9eef2]' : ''}`}>
-                                        <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960" width="20px" fill="#3c4852"><path d="M400-480q-66 0-113-47t-47-113q0-66 47-113t113-47q66 0 113 47t47 113q0 66-47 113t-113 47ZM80-160v-112q0-33 17-62t47-44q51-26 115-44t141-18h14q6 0 12 2-8 18-13.5 37.5T404-360h-4q-71 0-127.5 18T180-306q-9 5-14.5 14t-5.5 20v32h252q6 21 16 41.5t22 38.5H80Zm560 40-12-60q-12-5-22.5-10.5T584-204l-58 18-40-68 46-40q-2-14-2-26t2-26l-46-40 40-68 58 18q11-8 21.5-13.5T628-460l12-60h80l12 60q12 5 22.5 11t21.5 15l58-20 40 70-46 40q2 12 2 25t-2 25l46 40-40 68-58-18q-11 8-21.5 13.5T732-180l-12 60h-80Zm40-120q33 0 56.5-23.5T760-320q0-33-23.5-56.5T680-400q-33 0-56.5 23.5T600-320q0 33 23.5 56.5T680-240ZM400-560q33 0 56.5-23.5T480-640q0-33-23.5-56.5T400-720q-33 0-56.5 23.5T320-640q0 33 23.5 56.5T400-560Zm0-80Zm12 400Z" /></svg>
-                                        Settings
-                                    </button>
-                                </nav>
-                            </div>
-                        </div>
+                  {isAdmin && (
+                    <>
+                      <div className="col-span-2 lg:col-span-1 pt-2 mt-1 border-t border-slate-100">
+                        <p className="px-3.5 text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-1">
+                          Admin Controls
+                        </p>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => setCurrOption("addFaq")}
+                        className={`w-full text-left px-3.5 py-2 rounded-xl text-sm font-semibold transition ${
+                          currOption === "addFaq"
+                            ? "bg-indigo-50 text-indigo-700"
+                            : "text-slate-700 hover:bg-slate-100"
+                        }`}
+                      >
+                        Add FAQs
+                      </button>
+                      <Link
+                        href="/addQuestion"
+                        className="w-full text-left px-3.5 py-2 rounded-xl text-sm font-semibold text-slate-700 hover:bg-slate-100 transition block"
+                      >
+                        Add Questions
+                      </Link>
+                      <Link
+                        href="/previewQuestion"
+                        className="w-full text-left px-3.5 py-2 rounded-xl text-sm font-semibold text-slate-700 hover:bg-slate-100 transition block"
+                      >
+                        Preview Questions
+                      </Link>
+                      <Link
+                        href="/editQuestion"
+                        className="w-full text-left px-3.5 py-2 rounded-xl text-sm font-semibold text-slate-700 hover:bg-slate-100 transition block"
+                      >
+                        Edit Questions
+                      </Link>
+                      <Link
+                        href="/deleteQuestion"
+                        className="w-full text-left px-3.5 py-2 rounded-xl text-sm font-semibold text-slate-700 hover:bg-slate-100 transition block"
+                      >
+                        Delete Questions
+                      </Link>
+                    </>
+                  )}
+                </div>
 
-                        <div
-                            className={`w-full lg:w-9/12 lg:pr-5`}
-
-                        >
-                            {currOption === 'account' &&
-                                <motion.div
-                                    initial={{ opacity: 0 }}
-                                    animate={{ opacity: 1 }}
-                                    exit={{ opacity: 0 }}
-                                    transition={{ duration: 0.5 }}>
-                                    <AccountSection />
-                                </motion.div>
-
-                            }
-                            {currOption === 'registrations' &&
-                                <motion.div
-                                    initial={{ opacity: 0 }}
-                                    animate={{ opacity: 1 }}
-                                    exit={{ opacity: 0 }}
-                                    transition={{ duration: 0.5 }}>
-                                    <Registrations />
-                                </motion.div>
-
-                            }
-                            {currOption === 'results' &&
-                                <motion.div
-                                    initial={{ opacity: 0 }}
-                                    animate={{ opacity: 1 }}
-                                    exit={{ opacity: 0 }}
-                                    transition={{ duration: 0.5 }}>
-                                    <ResultSection />
-                                </motion.div>
-
-                            }
-                            {currOption === 'addFaq' &&
-                                <motion.div className={`bg-white font-bold rounded-2xl shadow-lg  border border-black ${style.fonttAverta}`}
-                                    initial={{ opacity: 0 }}
-                                    animate={{ opacity: 1 }}
-                                    exit={{ opacity: 0 }}
-                                    transition={{ duration: 0.5 }}
-                                >
-                                    <div className={`bg-[#1E91D6] rounded-t-2xl pt-5 pb-4 px-4`}>
-                                        <div className={`flex gap-2 md:px-2`}>
-                                            <svg xmlns="http://www.w3.org/2000/svg" height="30px" viewBox="0 -960 960 960" width="30px" fill="#ffffff"><path d="M560-360q17 0 29.5-12.5T602-402q0-17-12.5-29.5T560-444q-17 0-29.5 12.5T518-402q0 17 12.5 29.5T560-360Zm-30-128h60q0-29 6-42.5t28-35.5q30-30 40-48.5t10-43.5q0-45-31.5-73.5T560-760q-41 0-71.5 23T446-676l54 22q9-25 24.5-37.5T560-704q24 0 39 13.5t15 36.5q0 14-8 26.5T578-596q-33 29-40.5 45.5T530-488ZM320-240q-33 0-56.5-23.5T240-320v-480q0-33 23.5-56.5T320-880h480q33 0 56.5 23.5T880-800v480q0 33-23.5 56.5T800-240H320Zm0-80h480v-480H320v480ZM160-80q-33 0-56.5-23.5T80-160v-560h80v560h560v80H160Zm160-720v480-480Z" /></svg>
-                                            <h1 className="text-2xl font-semibold text-white">Add FAQ</h1>
-                                        </div>
-                                    </div>
-                                    {userDetails ?
-                                        <div>
-                                            <div className={``}>
-                                                <div className={``}>
-                                                    <div className={`flex flex-col w-full justify-center items-center`}>
-                                                        <div className="flex flex-col p-8 gap-2 w-full bg-white border border-gray-400 shadow-lg items-center mx-auto">
-                                                            <div className={`w-full`}>
-                                                                {/* Category Selection with Radio Buttons */}
-                                                                <p className={`text-left w-full font-bold text-[#0072bb] ${style.fonttAverta} text-sm mb-1`}>Category</p>
-
-                                                                <div className={`${style.radioButtonContainer} pt-2`}>
-                                                                    <div className={`${style.radioButton}`}>
-                                                                        <input
-                                                                            type="radio"
-                                                                            name="category"
-                                                                            value="General"
-                                                                            onChange={(e) => setCategory(e.target.value)}
-                                                                            required
-                                                                            className={`${style.radioButtonInput}`}
-                                                                            id="radio1"
-                                                                        />
-                                                                        <label className={`${style.radioButtonLabel}`} htmlFor="radio1">
-                                                                            <span className={`${style.radioButtonCustom}  ${style.fonttAverta}`}></span>
-                                                                            General
-                                                                        </label>
-                                                                    </div>
-                                                                    <div className={`${style.radioButton}`}>
-                                                                        <input
-                                                                            type="radio"
-                                                                            name="category"
-                                                                            value="Payments"
-                                                                            onChange={(e) => setCategory(e.target.value)}
-                                                                            required
-                                                                            className={`${style.radioButtonInput}`}
-                                                                            id="radio2"
-                                                                        />
-                                                                        <label className={`${style.radioButtonLabel}`} htmlFor="radio2">
-                                                                            <span className={`${style.radioButtonCustom}  ${style.fonttAverta}`}></span>
-                                                                            Payments
-                                                                        </label>
-                                                                    </div>
-                                                                    <div className={`${style.radioButton}`}>
-                                                                        <input
-                                                                            type="radio"
-                                                                            name="category"
-                                                                            value="Technical"
-                                                                            onChange={(e) => setCategory(e.target.value)}
-                                                                            required
-                                                                            className={`${style.radioButtonInput}`}
-                                                                            id="radio3"
-                                                                        />
-                                                                        <label className={`${style.radioButtonLabel}`} htmlFor="radio3">
-                                                                            <span className={`${style.radioButtonCustom}  ${style.fonttAverta}`}></span>
-                                                                            Technical
-                                                                        </label>
-                                                                    </div>
-                                                                    <div className={`${style.radioButton}`}>
-                                                                        <input
-                                                                            type="radio"
-                                                                            name="category"
-                                                                            value="Test"
-                                                                            onChange={(e) => setCategory(e.target.value)}
-                                                                            required
-                                                                            className={`${style.radioButtonInput}`}
-                                                                            id="radio4"
-                                                                        />
-                                                                        <label className={`${style.radioButtonLabel}`} htmlFor="radio4">
-                                                                            <span className={`${style.radioButtonCustom}  ${style.fonttAverta}`}></span>
-                                                                            Test
-                                                                        </label>
-                                                                    </div>
-                                                                    <div className={`${style.radioButton}`}>
-                                                                        <input
-                                                                            type="radio"
-                                                                            name="category"
-                                                                            value="Other"
-                                                                            onChange={(e) => setCategory(e.target.value)}
-                                                                            required
-                                                                            className={`${style.radioButtonInput}`}
-                                                                            id="radio5"
-                                                                        />
-                                                                        <label className={`${style.radioButtonLabel}`} htmlFor="radio5">
-                                                                            <span className={`${style.radioButtonCustom}  ${style.fonttAverta}`}></span>
-                                                                            Other
-                                                                        </label>
-                                                                    </div>
-                                                                </div>
-
-                                                                {/* Question Field */}
-                                                                <p className={`text-left w-full font-bold text-[#0072bb] ${style.fonttAverta} text-sm mb-1`} htmlFor="question">Question</p>
-                                                                <input
-                                                                    type="text"
-                                                                    required
-                                                                    value={question}
-                                                                    onChange={(e) => setQuestion(e.target.value)}
-                                                                    className={` ${style.fonttAverta} w-full p-2.5 mb-3 border-[1px] focus:border-blue-400 border-black rounded-md placeholder-gray-800 text-black focus:outline-none focus:ring-1 focus:ring-blue-400`}
-                                                                    placeholder="Enter the FAQ question"
-                                                                />
-
-                                                                {/* Answer Field */}
-                                                                <p className={`text-left font-bold text-[#0072bb] ${style.fonttAverta} text-sm mb-1`} htmlFor="answer">Answer</p>
-                                                                <textarea
-                                                                    required
-                                                                    value={answer}
-                                                                    onChange={(e) => setAnswer(e.target.value)}
-                                                                    className={` ${style.fonttAverta} w-full p-2.5 mb-3 border-[1px] focus:border-blue-400 border-black rounded-md placeholder-gray-800 text-black focus:outline-none focus:ring-1 focus:ring-blue-400`}
-                                                                    placeholder="Enter the FAQ answer"
-                                                                    rows="4"
-                                                                ></textarea>
-                                                            </div>
-
-                                                            <button
-                                                                className={`${style.button} flex gap-2 px-4`}
-                                                                onClick={addFAQ}>
-                                                                <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#ffffff"><path d="M840-680v480q0 33-23.5 56.5T760-120H200q-33 0-56.5-23.5T120-200v-560q0-33 23.5-56.5T200-840h480l160 160Zm-80 34L646-760H200v560h560v-446ZM480-240q50 0 85-35t35-85q0-50-35-85t-85-35q-50 0-85 35t-35 85q0 50 35 85t85 35ZM240-560h360v-160H240v160Zm-40-86v446-560 114Z" /></svg>
-                                                                Add
-                                                            </button>
-                                                        </div>
-                                                    </div>
-                                                </div>
-
-                                            </div>
-                                            <div className={`bg-[#1E91D6] px-4 flex items-center h-8 rounded-b-2xl`}>
-                                                <p className={`${style.fonttAverta} text-white text-sm`}>Facing issues?, Please <Link href={'/contact-us'} className={`bg-none underline`}>Contact us.</Link></p>
-
-                                            </div>
-                                        </div> :
-                                        <div className={`md:py-4 py-6 px-6`}>
-                                            <div className={`grid justify-center items-center my-0 md:my-10`}>
-                                                <div className={``}><Loader /></div>
-                                            </div>
-                                        </div>}
-
-
-                                </motion.div>
-                            }
-                            {currOption === 'settings' &&
-                                <motion.div className={`bg-white font-bold rounded-2xl shadow-lg  border border-black ${style.fonttAverta}`}
-                                    initial={{ opacity: 0 }}
-                                    animate={{ opacity: 1 }}
-                                    exit={{ opacity: 0 }}
-                                    transition={{ duration: 0.5 }}
-                                >
-                                    <div className={`bg-[#1E91D6] rounded-t-2xl pt-5 pb-4 px-4`}>
-                                        <div className={`flex gap-2 md:px-2`}>
-                                            <svg xmlns="http://www.w3.org/2000/svg" height="30px" viewBox="0 -960 960 960" width="30px" fill="#FFFFFF"><path d="M400-480q-66 0-113-47t-47-113q0-66 47-113t113-47q66 0 113 47t47 113q0 66-47 113t-113 47ZM80-160v-112q0-33 17-62t47-44q51-26 115-44t141-18h14q6 0 12 2-8 18-13.5 37.5T404-360h-4q-71 0-127.5 18T180-306q-9 5-14.5 14t-5.5 20v32h252q6 21 16 41.5t22 38.5H80Zm560 40-12-60q-12-5-22.5-10.5T584-204l-58 18-40-68 46-40q-2-14-2-26t2-26l-46-40 40-68 58 18q11-8 21.5-13.5T628-460l12-60h80l12 60q12 5 22.5 11t21.5 15l58-20 40 70-46 40q2 12 2 25t-2 25l46 40-40 68-58-18q-11 8-21.5 13.5T732-180l-12 60h-80Zm40-120q33 0 56.5-23.5T760-320q0-33-23.5-56.5T680-400q-33 0-56.5 23.5T600-320q0 33 23.5 56.5T680-240ZM400-560q33 0 56.5-23.5T480-640q0-33-23.5-56.5T400-720q-33 0-56.5 23.5T320-640q0 33 23.5 56.5T400-560Zm0-80Zm12 400Z" /></svg>
-                                            <h1 className="text-2xl font-semibold text-white">Account Settings</h1>
-                                        </div>
-                                    </div>
-                                    {userDetails ?
-                                        <div>
-                                            <div className={`md:py-4 md:py-6 md:px-6`}>
-                                                <div className={`md:grid md:justify-center md:items-center md:my-10`}>
-                                                    <div className={`flex flex-col w-full justify-center items-center`}>
-                                                        <div className="flex flex-col p-8 gap-2 w-full md:rounded-2xl bg-white border border-gray-400 shadow-lg items-center max-w-sm mx-auto">
-                                                            <div className={``}>
-                                                                <p className={`text-left  text-[#0072bb] text-sm mb-1`} htmlFor="name">Name</p>
-                                                                <input onChange={(e) => setName(e.target.value)}
-                                                                    type="name"
-                                                                    required
-                                                                    value={name}
-                                                                    className={`${style.input} w-full p-2.5 mb-3 border-[1px] focus:border-blue-400 border-black rounded-md placeholder-gray-800 text-black focus:outline-none focus:ring-1 focus:ring-blue-400`}
-                                                                    placeholder="Full Name" />
-                                                                <p className={`text-left  text-[#0072bb] text-sm mb-1 ${style.required}`} htmlFor="mobileNumber">Mobile Number</p>
-
-                                                                <div className="flex mb-3 items-center gap-1">
-                                                                    <span className="px-3 py-2.5 text-gray-700 border border-black rounded-l-md">+91</span>
-                                                                    <input
-                                                                        required
-                                                                        onChange={(e) => setMobileNumber(e.target.value)}
-                                                                        type="tel"
-                                                                        value={mobileNumber}
-                                                                        maxLength={10}
-                                                                        className={`${style.input} w-full p-2.5 border-[1px] focus:border-blue-400 border-black rounded-r-md text-black focus:outline-none focus:ring-1 focus:ring-blue-400`}
-                                                                        placeholder="XXXXXXXXXX"
-                                                                    />
-                                                                </div>
-                                                                <p className={`text-left  text-[#0072bb] text-sm mb-1 ${style.required}`} htmlFor="branch">Branch</p>
-                                                                <select required id="branches" value={selectedBranch} onChange={handleBranchChange}
-                                                                    className={`${style.input} w-full p-2.5 mb-3 border-[1px] focus:border-blue-400 border-black rounded-md placeholder-gray-800 text-black focus:outline-none focus:ring-1 focus:ring-blue-400`}>
-                                                                    <option className={`text-sm`} value="">Select Branch</option>
-                                                                    <option className={`text-sm`} value="ECE">ECE</option>
-                                                                    <option className={`text-sm`} value="Aerospace">Aerospace Engineering</option>
-                                                                    <option className={`text-sm`} value="Mechanical">Mechanical Engineering</option>
-                                                                    <option className={`text-sm`} value="Physics">Physics</option>
-                                                                    <option className={`text-sm`} value="other">Other</option>
-                                                                </select>
-                                                                {selectedBranch === 'other' &&
-                                                                    <div>
-                                                                        <p className={`text-left  text-[#0072bb] text-md ${style.fonttAverta} mb-1 ${style.required}`} htmlFor="otherBranch">Enter your branch</p>
-                                                                        <input onChange={(e) => setOtherBranch(e.target.value)}
-                                                                            type="text"
-                                                                            value={otherBranch}
-                                                                            className={`${style.input} w-full p-2.5 mb-3 border-[1px] focus:border-blue-400 border-black rounded-md placeholder-gray-800 text-black focus:outline-none focus:ring-1 focus:ring-blue-400`}
-                                                                            placeholder="Branch" />
-                                                                    </div>
-                                                                }
-                                                                <p className={`text-left  text-[#0072bb] text-sm mb-1 ${style.required}`} htmlFor="college">College</p>
-                                                                <input onChange={(e) => setCollegeName(e.target.value)}
-                                                                    required
-                                                                    type="text"
-                                                                    value={collegeName}
-                                                                    className={`${style.input} w-full p-2.5 mb-3 border-[1px] focus:border-blue-400 border-black rounded-md placeholder-gray-800 text-black focus:outline-none focus:ring-1 focus:ring-blue-400`}
-                                                                    placeholder="College Name" />
-                                                            </div>
-                                                            <button
-                                                                className={`${style.button} flex gap-2 px-4`}
-                                                                onClick={updateuserInfo}>
-                                                                <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#ffffff"><path d="M840-680v480q0 33-23.5 56.5T760-120H200q-33 0-56.5-23.5T120-200v-560q0-33 23.5-56.5T200-840h480l160 160Zm-80 34L646-760H200v560h560v-446ZM480-240q50 0 85-35t35-85q0-50-35-85t-85-35q-50 0-85 35t-35 85q0 50 35 85t85 35ZM240-560h360v-160H240v160Zm-40-86v446-560 114Z" /></svg>
-                                                                Save
-                                                            </button>
-
-                                                        </div>
-
-                                                    </div>
-                                                </div>
-
-                                            </div>
-                                            <div className={`bg-[#1E91D6] px-4 flex items-center h-8 rounded-b-2xl`}>
-                                                <p className={`${style.fonttAverta} text-white text-sm`}>Facing issues?, Please <Link href={'/contact-us'} className={`bg-none underline`}>Contact us.</Link></p>
-
-                                            </div>
-                                        </div> :
-                                        <div className={`md:py-4 py-6 px-6`}>
-                                            <div className={`grid justify-center items-center my-0 md:my-10`}>
-                                                <div className={``}><Loader /></div>
-                                            </div>
-                                        </div>}
-                                </motion.div>
-                            }
-                        </div>
-                    </div>
-                </motion.div>
+                <div className="pt-3 border-t border-slate-100">
+                  <button
+                    type="button"
+                    onClick={async () => {
+                      await signOut();
+                      window.location.href = "/sign-in";
+                    }}
+                    className="w-full px-3.5 py-2 rounded-xl text-sm font-semibold text-rose-600 hover:bg-rose-50 text-left transition"
+                  >
+                    Logout
+                  </button>
+                </div>
+              </div>
             </div>
-            <Footer />
-        </div>
-    );
-}
+          </aside>
 
+          {/* Main Content Panel */}
+          <section className="lg:col-span-9">
+            {!userDetails ? (
+              <div className="bg-white rounded-3xl border border-slate-200 p-16 flex justify-center">
+                <Loader />
+              </div>
+            ) : (
+              <motion.div
+                key={currOption}
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.25 }}
+                className="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden"
+              >
+                {currOption === "account" && (
+                  <>
+                    <div className="cosmicHeader px-6 py-5 text-white flex items-center justify-between">
+                      <h1 className="text-xl sm:text-2xl font-extrabold">Account Information</h1>
+                      <button
+                        type="button"
+                        onClick={() => setCurrOption("settings")}
+                        className="text-xs font-bold px-3.5 py-1.5 rounded-full bg-white/15 hover:bg-white/25 transition"
+                      >
+                        Edit Profile
+                      </button>
+                    </div>
+                    <div className="p-6 sm:p-8 grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div className="flex flex-col items-center justify-center bg-slate-50 border border-slate-200 rounded-2xl p-6 text-center">
+                        <img
+                          className="w-24 h-24 rounded-full border-4 border-indigo-200 shadow-md object-cover"
+                          src="/images/profile.png"
+                          alt="Profile"
+                        />
+                        <h3 className="mt-4 text-xl font-extrabold text-slate-900">
+                          {userDetails.name}
+                        </h3>
+                        <p className="text-sm text-slate-600">{userDetails.email}</p>
+                        <p className="text-sm text-slate-600 mt-0.5">+91 {userDetails.mobile}</p>
+                      </div>
+
+                      <div className="flex flex-col justify-center gap-5 bg-slate-50 border border-slate-200 rounded-2xl p-6">
+                        <div>
+                          <span className="text-xs font-bold uppercase tracking-wider text-indigo-600">
+                            Engineering Branch
+                          </span>
+                          <p className="text-base font-bold text-slate-900 mt-1">
+                            {getBranchName(userDetails.branch)}
+                          </p>
+                        </div>
+                        <div className="border-t border-slate-200 pt-4">
+                          <span className="text-xs font-bold uppercase tracking-wider text-indigo-600">
+                            College / Institution
+                          </span>
+                          <p className="text-base font-bold text-slate-900 mt-1">
+                            {userDetails.college}
+                          </p>
+                        </div>
+                        <div className="border-t border-slate-200 pt-4 flex items-center justify-between">
+                          <span className="text-xs font-bold uppercase tracking-wider text-indigo-600">
+                            Enrolled Packs
+                          </span>
+                          <span className="text-sm font-extrabold text-emerald-700 bg-emerald-100 px-3 py-1 rounded-full">
+                            {registeredTests.length} Active
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  </>
+                )}
+
+                {currOption === "registrations" && (
+                  <>
+                    <div className="cosmicHeader px-6 py-5 text-white flex items-center justify-between">
+                      <h1 className="text-xl sm:text-2xl font-extrabold">Your Registrations</h1>
+                      <Link
+                        href="/tests"
+                        className="text-xs font-bold px-3.5 py-1.5 rounded-full bg-amber-300 text-slate-950 hover:bg-amber-200 transition"
+                      >
+                        + Enroll More
+                      </Link>
+                    </div>
+                    <div className="p-6 sm:p-8">
+                      {registeredTests.length === 0 ? (
+                        <div className="text-center py-12 bg-slate-50 rounded-2xl border border-slate-200">
+                          <p className="text-base font-bold text-slate-800">
+                            You have no active registrations yet.
+                          </p>
+                          <p className="text-sm text-slate-500 mt-1 mb-5">
+                            Pick your engineering branch and enroll for GATE 2027 mocks.
+                          </p>
+                          <Link
+                            href="/tests"
+                            className="inline-block px-6 py-2.5 rounded-full font-bold text-white bg-indigo-600 hover:bg-indigo-700 transition"
+                          >
+                            Browse GATE 2027 Tests
+                          </Link>
+                        </div>
+                      ) : (
+                        <div className="space-y-4">
+                          {registeredTests.map((reg) => {
+                            const [testName, pkgName] = (reg.test || "").split(", ");
+                            return (
+                              <div
+                                key={reg._id}
+                                className="rounded-2xl border border-slate-200 bg-slate-50 p-5 sm:p-6 space-y-3"
+                              >
+                                <div className="flex flex-wrap items-center justify-between gap-2">
+                                  <h3 className="text-lg sm:text-xl font-extrabold text-slate-900">
+                                    GATE Mock for {testName || "Engineering"}
+                                  </h3>
+                                  <span className="inline-flex items-center gap-1 text-xs font-bold px-3 py-1 rounded-full bg-emerald-100 text-emerald-800">
+                                    ✓ {reg.payment?.status === "paid" ? "Paid" : "Confirmed"}
+                                  </span>
+                                </div>
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm text-slate-600">
+                                  <p>
+                                    <strong className="text-slate-800">Package:</strong>{" "}
+                                    {pkgName || "N/A"}
+                                  </p>
+                                  <p>
+                                    <strong className="text-slate-800">Amount:</strong> ₹{" "}
+                                    {reg.payment?.amount ?? "—"}/-
+                                  </p>
+                                  <p>
+                                    <strong className="text-slate-800">Name:</strong>{" "}
+                                    {reg.userId?.name}
+                                  </p>
+                                  <p className="font-mono text-xs sm:text-sm">
+                                    <strong className="font-sans text-slate-800">Payment ID:</strong>{" "}
+                                    {reg.pid}
+                                  </p>
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      )}
+                    </div>
+                  </>
+                )}
+
+                {currOption === "settings" && (
+                  <>
+                    <div className="cosmicHeader px-6 py-5 text-white">
+                      <h1 className="text-xl sm:text-2xl font-extrabold">Update Profile</h1>
+                    </div>
+                    <div className="p-6 sm:p-8 max-w-lg mx-auto space-y-4">
+                      <div>
+                        <label className="block text-sm font-bold text-slate-700 mb-1">
+                          Full Name
+                        </label>
+                        <input
+                          type="text"
+                          value={name}
+                          onChange={(e) => setName(e.target.value)}
+                          className="w-full px-4 py-2.5 rounded-xl border border-slate-300 bg-slate-50 focus:bg-white text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-bold text-slate-700 mb-1">
+                          Mobile Number *
+                        </label>
+                        <div className="flex">
+                          <span className="px-3.5 py-2.5 rounded-l-xl border border-r-0 border-slate-300 bg-slate-100 text-slate-600 font-semibold text-sm">
+                            +91
+                          </span>
+                          <input
+                            type="tel"
+                            maxLength={10}
+                            value={mobileNumber}
+                            onChange={(e) => setMobileNumber(e.target.value)}
+                            className="w-full px-4 py-2.5 rounded-r-xl border border-slate-300 bg-slate-50 focus:bg-white text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                          />
+                        </div>
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-bold text-slate-700 mb-1">
+                          Branch *
+                        </label>
+                        <select
+                          value={selectedBranch}
+                          onChange={(e) => setSelectedBranch(e.target.value)}
+                          className="w-full px-4 py-2.5 rounded-xl border border-slate-300 bg-slate-50 focus:bg-white text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                        >
+                          <option value="">Select Branch</option>
+                          <option value="ECE">ECE</option>
+                          <option value="Aerospace">Aerospace Engineering</option>
+                          <option value="Mechanical">Mechanical Engineering</option>
+                          <option value="Physics">Physics</option>
+                          <option value="other">Other</option>
+                        </select>
+                      </div>
+
+                      {selectedBranch === "other" && (
+                        <div>
+                          <label className="block text-sm font-bold text-slate-700 mb-1">
+                            Enter Your Branch *
+                          </label>
+                          <input
+                            type="text"
+                            value={otherBranch}
+                            onChange={(e) => setOtherBranch(e.target.value)}
+                            className="w-full px-4 py-2.5 rounded-xl border border-slate-300 bg-slate-50 focus:bg-white text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                          />
+                        </div>
+                      )}
+
+                      <div>
+                        <label className="block text-sm font-bold text-slate-700 mb-1">
+                          College *
+                        </label>
+                        <input
+                          type="text"
+                          value={collegeName}
+                          onChange={(e) => setCollegeName(e.target.value)}
+                          className="w-full px-4 py-2.5 rounded-xl border border-slate-300 bg-slate-50 focus:bg-white text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                        />
+                      </div>
+
+                      <button
+                        type="button"
+                        onClick={updateuserInfo}
+                        className="w-full py-3 rounded-full font-bold text-white bg-gradient-to-r from-[#4f46e5] to-[#674cee] hover:from-[#4338ca] hover:to-[#5b3fe3] shadow-md transition"
+                      >
+                        Save Changes
+                      </button>
+                    </div>
+                  </>
+                )}
+
+                {currOption === "addFaq" && isAdmin && (
+                  <>
+                    <div className="cosmicHeader px-6 py-5 text-white">
+                      <h1 className="text-xl sm:text-2xl font-extrabold">Add New FAQ</h1>
+                    </div>
+                    <div className="p-6 sm:p-8 max-w-xl mx-auto space-y-5">
+                      <div>
+                        <label className="block text-sm font-bold text-slate-700 mb-2">
+                          Category
+                        </label>
+                        <div className="flex flex-wrap gap-2">
+                          {["General", "Payments", "Technical", "Test", "Other"].map((cat) => (
+                            <button
+                              key={cat}
+                              type="button"
+                              onClick={() => setCategory(cat)}
+                              className={`px-4 py-1.5 rounded-full text-xs font-bold border transition ${
+                                category === cat
+                                  ? "bg-indigo-600 text-white border-indigo-600"
+                                  : "bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100"
+                              }`}
+                            >
+                              {cat}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-bold text-slate-700 mb-1">
+                          Question
+                        </label>
+                        <input
+                          type="text"
+                          value={question}
+                          onChange={(e) => setQuestion(e.target.value)}
+                          placeholder="Enter the FAQ question"
+                          className="w-full px-4 py-2.5 rounded-xl border border-slate-300 bg-slate-50 focus:bg-white text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-bold text-slate-700 mb-1">
+                          Answer
+                        </label>
+                        <textarea
+                          rows={4}
+                          value={answer}
+                          onChange={(e) => setAnswer(e.target.value)}
+                          placeholder="Enter the FAQ answer"
+                          className="w-full px-4 py-2.5 rounded-xl border border-slate-300 bg-slate-50 focus:bg-white text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                        />
+                      </div>
+
+                      <button
+                        type="button"
+                        onClick={addFAQ}
+                        className="w-full py-3 rounded-full font-bold text-white bg-gradient-to-r from-[#4f46e5] to-[#674cee] hover:from-[#4338ca] hover:to-[#5b3fe3] shadow-md transition"
+                      >
+                        Publish FAQ
+                      </button>
+                    </div>
+                  </>
+                )}
+              </motion.div>
+            )}
+          </section>
+        </div>
+      </main>
+
+      <Footer />
+    </div>
+  );
+}

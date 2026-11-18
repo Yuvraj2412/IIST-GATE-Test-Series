@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import Razorpay from "razorpay";
 import { getSupabaseAdmin } from "@/libs/supabase/admin";
 import { requireProfile } from "@/libs/supabase/server";
-import { computeTestAmountInPaise } from "@/libs/supabase/testAccess";
+import { computeTestAmountInPaise, findOverlappingRegistration } from "@/libs/supabase/testAccess";
 
 // Initialize Razorpay instance
 const instance = new Razorpay({
@@ -35,15 +35,8 @@ export async function POST(req) {
 
         const supabase = getSupabaseAdmin();
 
-        // Prevent creating an order if user is already registered for this test.
-        const { data: existingReg, error: regErr } = await supabase
-            .from("test_registrations")
-            .select("id")
-            .eq("userId", profile.id)
-            .eq("test", test)
-            .maybeSingle();
-        if (regErr) throw regErr;
-
+        // Prevent creating an order if user already holds an exact or overlapping registration.
+        const existingReg = await findOverlappingRegistration(profile.id, test);
         if (existingReg) {
             return NextResponse.json(
                 { message: "User is already registered for this test." },

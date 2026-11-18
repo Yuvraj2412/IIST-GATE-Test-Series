@@ -1,15 +1,8 @@
 .bgHome {
-  background-image: url("https://ik.imagekit.io/dhanak2k25/BG-Home.png?updatedAt=1732275093808");
-  background-size: cover;
-  background-position: center;
-  background-repeat: no-repeat;
-  background-color: #674cee;
+  background:
+    radial-gradient(circle at 18% 22%, rgba(79, 70, 229, 0.36) 0%, transparent 44%),
+    radial-gradient(circle at 82% 24%, rgba(245, 158, 11, 0.20) 0%, transparent 40%),
+    radial-gradient(circle at 55% 88%, rgba(14, 165, 233, 0.16) 0%, transparent 48%),
+    linear-gradient(135deg, #060914 0%, #0d1329 52%, #181042 100%);
   width: 100%;
-  background-color: rgba(
-    255,
-    255,
-    255,
-    0.9
-  ); /* Adjust transparency with RGBA color */
-  background-blend-mode: lighten; /* Blends image with the color */
 }

@@ -1,139 +1,164 @@
-"use client"
+"use client";
 import Navbar from "@/components/Navbar.jsx";
 import Footer from "@/components/Footer.jsx";
-import { useSelector } from 'react-redux';
-import style from "@/components/styles/testsCSS.module.css"
+import style from "@/components/styles/testsCSS.module.css";
 import Link from "next/link";
 import Image from "next/image";
 import tests from "@/data/tests";
-import TestDetails from "./[id]/layout";
-import { motion, useInView } from 'framer-motion';
-import { useRef } from "react";
+import { motion } from "framer-motion";
 import { useRouter } from "next/navigation";
 
 export default function Tests() {
   const router = useRouter();
-  const { uid, userDetails, loading } = useSelector((state) => state.auth);
 
   function calculateDiscountedPrice(originalPrice, discountRate) {
-    const discountRateTemp = discountRate;
-    const discountAmount = originalPrice * discountRateTemp;
-    const finalPrice = originalPrice - discountAmount;
-    return Math.round(finalPrice);
+    return Math.round(originalPrice - originalPrice * discountRate);
   }
 
-  const ref = useRef(null);
-
-  // isInView will be true when the element is in the viewport
-  const isInView = useInView(ref, { threshold: 0.1 }); // adjust threshold as needed
-
   return (
-    <div>
-      <div className="min-h-screen topSection flex flex-col items-center w-full mx-auto pb-20">
-        <Navbar />
-        <motion.div
-          className={`w-full`}
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          transition={{ duration: 0.5 }}
-        >
-          <div className={`w-full space-y-8 md:space-y-10`}>
-            <section className={`${style.topSection} w-full`}>
-              <section className={`sm:max-w-xl md:max-w-4xl lg:max-w-5xl xl:max-w-7xl md:px-0 px-3 md:px-8 lg:px-5 mx-auto pt-10 pb-5`}>
-                <div className={`flex flex-col gap-6 md:gap-6`}>
-                  <div className={`text-sm flex gap-2 text-white`}>
-                    <Link href={'/'}>
-                      Home
-                    </Link> /
-                    <Link href={'/tests'}>
-                      GATE Mock Test
-                    </Link>
-                  </div>
+    <div className="min-h-screen flex flex-col bg-slate-50">
+      <Navbar />
+
+      <main className="flex-1 w-full pb-20">
+        {/* Top Cosmic Header */}
+        <section className={`${style.topSection} relative overflow-hidden w-full text-white`}>
+          <div className="cosmicGrid absolute inset-0 opacity-50 pointer-events-none" />
+          <div className="relative max-w-screen-xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16">
+            <div className="flex flex-col gap-5 max-w-3xl">
+              <div className="text-xs sm:text-sm flex items-center gap-2 text-slate-300">
+                <Link href="/" className="hover:text-white transition">
+                  Home
+                </Link>
+                <span>/</span>
+                <span className="text-amber-300 font-semibold">GATE 2027 Mock Tests</span>
+              </div>
+
+              <h1 className="text-3xl sm:text-5xl font-extrabold tracking-tight">
+                GATE 2027{" "}
+                <span className="text-amber-300">Mock Test Series</span>
+              </h1>
+
+              <p className="text-base sm:text-lg text-slate-200 leading-relaxed">
+                Prepare for <strong>GATE 2027</strong> with confidence! Created by students and top
+                rankers at the Indian Institute of Space Science and Technology (IIST) for{" "}
+                <span className="text-amber-200 font-semibold">Dhanak 2027</span>, our mock tests
+                mirror the official GATE difficulty, question mix, and timing.
+              </p>
+
+              <div className="flex flex-wrap gap-2.5 pt-1">
+                {["65 Questions / Mock", "180 Mins Official Pattern", "Combo Save 58%"].map(
+                  (pill) => (
+                    <span
+                      key={pill}
+                      className="text-xs font-semibold px-3 py-1.5 rounded-full bg-white/10 border border-white/15 text-slate-100"
+                    >
+                      {pill}
+                    </span>
+                  )
+                )}
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Tests Cards Grid */}
+        <section className="max-w-screen-xl mx-auto px-4 sm:px-6 lg:px-8 mt-12">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-7 lg:gap-8">
+            {tests.map((test, index) => {
+              const singlePrice = calculateDiscountedPrice(test.pricePerPack, test.discountRate);
+              const comboPrice = calculateDiscountedPrice(
+                test.pricePerPack * 2,
+                test.comboDiscountRate
+              );
+              return (
+                <motion.div
+                  key={test.id}
+                  onClick={() => router.push(`/tests/${test.id}`)}
+                  initial={{ opacity: 0, y: 18 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.35, delay: index * 0.08 }}
+                  whileHover={{ y: -4 }}
+                  className="group cursor-pointer bg-white rounded-3xl border border-slate-200 hover:border-indigo-300 shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col justify-between overflow-hidden"
+                >
                   <div>
-                    <h1 className={`text-4xl md:text-5xl font-bold text-white`}>
-                      GATE MOCK TEST
-                    </h1>
-                  </div>
-                  <div className={`text-[17px] md:text-[18px] text-white text-justify`}>
-                    <p>
-                      Prepare for GATE 2025 with confidence! We, students of the Indian Institute of Space Science and Technology (IIST), have created a specialized platform to help aspirants achieve their best. Our mock tests are carefully crafted to reflect the latest GATE pattern and rigor, providing a realistic and effective preparation experience. Join us to practice, analyze, and enhance your performance.
-                    </p>
-                  </div>
-                </div>
-              </section>
-            </section>
-            <motion.div
-              ref={ref}
-              initial={{ opacity: 0, y: 20 }}
-              animate={isInView ? { opacity: 1, y: 0 } : {}}
-              transition={{ duration: 0.4 }}
-            >
-              <section className="px-4 sm:px-0 md:px-10 lg:px-0 xl:px-8 sm:px-0 sm:max-w-xl md:max-w-6xl lg:max-w-5xl xl:max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 md:gap-12 lg:gap-4 xl:gap-10">
-                {tests.map((test) => (
-                  <motion.div
-                    onClick={() => {
-                      router.push(`/tests/${test.id}`);
-                    }}
-                    whileHover={{
-                      scale: 1.0008, // Slight scaling on hover
-                      y: -3, // Move upward slightly
-                      boxShadow: "0px 6px 10px rgba(0, 0, 0, 0.15)", // Add shadow effect
-                    }}
-                    transition={{ duration: 0.3, ease: "easeInOut" }} // Smooth animation
-                    key={test.id}
-                    className="text-neutral-800 cursor-pointer w-full h-full border border-neutral-600 w-full pt-8 pb-2 md:pb-6 mx-auto relative overflow-hidden rounded-2xl shadow-lg bg-[#f1f7fe] px-6"
-                  >
-                    <div className="flex flex-col w-full h-full justify-between gap-2">
-                      <div className="w-full h-full flex justify-center items-center py-12 md:py-10 bg-white rounded-2xl">
-                        <div>
-                          <Image
-                            src={test.imageUrl}
-                            width={150}
-                            height={150}
-                            alt={test.altText}
-                          />
-                        </div>
-                      </div>
-                      <div className="pb-4 md:pb-0 flex flex-col gap-4 md:gap-4 justify-between pt-2 w-full h-full">
-                        <div className={`text-md xl:text-xl text-[#2c14a8] font-extrabold`}>
-                          GATE Mock for {test.title}
-                        </div>
-                        <div className="w-full flex flex-col gap-3 items-center">
-                          <p className="text-sm w-full text-green-700 font-semibold">Special Discounted Price</p>
-                          <div className={`flex flex-col w-full`}>
-                            <div className={`flex items-center justify-between`}>
-                              <div className={`flex items-center justify-center gap-4`}>
-                                <p className={`text-neutral-500 line-through font-hairline text-strike text-xl md:text-lg lg:text-2xl`}>
-                                  ₹ {test.pricePerPack}
-                                </p>
-                                <p className={`text-neutral-800 text-strike font-extrabold text-4xl md:text-3xl lg::text-5xl`}>
-                                  ₹ {calculateDiscountedPrice(test.pricePerPack, test.discountRate)}/-
-                                </p>
-                              </div>
-                              <div className={`px-2 py-1 bg-green-100 border border-green-900 text-green-900 text-sm font-semibold rounded-full`}>
-                                {test.discountRate * 100}% OFF
-                              </div>
-                            </div>
-                            <h1 className="text-neutral-700 font-semibold w-full text-left text-md">per package</h1>
-                          </div>
-                        </div>
-                        <div className="flex items-center justify-center">
-                          <motion.div
-                            className="px-8 w-full transition ease-in-out duration-200 py-3 text-lg text-center font-extrabold rounded-b-full rounded-tl-full text-white bg-gradient-to-b from-[#7c65f1] to-[#674cee] hover:from-[#674cee] hover:to-[#674cee]"
-                          >
-                            Explore
-                          </motion.div>
-                        </div>
+                    {/* Visual Header */}
+                    <div className="relative bg-slate-50 border-b border-slate-100 py-10 px-6 flex flex-col items-center justify-center">
+                      <span className="absolute top-4 left-4 text-xs font-extrabold tracking-wide px-3 py-1 rounded-full bg-slate-900 text-amber-300">
+                        {test.code}
+                      </span>
+                      <span className="absolute top-4 right-4 text-xs font-bold px-3 py-1 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-200">
+                        {Math.round(test.discountRate * 100)}% OFF
+                      </span>
+                      <div className="p-4 rounded-2xl bg-white shadow-sm ring-1 ring-slate-200/70">
+                        <Image
+                          src={test.imageUrl}
+                          width={120}
+                          height={120}
+                          alt={test.altText}
+                          className="transition-transform duration-300 group-hover:scale-105"
+                        />
                       </div>
                     </div>
-                  </motion.div>
-                ))}
-              </section>
-            </motion.div>
+
+                    {/* Content */}
+                    <div className="p-6 space-y-4">
+                      <div>
+                        <p className="text-xs font-bold uppercase tracking-wider text-indigo-600">
+                          GATE 2027 Test Series
+                        </p>
+                        <h2 className="mt-1 text-xl font-extrabold text-slate-900 group-hover:text-indigo-700 transition">
+                          {test.title}
+                        </h2>
+                        <p className="mt-2 text-sm text-slate-600 leading-relaxed">
+                          {test.tagline}
+                        </p>
+                      </div>
+
+                      <ul className="space-y-1.5 text-xs sm:text-sm text-slate-700">
+                        {test.highlights?.map((item) => (
+                          <li key={item} className="flex items-center gap-2">
+                            <span className="w-1.5 h-1.5 rounded-full bg-indigo-500 flex-shrink-0" />
+                            <span>{item}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  </div>
+
+                  {/* Pricing Footer */}
+                  <div className="px-6 pb-6 pt-4 border-t border-slate-100 space-y-4 bg-slate-50/60">
+                    <div className="flex items-baseline justify-between">
+                      <div>
+                        <p className="text-xs font-semibold text-emerald-700">
+                          Special Discounted Fee
+                        </p>
+                        <div className="flex items-baseline gap-2.5 mt-0.5">
+                          <span className="text-base text-slate-400 line-through">
+                            ₹{test.pricePerPack}
+                          </span>
+                          <span className="text-3xl font-extrabold text-slate-900">
+                            ₹{singlePrice}/-
+                          </span>
+                          <span className="text-xs text-slate-500 font-medium">per pack</span>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-[11px] text-slate-500 font-semibold">Combo (6 Tests)</p>
+                        <p className="text-sm font-extrabold text-indigo-700">₹{comboPrice}/-</p>
+                      </div>
+                    </div>
+
+                    <div className="w-full py-3 px-6 rounded-full text-center font-bold text-white bg-gradient-to-r from-[#4f46e5] to-[#674cee] group-hover:from-[#4338ca] group-hover:to-[#5b3fe3] shadow-sm shadow-indigo-500/20 transition">
+                      View Schedule &amp; Enroll →
+                    </div>
+                  </div>
+                </motion.div>
+              );
+            })}
           </div>
-        </motion.div>
-      </div>
+        </section>
+      </main>
+
       <Footer />
     </div>
   );

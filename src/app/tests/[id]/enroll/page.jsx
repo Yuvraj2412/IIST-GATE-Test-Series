@@ -1,52 +1,37 @@
-"use client"
+"use client";
 import NavbarLite from "@/components/NavbarLite.jsx";
+import Navbar from "@/components/Navbar.jsx";
 import Footer from "@/components/Footer.jsx";
 import Loader from "@/components/Loader";
-import { useSelector } from 'react-redux';
-import style from "@/components/styles/testsCSS.module.css"
 import Link from "next/link";
-import Image from "next/image";
-import React, { useLayoutEffect } from "react";
+import React, { useState, useEffect } from "react";
 import tests from "@/data/tests";
-import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
-import { usePathname, useSearchParams } from 'next/navigation'
+import { useRouter, useSearchParams } from "next/navigation";
 import toast from "react-hot-toast";
 import { useAuthState } from "@/libs/supabase/authClient";
 import { motion } from "framer-motion";
-import confetti from 'canvas-confetti';
-import Navbar from "@/components/Navbar";
-
-
+import confetti from "canvas-confetti";
 
 export default function Enroll({ params }) {
-
   const [userDetails, setUserDetails] = useState(null);
   const [user, authLoading] = useAuthState();
-  const [isFirstLoad, setIsFirstLoad] = useState(true);
   const searchParams = useSearchParams();
-  const testPack = searchParams.get('pack'); // Retrieve the 'pack' query parameter
+  const testPack = searchParams.get("pack");
 
   const pageParams = React.use(params);
-  const [testDetails, setTestDetails] = useState(null);  // State to hold test details
-  const [loadingPage, setLoadingPage] = useState(true);  // State to track loading state
-
-
+  const [testDetails, setTestDetails] = useState(null);
+  const [loadingPage, setLoadingPage] = useState(true);
   const pageType = pageParams.id;
 
   const router = useRouter();
-  const [paymentRunning, setPaymentRunning] = useState(null);
+  const [paymentRunning, setPaymentRunning] = useState(false);
   const [isRegistrationSuccess, setIsRegistrationSuccess] = useState(false);
-
-
 
   const getUser = async (id) => {
     try {
       const res = await fetch("/api/getUser", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ userId: id }),
       });
       const resjson = await res.json();
@@ -55,485 +40,417 @@ export default function Enroll({ params }) {
       } else if (resjson.msg === "No user found") {
         router.push("/sign-up?oauth=google");
       } else {
-        toast.error("Failed to get user details.")
+        toast.error("Failed to get user details.");
       }
     } catch (error) {
       console.error("Error fetching user details:", error);
     }
   };
 
-
   useEffect(() => {
     if (user) {
       getUser(user.uid);
-      setIsFirstLoad(false);
     } else if (!authLoading) {
-      toast.error('Please sign up / sign in first');
-      router.push('/sign-up');
+      toast.error("Please sign up / sign in first");
+      router.push("/sign-in");
     }
   }, [user, authLoading, router]);
 
-
-  // Filter data based on pageType
   useEffect(() => {
-    const fetchTestDetails = async () => {
-      if (!pageType) return;  // Return if pageType is not available yet
+    if (!pageType) return;
+    setLoadingPage(true);
+    const found = tests.find((t) => t.id === pageType) || null;
+    setTestDetails(found);
+    setLoadingPage(false);
+  }, [pageType]);
 
-      setLoadingPage(true);  // Set loading to true before the async operation
-
-      // Simulate async operation (e.g., fetching or filtering the tests)
-      const test = tests.find((test) => test.id === pageType);
-
-      setTestDetails(test);  // Update state with the found test details
-      setLoadingPage(false);  // Set loading to false once done
-    };
-
-    fetchTestDetails();  // Run the async function
-  }, [pageType]);  // Dependency on pageType, rerun the effect when it changes
+  const validPacks = ["Pack 1", "Pack 2", "Both Packs"];
+  const isValidPack = validPacks.includes(testPack);
 
   const formattedPack = (() => {
-    if (testPack === 'Pack 1') return 'Pack 1';
-    if (testPack === 'Pack 2') return 'Pack 2';
-    if (testPack === 'Both Packs') return 'Pack 1 + Pack 2 (Both)';
-    return testPack || 'N/A'; // Default case
+    if (testPack === "Pack 1") return "Pack 1";
+    if (testPack === "Pack 2") return "Pack 2";
+    if (testPack === "Both Packs") return "Pack 1 + Pack 2 (Both)";
+    return testPack || "N/A";
   })();
 
   function calculateDiscountedPrice(originalPrice, discount) {
-    const discountRate = discount; // 40% discount
-    const discountAmount = originalPrice * discountRate;
-    const finalPrice = originalPrice - discountAmount;
-    return Math.round(finalPrice);
+    return Math.round(originalPrice - originalPrice * discount);
   }
 
   const totalAmount = () => {
-    if (testPack === 'Pack 1') return (testDetails.pricePerPack);
-    if (testPack === 'Pack 2') return (testDetails.pricePerPack);
-    if (testPack === 'Both Packs') return (testDetails.pricePerPack * 2);
-    return 'Invalid package selected'; // Default case
-  }
-  const totalAmountAfterDiscount = () => {
-    if (testPack === 'Pack 1') return calculateDiscountedPrice(testDetails.pricePerPack, testDetails.discountRate);
-    if (testPack === 'Pack 2') return calculateDiscountedPrice(testDetails.pricePerPack, testDetails.discountRate);
-    if (testPack === 'Both Packs') return calculateDiscountedPrice(testDetails.pricePerPack * 2, testDetails.comboDiscountRate);
-    return 'Invalid package selected'; // Default case
-  }
+    if (!testDetails) return 0;
+    if (testPack === "Pack 1" || testPack === "Pack 2") return testDetails.pricePerPack;
+    if (testPack === "Both Packs") return testDetails.pricePerPack * 2;
+    return 0;
+  };
 
-  const discountedAmount = () => {
-    if (testPack === 'Pack 1') return testDetails.pricePerPack - calculateDiscountedPrice(testDetails.pricePerPack, testDetails.discountRate);
-    if (testPack === 'Pack 2') return testDetails.pricePerPack - calculateDiscountedPrice(testDetails.pricePerPack, testDetails.discountRate);
-    if (testPack === 'Both Packs') return testDetails.pricePerPack * 2 - calculateDiscountedPrice(testDetails.pricePerPack * 2, testDetails.comboDiscountRate);
-    return 'Invalid package selected'; // Default case
-  }
+  const totalAmountAfterDiscount = () => {
+    if (!testDetails) return 0;
+    if (testPack === "Pack 1" || testPack === "Pack 2") {
+      return calculateDiscountedPrice(testDetails.pricePerPack, testDetails.discountRate);
+    }
+    if (testPack === "Both Packs") {
+      return calculateDiscountedPrice(testDetails.pricePerPack * 2, testDetails.comboDiscountRate);
+    }
+    return 0;
+  };
+
+  const discountedAmount = () => Math.max(0, totalAmount() - totalAmountAfterDiscount());
 
   function loadScript(src) {
     return new Promise((resolve) => {
+      if (document.querySelector(`script[src="${src}"]`)) {
+        resolve(true);
+        return;
+      }
       const script = document.createElement("script");
       script.src = src;
-      script.onload = () => {
-        resolve(true);
-      };
-      script.onerror = () => {
-        resolve(false);
-      };
+      script.onload = () => resolve(true);
+      script.onerror = () => resolve(false);
       document.body.appendChild(script);
     });
   }
 
-
-  // payments code
   const handlePayment = async () => {
-    const amount = totalAmountAfterDiscount(); // Amount in paise (₹500)
-    const receipt = `TEST-${new Date().getTime()}`; // a receipt for payment usually generated with date,
+    if (paymentRunning || !testDetails || !isValidPack || !userDetails) return;
+
+    const amount = totalAmountAfterDiscount();
+    const receipt = `TEST-${Date.now()}`;
     const test = `${testDetails.title}, ${formattedPack}`;
 
+    setPaymentRunning(true);
+    const loadingId = toast.loading("Initializing secure checkout...");
 
-    setPaymentRunning("running");
-    const paymentPostData = {
-      amount: amount * 100,
-      receipt: receipt,
-      user: userDetails, //whole user object,
-      test: test, //array of items
-    };
-    let t = toast.loading("Processing your registration....");
-    const response = await fetch("/api/payments/init", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: "dhanak", // Add your custom headers
-      },
-      body: JSON.stringify(paymentPostData),
-    });
+    try {
+      const response = await fetch("/api/payments/init", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: "dhanak",
+        },
+        body: JSON.stringify({
+          amount: amount * 100,
+          receipt,
+          user: userDetails,
+          test,
+        }),
+      });
 
-    if (!response.ok) {
-      throw new Error("Network response was not ok");
-    }
+      const initPaymentResponse = await response.json();
+      toast.dismiss(loadingId);
 
-    const initPaymentResponse = await response.json();
-    if (response.status !== 200) {
-      toast.dismiss(t);
-      toast.error(data.message);
-      return;
-    }
+      if (!response.ok) {
+        toast.error(initPaymentResponse?.message || "Could not initialize payment.");
+        setPaymentRunning(false);
+        return;
+      }
 
-    toast.dismiss(t);
-    const res = await loadScript(
-      "https://checkout.razorpay.com/v2/checkout.js"
-    );
-    if (!res) {
-      toast.error("Razropay failed to load!!");
-      toast.dismiss(t);
-      return;
-    }
+      const loaded = await loadScript("https://checkout.razorpay.com/v2/checkout.js");
+      if (!loaded) {
+        toast.error("Razorpay SDK failed to load. Please check your connection.");
+        setPaymentRunning(false);
+        return;
+      }
 
-    let options = {
-      key: process.env.NEXT_PUBLIC_RAZORPAY_KEY, // Enter the Key ID generated from the Dashboard
-      amount: totalAmountAfterDiscount(), // Amount is in currency subunits. Default currency is INR.
-      currency: "INR",
-      name: "IGTS Registration - Dhanak 2k24",
-      description: "Transcation for GATE Mock Test registration",
-      image: "https://igts.dhanakiist.co.in/images/logo.png",
-      order_id: initPaymentResponse.id, //This is a sample Order ID. Pass the `id` obtained in the response of Step 1
-      handler: async function (response) {
-        toast.dismiss(t);
-        let t2 = toast.loading(
-          "Locking in your registration, please hold on..."
-        );
-        let res = await fetch("/api/test/registerTest", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
+      const options = {
+        key: process.env.NEXT_PUBLIC_RAZORPAY_KEY,
+        amount: amount * 100,
+        currency: "INR",
+        name: "IGTS Registration - Dhanak 2027",
+        description: `GATE 2027 Mock Test (${testDetails.shortName})`,
+        image: `${window.location.origin}/images/logo.png`,
+        order_id: initPaymentResponse.id,
+        handler: async function (rzpResponse) {
+          const t2 = toast.loading("Locking in your registration, please hold on...");
+          try {
+            const verifyRes = await fetch("/api/test/registerTest", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                pid: rzpResponse.razorpay_payment_id,
+                oid: rzpResponse.razorpay_order_id,
+                signature: rzpResponse.razorpay_signature,
+                name: userDetails.name,
+                test,
+                userId: user.uid,
+              }),
+            });
+            const rdata = await verifyRes.json();
+            toast.dismiss(t2);
+
+            if (!verifyRes.ok) {
+              toast.error(rdata?.message || "Payment verification failed.");
+              setPaymentRunning(false);
+              return;
+            }
+
+            toast.success("Test registered successfully!");
+            setPaymentRunning(false);
+            setIsRegistrationSuccess(true);
+            confetti({
+              particleCount: 110,
+              spread: 75,
+              origin: { x: 0.5, y: 0.5 },
+              colors: ["#f59e0b", "#4f46e5", "#10b981"],
+            });
+          } catch (err) {
+            toast.dismiss(t2);
+            toast.error("Verification request failed. Please contact support if amount was debited.");
+            setPaymentRunning(false);
+          }
+        },
+        modal: {
+          ondismiss: function () {
+            setPaymentRunning(false);
           },
-          body: JSON.stringify({
-            pid: response.razorpay_payment_id,
-            oid: response.razorpay_order_id,
-            signature: response.razorpay_signature,
-            name: userDetails.name,
-            test: test,
-            userId: user.uid,
-          }),
-        });
-        let rdata = await res.json();
-        if (res.status !== 200) {
-          toast.error("Error, Payment failed");
-          return;
-        }
-        toast.success("Payment successful");
+        },
+        prefill: {
+          name: userDetails.name,
+          email: userDetails.email,
+          contact: String(userDetails.mobile || ""),
+        },
+        notes: {
+          address: "IIST, Valiamala, Thiruvananthapuram, Kerala, India",
+        },
+        theme: {
+          color: "#4f46e5",
+        },
+      };
 
-        toast.dismiss(t2);
-        setPaymentRunning("successful");
-        toast.success("Test registered successfully");
-        setIsRegistrationSuccess(true);
-        confetti({
-          particleCount: 100,
-          spread: 70,
-          origin: { x: 0.5, y: 0.5 }, // Center of the screen
-          colors: ['#FFD700', '#1E90FF', '#FF4500'], // Customize colors
-        });
-      },
-      prefill: {
-        name: userDetails.name,
-        email: userDetails.email,
-        contact: userDetails.mobile,
-      },
-      notes: {
-        address: "IIST, Valiamala, Thiruvananthapuram, Kerala, India",
-      },
-      theme: {
-        color: "#674cee",
-      },
-    };
-
-    const rzp = new window.Razorpay(options);
-    rzp.on("payment.failed", async function (response) {
-      toast.dismiss(t);
-      toast.error(response.error.description);
-    });
-    rzp.open();
-
-
+      const rzp = new window.Razorpay(options);
+      rzp.on("payment.failed", function (rzpError) {
+        setPaymentRunning(false);
+        toast.error(rzpError?.error?.description || "Payment failed.");
+      });
+      rzp.open();
+    } catch (err) {
+      toast.dismiss(loadingId);
+      setPaymentRunning(false);
+      toast.error("Unable to reach payment gateway. Please try again.");
+    }
   };
 
-
-  if (loadingPage && !userDetails) {
+  if (loadingPage || (!userDetails && !authLoading)) {
     return (
-      <div>
+      <div className="min-h-screen flex flex-col bg-slate-50">
         <NavbarLite />
-        <div className="min-h-screen bg-white flex flex-col items-center w-full mx-auto pb-20">
-          <div className={`grid grid-cols-1 items-center pt-8`}>
-            <div className={`max-w-7xl mx-auto px-4 md:px-10 lg:px-10`}>
-              <Loader />
-            </div>
-          </div>
-        </div>
-      </div>);
-  }
-
-  if (isRegistrationSuccess) {
-    return (
-      <div>
-        <Navbar />
-        <div className="min-h-[calc(100vh-80px)] bg-green-50 flex flex-col items-center w-full mx-auto pb-20">
-          <div className={`grid grid-cols-1 items-center pt-8`}>
-            <div className={`max-w-7xl mx-auto px-4 md:px-10 lg:px-10 `}>
-              <motion.div
-                className="flex flex-col items-center px-12 py-14 rounded-lg shadow-lg bg-white max-w-xl w-full"
-                initial={{ opacity: 0, y: -50 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, ease: "easeInOut" }}
-              >
-                {/* Success Icon */}
-                <motion.div
-                  className="text-white rounded-full mb-4"
-                  initial={{ scale: 0 }}
-                  animate={{ scale: 1 }}
-                  transition={{ duration: 0.6, ease: "easeInOut" }}
-                >
-                  <img className={`h-20 w-20`} src="/images/successTick.svg" alt="successTick" />
-                </motion.div>
-
-                {/* Success Message */}
-                <h1 className="text-2xl font-bold text-green-600 mb-2">
-                  Registration Successful!
-                </h1>
-                <p className="text-gray-600 text-center mb-4">
-                  Your registration has been completed successfully. Thank you for
-                  registering!
-                </p>
-
-                {/* Button to Go Back */}
-                <Link
-                  className="px-6 py-2 bg-green-500 text-white rounded-md shadow-md hover:bg-green-600 transition-all"
-                  href='/dashboard'
-                >
-                  Go to Dashboard
-                </Link>
-              </motion.div>
-            </div>
-          </div>
+        <div className="flex-1 flex items-center justify-center py-20">
+          <Loader />
         </div>
         <Footer />
       </div>
     );
   }
 
+  if (!testDetails || !isValidPack) {
+    return (
+      <div className="min-h-screen flex flex-col bg-slate-50">
+        <NavbarLite />
+        <div className="flex-1 flex flex-col items-center justify-center px-4 text-center py-20">
+          <h1 className="text-2xl font-extrabold text-slate-900">Invalid Package Selected</h1>
+          <p className="text-slate-600 mt-2">
+            Please select a valid branch and pack from the GATE 2027 tests page.
+          </p>
+          <Link
+            href="/tests"
+            className="mt-6 px-6 py-3 rounded-full bg-indigo-600 text-white font-bold hover:bg-indigo-700 transition"
+          >
+            Browse Test Packages
+          </Link>
+        </div>
+        <Footer />
+      </div>
+    );
+  }
+
+  if (isRegistrationSuccess) {
+    return (
+      <div className="min-h-screen flex flex-col bg-slate-50">
+        <Navbar />
+        <main className="flex-1 flex items-center justify-center px-4 py-16">
+          <motion.div
+            className="flex flex-col items-center px-8 sm:px-12 py-12 rounded-3xl shadow-xl border border-emerald-200 bg-white max-w-xl w-full text-center"
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.45 }}
+          >
+            <img className="h-20 w-20 mb-4" src="/images/successTick.svg" alt="Success" />
+            <h1 className="text-2xl sm:text-3xl font-extrabold text-emerald-700 mb-2">
+              Registration Successful!
+            </h1>
+            <p className="text-slate-600 mb-6">
+              You are enrolled in <strong>{testDetails.title} ({formattedPack})</strong> for GATE 2027.
+              A confirmation email has been sent to {userDetails?.email}.
+            </p>
+            <div className="flex flex-wrap gap-3 justify-center">
+              <Link
+                className="px-6 py-3 bg-emerald-600 text-white font-bold rounded-full shadow-md hover:bg-emerald-700 transition"
+                href="/registered-tests"
+              >
+                View My Tests →
+              </Link>
+              <Link
+                className="px-6 py-3 bg-slate-100 text-slate-700 font-semibold rounded-full hover:bg-slate-200 transition"
+                href="/dashboard"
+              >
+                Go to Dashboard
+              </Link>
+            </div>
+          </motion.div>
+        </main>
+        <Footer />
+      </div>
+    );
+  }
+
+  const appliedDiscountPercent = Math.round(
+    (testPack === "Both Packs" ? testDetails.comboDiscountRate : testDetails.discountRate) * 100
+  );
+
   return (
-    <div>
+    <div className="min-h-screen flex flex-col bg-slate-50">
       <NavbarLite />
-      {userDetails ?
-        <motion.div className="min-h-screen bg-white flex flex-col w-full mx-auto pb-20"
-          initial={{ opacity: 0, y: 10 }}    // Start below with opacity 0
-          animate={{ opacity: 1, y: 0 }}     // Fade in and move to original position
-          exit={{ opacity: 0, y: 10 }}       // Exit by fading out and moving down
-          transition={{ duration: 0.3 }}     // Duration of the animation
-        >
-          <section className="grid grid-cols-1 sm:grid-cols-1 md:grid-cols-3 sm:max-w-xl md:max-w-4xl lg:max-w-5xl xl:max-w-6xl px-4 mx-auto">
 
-            {/* Left Column */}
-            <div className="md:col-span-2 w-full px-1 md:px-0 md:space-y-2">
+      <main className="flex-1 max-w-screen-xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-10">
+        <div className="mb-8">
+          <span className="text-xs font-bold uppercase tracking-widest text-indigo-600">
+            IGTS · Dhanak 2027 Checkout
+          </span>
+          <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 mt-1">
+            Confirm Your Enrollment
+          </h1>
+        </div>
 
-              {/* Your Details Section */}
-              <div className="grid grid-cols-1 md:grid-cols-4 border-b border-neutral-300 gap-2 pt-2 md:pt-8 pb-5">
-                <div className="col-span-1 pt-2">
-                  <h1 className="text-xl font-bold">Your Details</h1>
-                </div>
-                <div className="md:col-span-3 p-5 rounded-lg border border-neutral-300 gap-2 md:gap-10 text-neutral-700 flex flex-col md:flex-row justify-between">
-
-                  <div className="flex flex-col">
-                    <p className={`font-semibold`}>{userDetails.name}</p>
-                    <p>{userDetails.email}</p>
-                    <p>+91 {userDetails.mobile}</p>
-                    <p>
-                      Branch - {userDetails.branch === "ECE"
-                        ? "Electronics and Communication Engineering"
-                        : /engineering/i.test(userDetails.branch)
-                          ? userDetails.branch
-                          : `${userDetails.branch} Engineering`}
-                    </p>
-
-                    <p>{userDetails.college}</p>
-                  </div>
-                  <div className="md:mt-0">
-                    <Link
-                      className="text-[#007185] text-sm hover:underline hover:text-[#c7511f]"
-                      href={'/dashboard'}
-                    >
-                      Update
-                    </Link>
-                  </div>
-                </div>
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+          {/* Left Column */}
+          <div className="lg:col-span-8 space-y-6">
+            {/* Candidate Details */}
+            <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm">
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-lg font-extrabold text-slate-900">1. Candidate Details</h2>
+                <Link href="/dashboard" className="text-xs font-bold text-indigo-600 hover:underline">
+                  Update Profile
+                </Link>
               </div>
-
-              {/* Registering For Section */}
-              <div className="grid grid-cols-1 md:grid-cols-4 border-b gap-2 border-neutral-300 pt-6 pb-5">
-                <div className="col-span-1 pt-2">
-                  <h1 className="text-xl font-bold">Registering For</h1>
-                </div>
-                <div className="md:col-span-3 p-5 rounded-lg border border-neutral-300 gap-2 md:gap-10 text-neutral-700 flex flex-col md:flex-row justify-between">
-                  <div className="flex flex-col">
-                    <p className={`font-semibold`}>GATE Mock test series</p>
-                    <p><span className={`font-semibold`}>Branch/Domain: </span> {testDetails.title === 'ECE' && 'Electronics and Communication Engineering'}{testDetails.title !== 'ECE' && testDetails.title}</p>
-                    <p><span className={`font-semibold`}>Package: </span>{formattedPack}</p>
-                    <p>*Includes {testPack === 'Pack 1' || testPack === 'Pack 2' && "3"}{testPack === 'Both Packs' && "6"} mock tests for GATE 2025</p>
-                  </div>
-                  <div className="md:mt-0">
-                    <Link
-                      className="text-[#007185] text-sm hover:underline hover:text-[#c7511f]"
-                      href={'/tests'}
-                    >
-                      Change
-                    </Link>
-                  </div>
-                </div>
-              </div>
-
-              <div className="md:col-span-1 py-8 px-1 lg:px-10 xl:px-14 md:hidden flex justify-center">
-                <div className={`w-full flex flex-col justify-between items-center rounded-md border border-neutral-400 h-full md:h-4/5`}>
-                  <div className={`p-6 flex flex-col space-y-2`}>
-
-                    <div className={`flex flex-col gap-4`}>
-                      <p className={`text-black font-bold text-xl md:text-lg`}>Payment Summary</p>
-                      <div className={`text-md md:text-sm flex flex-col`}>
-                        <div className='flex flex-col w-full gap-1'>
-                          <p className={`flex w-full justify-between items-center`}><span>Test Series:</span><span>₹{totalAmount()}.00</span></p>
-                          <p className={`flex w-full justify-between items-center`}><span>Discount ({testDetails.discountRate * 100}%) :</span><span>₹{discountedAmount()}.00</span></p>
-                        </div>
-                      </div>
-                    </div>
-                    <hr className={`h-[1px]`} />
-                    <div>
-                      <p className={`text-2xl md:text-xl font-extrabold text-[#0072bb] flex justify-between`}>
-                        <span>Total Amount:</span><span>₹{totalAmountAfterDiscount()}.00</span>
-                      </p>
-                    </div>
-                    <hr />
-                    <div>
-                      <p className={`flex flex-row gap-1 text-[#0072bb] text-sm font-semibold`}>
-                        <span>Discount: </span><span> ₹ {discountedAmount()}.00</span>
-                        <span>(
-                          {testPack === 'Pack 1' && `${testDetails.discountRate * 100}% OFF`}
-                          {testPack === 'Pack 2' && `${testDetails.discountRate * 100}% OFF`}
-                          {testPack === 'Both Packs' && `${Math.round(testDetails.comboDiscountRate * 100)}% OFF`})
-                        </span>
-                      </p>
-                    </div>
-                    <hr className={`h-[1px]`} />
-
-                    <div className={`flex flex-col gap-3`}>
-                      <div
-                        className={`w-full flex gap-0 p-0 rounded-sm overflow-hidden border border-[#072654] cursor-pointer bg-[#eaf2fe]`}
-                        onClick={handlePayment}
-                      >
-                        <div className={`bg-[#1e40a0] p-4 md:p-3`}>
-                          <svg width="18" height="20" viewBox="0 0 18 20" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M7.077 6.476l-.988 3.569 5.65-3.589-3.695 13.54 3.752.004 5.457-20L7.077 6.476z" fill="#fff"></path><path d="M1.455 14.308L0 20h7.202L10.149 8.42l-8.694 5.887z" fill="#fff"></path></svg>
-                        </div>
-                        <div className={`flex flex-col justify-center items-center text-center w-full`}>
-                          <p className={`text-[#072654] font-extrabold italic text-neutral-600 text-md md:text-sm`}>
-                            Continue to pay
-                          </p>
-                          <p className={`text-[#072654] italic text-neutral-600 text-sm md:text-xs`}>
-                            Secured by Razorpay
-                          </p>
-                        </div>
-                      </div>
-                      <p className={`text-xs text-neutral-700 text-center px-2`}>By enrolling for this tests series, you agree to our <Link href={`/privacy-policy`} className={`text-[#007185] hover:underline hover:text-[#c7511f]`}>privacy policy</Link></p>
-                    </div>
-                  </div>
-                  <div className={`px-6 w-full py-4 md:py-4 text-center bg-neutral-200 rounded-b-md flex flex-col`}>
-                    <p className={`text-xs text-center`}>
-                      Need help? Check our <Link href={`/faqs`} className={`text-[#007185] hover:underline hover:text-[#c7511f]`}>help pages</Link> or <Link href={`/contact-us`} className={`text-[#007185] hover:underline hover:text-[#c7511f]`}>Contact us</Link>
-                    </p>
-                  </div>
-                </div>
-              </div>
-
-              <hr className={`flex md:hidden`} />
-
-              <div className={`flex flex-col gap-3 pr-4 md:pr-10 pt-2 text-justify`}>
-                <p className={`text-xs`}>
-                  Need help? Check our <Link href={`/faqs`} className={`text-[#007185] hover:underline hover:text-[#c7511f]`}>help pages</Link> or <Link href={`/contact-us`} className={`text-[#007185] hover:underline hover:text-[#c7511f]`}>Contact us</Link>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm text-slate-700">
+                <p>
+                  <span className="text-slate-500">Name:</span>{" "}
+                  <strong className="text-slate-900">{userDetails?.name}</strong>
                 </p>
-                <p className={`text-xs`}>
-                  After completing your registration, you’ll receive a confirmation email with the details of your registration. To secure your registration, please proceed with payment through UPI. Note that your registrations will be confirmed once the payment is successfully received. <br /> Please avoid refreshing the page while your payment is being processed.
+                <p>
+                  <span className="text-slate-500">Email:</span>{" "}
+                  <strong className="text-slate-900">{userDetails?.email}</strong>
                 </p>
-                <p className={`text-xs`}>
-                  Looking for additional test series or resources? Visit our <Link href={`/home`} className={`text-[#007185] hover:underline hover:text-[#c7511f]`}>homepage</Link> or <Link href={`/tests`} className={`text-[#007185] hover:underline hover:text-[#c7511f]`}>tests page</Link> to explore our other offerings.
+                <p>
+                  <span className="text-slate-500">Mobile:</span>{" "}
+                  <strong className="text-slate-900">+91 {userDetails?.mobile}</strong>
+                </p>
+                <p>
+                  <span className="text-slate-500">Branch:</span>{" "}
+                  <strong className="text-slate-900">{userDetails?.branch}</strong>
+                </p>
+                <p className="sm:col-span-2">
+                  <span className="text-slate-500">College:</span>{" "}
+                  <strong className="text-slate-900">{userDetails?.college}</strong>
                 </p>
               </div>
             </div>
 
-            {/* Right Column */}
-            <div className="md:col-span-1 py-8 px-2 lg:px-6 xl:px-10 hidden md:flex justify-center">
-              <div className={`w-full flex flex-col justify-between items-center rounded-md border border-neutral-400 h-full md:h-4/5`}>
-                <div className={`p-6 flex flex-col space-y-2 w-full`}>
-
-
-                  <div className={`flex flex-col gap-4`}>
-                    <p className={`text-black font-bold text-xl md:text-lg`}>Payment Summary</p>
-                    <div className={`text-md md:text-sm flex flex-col`}>
-                      <div className='flex flex-col w-full gap-1'>
-                        <p className={`flex w-full justify-between items-center`}><span>Test Series:</span><span>₹{totalAmount()}.00</span></p>
-                        <p className={`flex w-full justify-between items-center`}><span>Discount ({testDetails.discountRate * 100}%):</span><span>₹{discountedAmount()}.00</span></p>
-                      </div>
-                    </div>
-                  </div>
-                  <hr className={`h-[1px]`} />
-                  <div>
-                    <p className={`text-2xl md:text-xl font-extrabold text-[#0072bb] flex justify-between`}>
-                      <span>Total Amount:</span><span>₹{totalAmountAfterDiscount()}.00</span>
-                    </p>
-                  </div>
-                  <hr />
-                  <div>
-                    <p className={`flex flex-row gap-1 text-[#0072bb] text-sm font-semibold`}>
-                      <span>Discount: </span><span> ₹ {discountedAmount()}.00</span>
-                      <span>(
-                        {testPack === 'Pack 1' && `${testDetails.discountRate * 100}% OFF`}
-                        {testPack === 'Pack 2' && `${testDetails.discountRate * 100}% OFF`}
-                        {testPack === 'Both Packs' && `${Math.round(testDetails.comboDiscountRate * 100)}% OFF`})
-                      </span>
-                    </p>
-                  </div>
-                  <hr className={`h-[1px]`} />
-                  <div className={`flex flex-col gap-3 w-full justify-center`}>
-
-                    <div
-                      className={`w-full flex gap-0 p-0 rounded-sm overflow-hidden border border-[#072654] cursor-pointer bg-[#eaf2fe]`}
-                      onClick={handlePayment}
-                    >
-                      <div className={`bg-[#1e40a0] p-4 md:p-3`}>
-                        <svg width="18" height="20" viewBox="0 0 18 20" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M7.077 6.476l-.988 3.569 5.65-3.589-3.695 13.54 3.752.004 5.457-20L7.077 6.476z" fill="#fff"></path><path d="M1.455 14.308L0 20h7.202L10.149 8.42l-8.694 5.887z" fill="#fff"></path></svg>
-                      </div>
-                      <div className={`flex flex-col justify-center items-center text-center w-full`}>
-                        <p className={`text-[#072654] font-extrabold italic text-neutral-600 text-md md:text-sm`}>
-                          Continue to pay
-                        </p>
-                        <p className={`text-[#072654] italic text-neutral-600 text-sm md:text-xs`}>
-                          Secured by Razorpay
-                        </p>
-                      </div>
-                    </div>
-
-                    <p className={`text-xs text-neutral-700 text-center px-2`}>By enrolling for this tests series, you agree to our <Link href={`/privacy-policy`} className={`text-[#007185] hover:underline hover:text-[#c7511f]`}>privacy policy</Link></p>
-                  </div>
-                </div>
-                <div className={`px-6 py-2 bg-neutral-200 text-center rounded-b-md flex flex-col`}>
-                  <p className={`text-xs text-center`}>
-                    Need help? Check our <Link href={`/faqs`} className={`text-[#007185] hover:underline hover:text-[#c7511f]`}>help pages</Link> or <Link href={`/contact-us`} className={`text-[#007185] hover:underline hover:text-[#c7511f]`}>Contact us</Link>
-                  </p>
-                </div>
+            {/* Package Details */}
+            <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm">
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-lg font-extrabold text-slate-900">2. Selected Package</h2>
+                <Link href={`/tests/${testDetails.id}`} className="text-xs font-bold text-indigo-600 hover:underline">
+                  Change Pack
+                </Link>
+              </div>
+              <div className="space-y-2 text-sm text-slate-700">
+                <p className="text-base font-extrabold text-indigo-700">
+                  GATE 2027 Mock Test Series — {testDetails.title}
+                </p>
+                <p>
+                  <span className="text-slate-500">Package:</span>{" "}
+                  <strong className="text-slate-900">{formattedPack}</strong>
+                </p>
+                <p className="text-slate-600">
+                  *Includes {testPack === "Both Packs" ? "6" : "3"} full-length mock tests aligned with
+                  GATE 2027.
+                </p>
               </div>
             </div>
-          </section>
-        </motion.div>
-        :
-        <div className="min-h-screen bg-white flex flex-col items-center w-full mx-auto pb-20">
-          <div className={`grid grid-cols-1 items-center pt-8`}>
-            <div className={`max-w-7xl mx-auto px-4 md:px-10 lg:px-10`}>
-              <Loader />
+
+            <p className="text-xs text-slate-500 leading-relaxed">
+              After completing payment via Razorpay UPI / Card / Netbanking, you will receive an
+              instant confirmation email and access inside <strong>Your Tests</strong>. Please do not
+              refresh the browser during payment processing. Need help? Visit{" "}
+              <Link href="/faqs" className="text-indigo-600 underline">
+                FAQs
+              </Link>{" "}
+              or{" "}
+              <Link href="/contact-us" className="text-indigo-600 underline">
+                Contact Us
+              </Link>
+              .
+            </p>
+          </div>
+
+          {/* Right Column: Payment Summary */}
+          <div className="lg:col-span-4">
+            <div className="bg-white rounded-3xl border border-slate-200 shadow-lg overflow-hidden">
+              <div className="p-6 space-y-5">
+                <h2 className="text-lg font-extrabold text-slate-900">Payment Summary</h2>
+
+                <div className="space-y-2 text-sm">
+                  <div className="flex justify-between text-slate-600">
+                    <span>Test Series Fee</span>
+                    <span>₹{totalAmount()}.00</span>
+                  </div>
+                  <div className="flex justify-between text-emerald-700 font-semibold">
+                    <span>Discount ({appliedDiscountPercent}% OFF)</span>
+                    <span>- ₹{discountedAmount()}.00</span>
+                  </div>
+                </div>
+
+                <hr className="border-slate-200" />
+
+                <div className="flex items-baseline justify-between">
+                  <span className="text-base font-bold text-slate-900">Total Payable</span>
+                  <span className="text-3xl font-extrabold text-indigo-700">
+                    ₹{totalAmountAfterDiscount()}.00
+                  </span>
+                </div>
+
+                <button
+                  type="button"
+                  disabled={paymentRunning}
+                  onClick={handlePayment}
+                  className={`w-full py-3.5 px-6 rounded-full font-bold text-white shadow-md transition flex items-center justify-center gap-2 ${
+                    paymentRunning
+                      ? "bg-indigo-400 cursor-wait"
+                      : "bg-gradient-to-r from-[#4f46e5] to-[#674cee] hover:from-[#4338ca] hover:to-[#5b3fe3]"
+                  }`}
+                >
+                  <span>{paymentRunning ? "Processing..." : "Pay Securely with Razorpay"}</span>
+                </button>
+
+                <p className="text-[11px] text-slate-500 text-center">
+                  By enrolling, you agree to our{" "}
+                  <Link href="/privacy-policy" className="text-indigo-600 hover:underline">
+                    Privacy Policy
+                  </Link>
+                  .
+                </p>
+              </div>
+              <div className="px-6 py-3.5 bg-slate-50 border-t border-slate-200 text-center text-xs text-slate-500">
+                256-bit SSL Encrypted Checkout · Powered by Razorpay
+              </div>
             </div>
           </div>
         </div>
-      }
+      </main>
+
+      <Footer />
     </div>
   );
 }

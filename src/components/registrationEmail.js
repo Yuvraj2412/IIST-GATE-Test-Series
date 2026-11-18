@@ -1,653 +1,77 @@
 export const registrationEmail = (name, pid, test, packName, amount, email) => {
-  return `<!DOCTYPE HTML PUBLIC "-//W3C//DTD XHTML 1.0 Transitional //EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:o="urn:schemas-microsoft-com:office:office">
+  return `<!DOCTYPE html>
+<html lang="en">
 <head>
-<!--[if gte mso 9]>
-<xml>
-  <o:OfficeDocumentSettings>
-    <o:AllowPNG/>
-    <o:PixelsPerInch>96</o:PixelsPerInch>
-  </o:OfficeDocumentSettings>
-</xml>
-<![endif]-->
-  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="x-apple-disable-message-reformatting">
-  <!--[if !mso]><!--><meta http-equiv="X-UA-Compatible" content="IE=edge"><!--<![endif]-->
-  <title></title>
-  
-    <style type="text/css">
-      
-      @media only screen and (min-width: 620px) {
-        .u-row {
-          width: 600px !important;
-        }
-
-        .u-row .u-col {
-          vertical-align: top;
-        }
-
-        
-            .u-row .u-col-100 {
-              width: 600px !important;
-            }
-          
-      }
-
-      @media only screen and (max-width: 620px) {
-        .u-row-container {
-          max-width: 100% !important;
-          padding-left: 0px !important;
-          padding-right: 0px !important;
-        }
-
-        .u-row {
-          width: 100% !important;
-        }
-
-        .u-row .u-col {
-          display: block !important;
-          width: 100% !important;
-          min-width: 320px !important;
-          max-width: 100% !important;
-        }
-
-        .u-row .u-col > div {
-          margin: 0 auto;
-        }
-
-
-        .u-row .u-col img {
-          max-width: 100% !important;
-        }
-
-}
-    
-body{margin:0;padding:0}table,td,tr{border-collapse:collapse;vertical-align:top}.ie-container table,.mso-container table{table-layout:fixed}*{line-height:inherit}a[x-apple-data-detectors=true]{color:inherit!important;text-decoration:none!important}
-
-
-@media (max-width: 480px) {
-            .hide-mobile {
-              
-              max-height: 0px;
-              overflow: hidden;
-    
-              display: none !important;
-            }
-          }
-          
-
-table, td { color: #000000; } @media (max-width: 480px) { #u_content_image_1 .v-container-padding-padding { padding: 45px 10px 10px !important; } #u_content_heading_2 .v-font-size { font-size: 20px !important; } #u_content_text_1 .v-container-padding-padding { padding: 10px !important; } #u_content_text_6 .v-container-padding-padding { padding: 10px !important; } #u_content_text_3 .v-container-padding-padding { padding: 40px 10px 10px !important; } #u_content_menu_1 .v-padding { padding: 5px 10px !important; } }
-    </style>
-  
-  
-
-<!--[if !mso]><!--><link href="https://fonts.googleapis.com/css?family=Cabin:400,700&display=swap" rel="stylesheet" type="text/css"><!--<![endif]-->
-
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>IGTS Dhanak 2027 · Registration Confirmed</title>
 </head>
-
-<body class="clean-body u_body" style="margin: 0;padding: 0;-webkit-text-size-adjust: 100%;background-color: #e7e7e7;color: #000000">
-  <!--[if IE]><div class="ie-container"><![endif]-->
-  <!--[if mso]><div class="mso-container"><![endif]-->
-  <table id="u_body" style="border-collapse: collapse;table-layout: fixed;border-spacing: 0;mso-table-lspace: 0pt;mso-table-rspace: 0pt;vertical-align: top;min-width: 320px;Margin: 0 auto;background-color: #e7e7e7;width:100%" cellpadding="0" cellspacing="0">
-  <tbody>
-  <tr style="vertical-align: top">
-    <td style="word-break: break-word;border-collapse: collapse !important;vertical-align: top">
-    <!--[if (mso)|(IE)]><table width="100%" cellpadding="0" cellspacing="0" border="0"><tr><td align="center" style="background-color: #e7e7e7;"><![endif]-->
-    
-  
-  
-<div class="u-row-container" style="padding: 0px;background-color: transparent">
-  <div class="u-row" style="margin: 0 auto;min-width: 320px;max-width: 600px;overflow-wrap: break-word;word-wrap: break-word;word-break: break-word;background-color: transparent;">
-    <div style="border-collapse: collapse;display: table;width: 100%;height: 100%;background-color: transparent;">
-      <!--[if (mso)|(IE)]><table width="100%" cellpadding="0" cellspacing="0" border="0"><tr><td style="padding: 0px;background-color: transparent;" align="center"><table cellpadding="0" cellspacing="0" border="0" style="width:600px;"><tr style="background-color: transparent;"><![endif]-->
-      
-<!--[if (mso)|(IE)]><td align="center" width="600" style="background-color: #e9e9e9;width: 600px;padding: 0px;border-top: 0px solid transparent;border-left: 0px solid transparent;border-right: 0px solid transparent;border-bottom: 0px solid transparent;border-radius: 0px;-webkit-border-radius: 0px; -moz-border-radius: 0px;" valign="top"><![endif]-->
-<div class="u-col u-col-100" style="max-width: 320px;min-width: 600px;display: table-cell;vertical-align: top;">
-  <div style="background-color: #e9e9e9;height: 100%;width: 100% !important;border-radius: 0px;-webkit-border-radius: 0px; -moz-border-radius: 0px;">
-  <!--[if (!mso)&(!IE)]><!--><div style="box-sizing: border-box; height: 100%; padding: 0px;border-top: 0px solid transparent;border-left: 0px solid transparent;border-right: 0px solid transparent;border-bottom: 0px solid transparent;border-radius: 0px;-webkit-border-radius: 0px; -moz-border-radius: 0px;"><!--<![endif]-->
-  
-<table style="font-family:arial,helvetica,sans-serif;" role="presentation" cellpadding="0" cellspacing="0" width="100%" border="0">
-  <tbody>
+<body style="margin:0;padding:0;background-color:#0b1020;font-family:Arial,Helvetica,sans-serif;color:#0f172a;">
+  <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background-color:#0b1020;padding:32px 12px;">
     <tr>
-      <td class="v-container-padding-padding" style="overflow-wrap:break-word;word-break:break-word;padding:10px;font-family:arial,helvetica,sans-serif;" align="left">
-        
-<table width="100%" cellpadding="0" cellspacing="0" border="0">
-  <tr>
-    <td style="padding-right: 0px;padding-left: 0px;" align="center">
-      
-      <img align="center" border="0" src="https://ik.imagekit.io/dhanak2k25/images/image-1.png?updatedAt=1734628638272" alt="" title="" style="outline: none;text-decoration: none;-ms-interpolation-mode: bicubic;clear: both;display: inline-block !important;border: none;height: auto;float: none;width: 16%;max-width: 92.8px;" width="92.8"/>
-      
-    </td>
-  </tr>
-</table>
-
+      <td align="center">
+        <table role="presentation" width="600" cellspacing="0" cellpadding="0" border="0" style="max-width:600px;width:100%;background-color:#ffffff;border-radius:16px;overflow:hidden;border:1px solid #1e293b;">
+          <tr>
+            <td style="background:linear-gradient(135deg,#070b18 0%,#1a1040 65%,#4338ca 100%);padding:28px 32px;text-align:center;">
+              <p style="margin:0 0 6px;font-size:12px;letter-spacing:2.5px;text-transform:uppercase;color:#fbbf24;font-weight:700;">
+                IIST · DHANAK 2027
+              </p>
+              <h1 style="margin:0;font-size:24px;line-height:1.3;color:#ffffff;font-weight:700;">
+                Registration Successful!
+              </h1>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding:32px;">
+              <p style="margin:0 0 18px;font-size:15px;line-height:1.6;color:#334155;">
+                Hello <strong>${name}</strong>, your enrollment for the <strong>IGTS GATE 2027 Mock Test Series</strong> has been confirmed.
+              </p>
+              <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background-color:#f8fafc;border:1px solid #e2e8f0;border-radius:12px;padding:16px 20px;margin-bottom:24px;">
+                <tr>
+                  <td style="padding:6px 0;font-size:14px;color:#475569;"><strong>Participant:</strong></td>
+                  <td style="padding:6px 0;font-size:14px;color:#0f172a;text-align:right;">${name}</td>
+                </tr>
+                <tr>
+                  <td style="padding:6px 0;font-size:14px;color:#475569;"><strong>Email:</strong></td>
+                  <td style="padding:6px 0;font-size:14px;color:#0f172a;text-align:right;">${email}</td>
+                </tr>
+                <tr>
+                  <td style="padding:6px 0;font-size:14px;color:#475569;"><strong>Branch / Stream:</strong></td>
+                  <td style="padding:6px 0;font-size:14px;color:#0f172a;text-align:right;">${test}</td>
+                </tr>
+                <tr>
+                  <td style="padding:6px 0;font-size:14px;color:#475569;"><strong>Package:</strong></td>
+                  <td style="padding:6px 0;font-size:14px;color:#0f172a;text-align:right;">${packName}</td>
+                </tr>
+                <tr>
+                  <td style="padding:6px 0;font-size:14px;color:#475569;"><strong>Amount Paid:</strong></td>
+                  <td style="padding:6px 0;font-size:14px;color:#15803d;font-weight:700;text-align:right;">₹ ${amount}/-</td>
+                </tr>
+                <tr>
+                  <td style="padding:6px 0;font-size:14px;color:#475569;"><strong>Payment ID:</strong></td>
+                  <td style="padding:6px 0;font-size:13px;color:#0f172a;font-family:monospace;text-align:right;">${pid}</td>
+                </tr>
+              </table>
+              <p style="margin:0;font-size:14px;line-height:1.6;color:#475569;text-align:center;">
+                Visit your Dashboard &rarr; <strong>Your Tests</strong> on a laptop or tablet before your scheduled test window.
+              </p>
+            </td>
+          </tr>
+          <tr>
+            <td style="background-color:#f8fafc;padding:20px 32px;text-align:center;border-top:1px solid #e2e8f0;">
+              <p style="margin:0 0 6px;font-size:13px;color:#334155;">
+                Questions? Reach us at
+                <a href="mailto:dhanak2k25@gmail.com" style="color:#4f46e5;text-decoration:underline;">dhanak2k25@gmail.com</a>
+              </p>
+              <p style="margin:0;font-size:12px;color:#64748b;">
+                © 2027 Dhanak · Indian Institute of Space Science and Technology (IIST), Thiruvananthapuram
+              </p>
+            </td>
+          </tr>
+        </table>
       </td>
     </tr>
-  </tbody>
-</table>
-
-  <!--[if (!mso)&(!IE)]><!--></div><!--<![endif]-->
-  </div>
-</div>
-<!--[if (mso)|(IE)]></td><![endif]-->
-      <!--[if (mso)|(IE)]></tr></table></td></tr></table><![endif]-->
-    </div>
-  </div>
-  </div>
-  
-
-
-  
-  
-<div class="u-row-container" style="padding: 0px;background-color: transparent">
-  <div class="u-row" style="margin: 0 auto;min-width: 320px;max-width: 600px;overflow-wrap: break-word;word-wrap: break-word;word-break: break-word;background-color: transparent;">
-    <div style="border-collapse: collapse;display: table;width: 100%;height: 100%;background-color: transparent;">
-      <!--[if (mso)|(IE)]><table width="100%" cellpadding="0" cellspacing="0" border="0"><tr><td style="padding: 0px;background-color: transparent;" align="center"><table cellpadding="0" cellspacing="0" border="0" style="width:600px;"><tr style="background-color: transparent;"><![endif]-->
-      
-<!--[if (mso)|(IE)]><td align="center" width="600" style="background-color: #ffffff;width: 600px;padding: 0px;border-top: 0px solid transparent;border-left: 0px solid transparent;border-right: 0px solid transparent;border-bottom: 0px solid transparent;" valign="top"><![endif]-->
-<div class="u-col u-col-100" style="max-width: 320px;min-width: 600px;display: table-cell;vertical-align: top;">
-  <div style="background-color: #ffffff;height: 100%;width: 100% !important;">
-  <!--[if (!mso)&(!IE)]><!--><div style="box-sizing: border-box; height: 100%; padding: 0px;border-top: 0px solid transparent;border-left: 0px solid transparent;border-right: 0px solid transparent;border-bottom: 0px solid transparent;"><!--<![endif]-->
-  
-<table id="u_content_image_1" style="font-family:arial,helvetica,sans-serif;" role="presentation" cellpadding="0" cellspacing="0" width="100%" border="0">
-  <tbody>
-    <tr>
-      <td class="v-container-padding-padding" style="overflow-wrap:break-word;word-break:break-word;padding:80px 10px 10px;font-family:arial,helvetica,sans-serif;" align="left">
-        
-<table width="100%" cellpadding="0" cellspacing="0" border="0">
-  <tr>
-    <td style="padding-right: 0px;padding-left: 0px;" align="center">
-      
-      <img align="center" border="0" src="https://ik.imagekit.io/dhanak2k25/success-green-check-mark-icon.png?updatedAt=1734632841468" alt="image" title="image" style="outline: none;text-decoration: none;-ms-interpolation-mode: bicubic;clear: both;display: inline-block !important;border: none;height: auto;float: none;width: 25%;max-width: 145px;" width="145"/>
-      
-    </td>
-  </tr>
-</table>
-
-      </td>
-    </tr>
-  </tbody>
-</table>
-
-<table id="u_content_heading_2" style="font-family:arial,helvetica,sans-serif;" role="presentation" cellpadding="0" cellspacing="0" width="100%" border="0">
-  <tbody>
-    <tr>
-      <td class="v-container-padding-padding" style="overflow-wrap:break-word;word-break:break-word;padding:20px 10px 10px;font-family:arial,helvetica,sans-serif;" align="left">
-        
-  <!--[if mso]><table width="100%"><tr><td><![endif]-->
-    <h1 class="v-font-size" style="margin: 0px; line-height: 140%; text-align: center; word-wrap: break-word; font-size: 25px; font-weight: 400;"><span><strong>Registration Successful!</strong><br /></span></h1>
-  <!--[if mso]></td></tr></table><![endif]-->
-
-      </td>
-    </tr>
-  </tbody>
-</table>
-
-<table style="font-family:arial,helvetica,sans-serif;" role="presentation" cellpadding="0" cellspacing="0" width="100%" border="0">
-  <tbody>
-    <tr>
-      <td class="v-container-padding-padding" style="overflow-wrap:break-word;word-break:break-word;padding:10px;font-family:arial,helvetica,sans-serif;" align="left">
-        
-  <table height="0px" align="center" border="0" cellpadding="0" cellspacing="0" width="19%" style="border-collapse: collapse;table-layout: fixed;border-spacing: 0;mso-table-lspace: 0pt;mso-table-rspace: 0pt;vertical-align: top;border-top: 5px solid #674cee;-ms-text-size-adjust: 100%;-webkit-text-size-adjust: 100%">
-    <tbody>
-      <tr style="vertical-align: top">
-        <td style="word-break: break-word;border-collapse: collapse !important;vertical-align: top;font-size: 0px;line-height: 0px;mso-line-height-rule: exactly;-ms-text-size-adjust: 100%;-webkit-text-size-adjust: 100%">
-          <span>&#160;</span>
-        </td>
-      </tr>
-    </tbody>
   </table>
-
-      </td>
-    </tr>
-  </tbody>
-</table>
-
-<table id="u_content_text_1" style="font-family:arial,helvetica,sans-serif;" role="presentation" cellpadding="0" cellspacing="0" width="100%" border="0">
-  <tbody>
-    <tr>
-      <td class="v-container-padding-padding" style="overflow-wrap:break-word;word-break:break-word;padding:10px 60px;font-family:arial,helvetica,sans-serif;" align="left">
-        
-  <div class="v-font-size" style="font-size: 14px; color: #616161; line-height: 140%; text-align: center; word-wrap: break-word;">
-<p style="line-height: 140%; margin: 0px;"><span style="color: #000000; line-height: 19.6px;"><span style="font-size: 16px; line-height: 22.4px;"><strong>Find Your Registration Details Here</strong></span></span></p>
-  </div>
-
-      </td>
-    </tr>
-  </tbody>
-</table>
-
-<table
-    id="u_content_text_6"
-    style="font-family: arial, helvetica, sans-serif"
-    role="presentation"
-    cellpadding="0"
-    cellspacing="0"
-    width="100%"
-    border="0"
-  >
-    <tbody>
-      <tr>
-        <td
-          class="v-container-padding-padding"
-          style="
-            overflow-wrap: break-word;
-            word-break: break-word;
-            padding: 14px 60px;
-            font-family: arial, helvetica, sans-serif;
-          "
-          align="left"
-        >
-          <div
-            class="v-font-size"
-            style="
-              font-size: 14px;
-              color: #616161;
-              letter-spacing: 0.1px;
-              line-height: 220%;
-              text-align: center;
-              word-wrap: break-word;
-            "
-          >
-            <p
-              style="
-                line-height: 220%;
-                text-align: left;
-                margin: 0px;
-              "
-            >
-              <span
-                style="
-                  font-size: 16px;
-                  line-height: 35.2px;
-                  font-family: Cabin, sans-serif;
-                "
-                ><span
-                  style="
-                    color: #000000;
-                    line-height: 35.2px;
-                  "
-                  ><span style="line-height: 35.2px"
-                    ><strong>Name: </strong>${name}</span
-                  ></span
-                ><span
-                  style="
-                    color: #000000;
-                    line-height: 35.2px;
-                  "
-                  ><span
-                    style="line-height: 35.2px"
-                  ></span></span
-              ></span>
-            </p>
-            <p
-              style="
-                line-height: 220%;
-                text-align: left;
-                margin: 0px;
-              "
-            >
-              <span
-                style="
-                  color: #000000;
-                  line-height: 35.2px;
-                  font-size: 16px;
-                  font-family: Cabin, sans-serif;
-                "
-                ><span style="line-height: 35.2px"
-                  ><strong>Email: </strong>${email}</span
-                ></span
-              >
-            </p>
-            <p
-              style="
-                line-height: 220%;
-                text-align: left;
-                margin: 0px;
-              "
-            >
-              <span
-                style="
-                  font-size: 16px;
-                  line-height: 35.2px;
-                  font-family: Cabin, sans-serif;
-                "
-                ><span
-                  style="
-                    color: #000000;
-                    line-height: 35.2px;
-                  "
-                  ><span style="line-height: 35.2px"
-                    ><strong>Registered for: </strong
-                    >GATE Mock - ${test}</span
-                  ></span
-                ></span
-              >
-            </p>
-            <p
-              style="
-                line-height: 220%;
-                text-align: left;
-                margin: 0px;
-              "
-            >
-              <span
-                style="
-                  font-size: 16px;
-                  line-height: 35.2px;
-                  font-family: Cabin, sans-serif;
-                "
-                ><span
-                  style="
-                    color: #000000;
-                    line-height: 35.2px;
-                  "
-                  ><span style="line-height: 35.2px"
-                    ><strong>Package: </strong
-                    >${packName}</span
-                  ></span
-                ></span
-              >
-            </p>
-            <p
-              style="
-                line-height: 220%;
-                text-align: left;
-                margin: 0px;
-              "
-            >
-              <span
-                style="
-                  font-size: 16px;
-                  line-height: 35.2px;
-                  font-family: Cabin, sans-serif;
-                "
-                ><span
-                  style="
-                    color: #000000;
-                    line-height: 35.2px;
-                  "
-                  ><span style="line-height: 35.2px"
-                    ><strong>Payment Status: </strong
-                    >${'Paid'}</span
-                  ></span
-                ></span
-              >
-            </p>
-            <p
-              style="
-                line-height: 220%;
-                text-align: left;
-                margin: 0px;
-              "
-            >
-              <span
-                style="
-                  font-size: 16px;
-                  line-height: 35.2px;
-                  font-family: Cabin, sans-serif;
-                "
-                ><span
-                  style="
-                    color: #000000;
-                    line-height: 35.2px;
-                  "
-                  ><span style="line-height: 35.2px"
-                    ><strong>Paid Amount: </strong
-                    >Rs. ${amount} /-</span
-                  ></span
-                ></span
-              >
-            </p>
-            <p
-              style="
-                line-height: 220%;
-                text-align: left;
-                margin: 0px;
-              "
-            >
-              <span
-                style="
-                  font-size: 16px;
-                  line-height: 35.2px;
-                  font-family: Cabin, sans-serif;
-                "
-                ><span
-                  style="
-                    color: #000000;
-                    line-height: 35.2px;
-                  "
-                  ><span style="line-height: 35.2px"
-                    ><strong>Payment ID: </strong
-                    >${pid}</span
-                  ></span
-                ></span
-              >
-            </p>
-          </div>
-        </td>
-      </tr>
-    </tbody>
-  </table>
-
-  <!--[if (!mso)&(!IE)]><!--></div><!--<![endif]-->
-  </div>
-</div>
-<!--[if (mso)|(IE)]></td><![endif]-->
-      <!--[if (mso)|(IE)]></tr></table></td></tr></table><![endif]-->
-    </div>
-  </div>
-  </div>
-  
-
-
-  
-  
-<div class="u-row-container" style="padding: 0px;background-color: transparent">
-  <div class="u-row" style="margin: 0 auto;min-width: 320px;max-width: 600px;overflow-wrap: break-word;word-wrap: break-word;word-break: break-word;background-color: transparent;">
-    <div style="border-collapse: collapse;display: table;width: 100%;height: 100%;background-color: transparent;">
-      <!--[if (mso)|(IE)]><table width="100%" cellpadding="0" cellspacing="0" border="0"><tr><td style="padding: 0px;background-color: transparent;" align="center"><table cellpadding="0" cellspacing="0" border="0" style="width:600px;"><tr style="background-color: transparent;"><![endif]-->
-      
-<!--[if (mso)|(IE)]><td align="center" width="600" style="width: 600px;padding: 0px;border-top: 0px solid transparent;border-left: 0px solid transparent;border-right: 0px solid transparent;border-bottom: 0px solid transparent;border-radius: 0px;-webkit-border-radius: 0px; -moz-border-radius: 0px;" valign="top"><![endif]-->
-<div class="u-col u-col-100" style="max-width: 320px;min-width: 600px;display: table-cell;vertical-align: top;">
-  <div style="height: 100%;width: 100% !important;border-radius: 0px;-webkit-border-radius: 0px; -moz-border-radius: 0px;">
-  <!--[if (!mso)&(!IE)]><!--><div style="box-sizing: border-box; height: 100%; padding: 0px;border-top: 0px solid transparent;border-left: 0px solid transparent;border-right: 0px solid transparent;border-bottom: 0px solid transparent;border-radius: 0px;-webkit-border-radius: 0px; -moz-border-radius: 0px;"><!--<![endif]-->
-  
-<table id="u_content_text_3" style="font-family:arial,helvetica,sans-serif;" role="presentation" cellpadding="0" cellspacing="0" width="100%" border="0">
-  <tbody>
-    <tr>
-      <td class="v-container-padding-padding" style="overflow-wrap:break-word;word-break:break-word;padding:40px 80px 10px;font-family:arial,helvetica,sans-serif;" align="left">
-        
-  <div class="v-font-size" style="font-size: 14px; color: #000000; line-height: 160%; text-align: center; word-wrap: break-word;">
-<p style="font-size: 14px; line-height: 160%; margin: 0px;"><span style="color: #000000; line-height: 22.4px;">if you have any questions</span></p>
-<p style="font-size: 14px; line-height: 160%; margin: 0px;"><span style="color: #000000; line-height: 22.4px;">please email us at <span style="line-height: 22.4px; color: #674cee;"><a rel="noopener" href="https://https://igts.dhanakiist.co.in/contact-us" target="_blank" style="color: rgb(103, 76, 238); text-decoration: underline; line-height: inherit;">dhanak2k25@gmail.com</a></span> or visit our FAQS.</span></p></div>
-
-      </td>
-    </tr>
-  </tbody>
-</table>
-
-<table style="font-family:arial,helvetica,sans-serif;" role="presentation" cellpadding="0" cellspacing="0" width="100%" border="0">
-  <tbody>
-    <tr>
-      <td class="v-container-padding-padding" style="overflow-wrap:break-word;word-break:break-word;padding:20px 0px;font-family:arial,helvetica,sans-serif;" align="left">
-        
-  <table height="0px" align="center" border="0" cellpadding="0" cellspacing="0" width="100%" style="border-collapse: collapse;table-layout: fixed;border-spacing: 0;mso-table-lspace: 0pt;mso-table-rspace: 0pt;vertical-align: top;border-top: 1px solid #BBBBBB;-ms-text-size-adjust: 100%;-webkit-text-size-adjust: 100%">
-    <tbody>
-      <tr style="vertical-align: top">
-        <td style="word-break: break-word;border-collapse: collapse !important;vertical-align: top;font-size: 0px;line-height: 0px;mso-line-height-rule: exactly;-ms-text-size-adjust: 100%;-webkit-text-size-adjust: 100%">
-          <span>&#160;</span>
-        </td>
-      </tr>
-    </tbody>
-  </table>
-
-      </td>
-    </tr>
-  </tbody>
-</table>
-
-<table style="font-family:arial,helvetica,sans-serif;" role="presentation" cellpadding="0" cellspacing="0" width="100%" border="0">
-  <tbody>
-    <tr>
-      <td class="v-container-padding-padding" style="overflow-wrap:break-word;word-break:break-word;padding:10px;font-family:arial,helvetica,sans-serif;" align="left">
-        
-<div align="center" style="direction: ltr;">
-  <div style="display: table; max-width:187px;">
-  <!--[if (mso)|(IE)]><table width="187" cellpadding="0" cellspacing="0" border="0"><tr><td style="border-collapse:collapse;" align="center"><table width="100%" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse; mso-table-lspace: 0pt;mso-table-rspace: 0pt; width:187px;"><tr><![endif]-->
-  
-    
-    <!--[if (mso)|(IE)]><td width="32" style="width:32px; padding-right: 15px;" valign="top"><![endif]-->
-    <table border="0" cellspacing="0" cellpadding="0" width="32" height="32" style="width: 32px !important;height: 32px !important;display: inline-block;border-collapse: collapse;table-layout: fixed;border-spacing: 0;mso-table-lspace: 0pt;mso-table-rspace: 0pt;vertical-align: top;margin-right: 15px">
-      <tbody><tr style="vertical-align: top"><td valign="middle" style="word-break: break-word;border-collapse: collapse !important;vertical-align: top">
-<a href="https://www.facebook.com/@iist.dhanak" title="Facebook" target="_blank" style="color: rgb(0, 0, 238); text-decoration: underline; line-height: inherit;"><img src="https://ik.imagekit.io/dhanak2k25/images/facebook.png?updatedAt=1734631352221" alt="Facebook" title="Facebook" width="32" style="outline: none;text-decoration: none;-ms-interpolation-mode: bicubic;clear: both;display: block !important;border: none;height: auto;float: none;max-width: 32px !important">
-        </a>
-      </td></tr>
-    </tbody></table>
-    <!--[if (mso)|(IE)]></td><![endif]-->
-    
-    <!--[if (mso)|(IE)]><td width="32" style="width:32px; padding-right: 15px;" valign="top"><![endif]-->
-    <table border="0" cellspacing="0" cellpadding="0" width="32" height="32" style="width: 32px !important;height: 32px !important;display: inline-block;border-collapse: collapse;table-layout: fixed;border-spacing: 0;mso-table-lspace: 0pt;mso-table-rspace: 0pt;vertical-align: top;margin-right: 15px">
-      <tbody><tr style="vertical-align: top"><td valign="middle" style="word-break: break-word;border-collapse: collapse !important;vertical-align: top">
-<a href="https://www.instagram.com/dhanak.iist/" title="Instagram" target="_blank" style="color: rgb(0, 0, 238); text-decoration: underline; line-height: inherit;"><img src="https://ik.imagekit.io/dhanak2k25/images/insta.png?updatedAt=1734631352291" alt="Instagram" title="Instagram" width="32" style="outline: none;text-decoration: none;-ms-interpolation-mode: bicubic;clear: both;display: block !important;border: none;height: auto;float: none;max-width: 32px !important">
-        </a>
-      </td></tr>
-    </tbody></table>
-    <!--[if (mso)|(IE)]></td><![endif]-->
-    
-    <!--[if (mso)|(IE)]><td width="32" style="width:32px; padding-right: 15px;" valign="top"><![endif]-->
-    <table border="0" cellspacing="0" cellpadding="0" width="32" height="32" style="width: 32px !important;height: 32px !important;display: inline-block;border-collapse: collapse;table-layout: fixed;border-spacing: 0;mso-table-lspace: 0pt;mso-table-rspace: 0pt;vertical-align: top;margin-right: 15px">
-      <tbody><tr style="vertical-align: top"><td valign="middle" style="word-break: break-word;border-collapse: collapse !important;vertical-align: top">
-<a href="https://x.com/dhanakiist" title="X" target="_blank" style="color: rgb(0, 0, 238); text-decoration: underline; line-height: inherit;"><img src="https://ik.imagekit.io/dhanak2k25/images/x.png?updatedAt=1734631352209" alt="X" title="X" width="32" style="outline: none;text-decoration: none;-ms-interpolation-mode: bicubic;clear: both;display: block !important;border: none;height: auto;float: none;max-width: 32px !important">
-        </a>
-      </td></tr>
-    </tbody></table>
-    <!--[if (mso)|(IE)]></td><![endif]-->
-    
-    <!--[if (mso)|(IE)]><td width="32" style="width:32px; padding-right: 0px;" valign="top"><![endif]-->
-    <table border="0" cellspacing="0" cellpadding="0" width="32" height="32" style="width: 32px !important;height: 32px !important;display: inline-block;border-collapse: collapse;table-layout: fixed;border-spacing: 0;mso-table-lspace: 0pt;mso-table-rspace: 0pt;vertical-align: top;margin-right: 0px">
-      <tbody><tr style="vertical-align: top"><td valign="middle" style="word-break: break-word;border-collapse: collapse !important;vertical-align: top">
-<a href="https://www.youtube.com/@DhanakIIST" title="YouTube" target="_blank" style="color: rgb(0, 0, 238); text-decoration: underline; line-height: inherit;"><img src="https://ik.imagekit.io/dhanak2k25/images/youtube.png?updatedAt=1734631352292" alt="YouTube" title="YouTube" width="32" style="outline: none;text-decoration: none;-ms-interpolation-mode: bicubic;clear: both;display: block !important;border: none;height: auto;float: none;max-width: 32px !important">
-        </a>
-      </td></tr>
-    </tbody></table>
-    <!--[if (mso)|(IE)]></td><![endif]-->
-    
-    
-    <!--[if (mso)|(IE)]></tr></table></td></tr></table><![endif]-->
-  </div>
-</div>
-
-      </td>
-    </tr>
-  </tbody>
-</table>
-
-<table id="u_content_menu_1" style="font-family:arial,helvetica,sans-serif;" role="presentation" cellpadding="0" cellspacing="0" width="100%" border="0">
-  <tbody>
-    <tr>
-      <td class="v-container-padding-padding" style="overflow-wrap:break-word;word-break:break-word;padding:10px;font-family:arial,helvetica,sans-serif;" align="left">
-        
-<div class="menu" style="text-align:center;">
-<!--[if (mso)|(IE)]><table role="presentation" border="0" cellpadding="0" cellspacing="0" align="center" style=""><tr><![endif]-->
-
-  <!--[if (mso)|(IE)]><td style="padding:5px 15px"><![endif]-->
-  
-<a href="https://igts.dhanakiist.co.in" target="_self" style="padding: 5px 15px; display: inline-block; color: rgb(103, 76, 238); font-size: 14px; text-decoration: none; line-height: inherit;" class="v-padding v-font-size">Home
-    </a>
-  
-  <!--[if (mso)|(IE)]></td><![endif]-->
-  
-    <!--[if (mso)|(IE)]><td style="padding:5px 15px"><![endif]-->
-    <span style="padding:5px 15px;display:inline-block;color:#000000;font-size:14px;" class="v-padding v-font-size hide-mobile">
-      |
-    </span>
-    <!--[if (mso)|(IE)]></td><![endif]-->
-  
-
-  <!--[if (mso)|(IE)]><td style="padding:5px 15px"><![endif]-->
-  
-<a href="https://igts.dhanakiist.co.in/tests" target="_self" style="padding: 5px 15px; display: inline-block; color: rgb(103, 76, 238); font-size: 14px; text-decoration: none; line-height: inherit;" class="v-padding v-font-size">Tests
-    </a>
-  
-  <!--[if (mso)|(IE)]></td><![endif]-->
-  
-    <!--[if (mso)|(IE)]><td style="padding:5px 15px"><![endif]-->
-    <span style="padding:5px 15px;display:inline-block;color:#000000;font-size:14px;" class="v-padding v-font-size hide-mobile">
-      |
-    </span>
-    <!--[if (mso)|(IE)]></td><![endif]-->
-  
-
-  <!--[if (mso)|(IE)]><td style="padding:5px 15px"><![endif]-->
-  
-<a href="https://igts.dhanakiist.co.in/about" target="_self" style="padding: 5px 15px; display: inline-block; color: rgb(103, 76, 238); font-size: 14px; text-decoration: none; line-height: inherit;" class="v-padding v-font-size">About Us
-    </a>
-  
-  <!--[if (mso)|(IE)]></td><![endif]-->
-  
-    <!--[if (mso)|(IE)]><td style="padding:5px 15px"><![endif]-->
-    <span style="padding:5px 15px;display:inline-block;color:#000000;font-size:14px;" class="v-padding v-font-size hide-mobile">
-      |
-    </span>
-    <!--[if (mso)|(IE)]></td><![endif]-->
-  
-
-  <!--[if (mso)|(IE)]><td style="padding:5px 15px"><![endif]-->
-  
-<a href="https://igts.dhanakiist.co.in/contact-us" target="_self" style="padding: 5px 15px; display: inline-block; color: rgb(103, 76, 238); font-size: 14px; text-decoration: none; line-height: inherit;" class="v-padding v-font-size">Contact US
-    </a>
-  
-  <!--[if (mso)|(IE)]></td><![endif]-->
-  
-
-<!--[if (mso)|(IE)]></tr></table><![endif]-->
-</div>
-
-      </td>
-    </tr>
-  </tbody>
-</table>
-
-<table style="font-family:arial,helvetica,sans-serif;" role="presentation" cellpadding="0" cellspacing="0" width="100%" border="0">
-  <tbody>
-    <tr>
-      <td class="v-container-padding-padding" style="overflow-wrap:break-word;word-break:break-word;padding:10px 10px 40px;font-family:arial,helvetica,sans-serif;" align="left">
-        
-  <div class="v-font-size" style="font-size: 14px; color: #5b5b5b; line-height: 160%; text-align: center; word-wrap: break-word;">
-<p style="font-size: 14px; line-height: 160%; margin: 0px;">you have received this email because you have registered for GATE Mock test at IGTS - IIST GATE Mock Test.</p>
-<p style="font-size: 14px; line-height: 160%; margin: 0px;"></p>
-<p style="font-size: 14px; line-height: 160%; margin: 0px;">Indian Institute of Space Science and Technology, Valiamala</p>
-<p style="font-size: 14px; line-height: 160%; margin: 0px;">Trivandrum, Kerala - 695547</p>
-  </div>
-
-      </td>
-    </tr>
-  </tbody>
-</table>
-
-  <!--[if (!mso)&(!IE)]><!--></div><!--<![endif]-->
-  </div>
-</div>
-<!--[if (mso)|(IE)]></td><![endif]-->
-      <!--[if (mso)|(IE)]></tr></table></td></tr></table><![endif]-->
-    </div>
-  </div>
-  </div>
-  
-
-
-    <!--[if (mso)|(IE)]></td></tr></table><![endif]-->
-    </td>
-  </tr>
-  </tbody>
-  </table>
-  <!--[if mso]></div><![endif]-->
-  <!--[if IE]></div><![endif]-->
 </body>
-
-</html>
-
-`;
+</html>`;
 };

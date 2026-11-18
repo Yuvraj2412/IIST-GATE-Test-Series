@@ -1,812 +1,436 @@
-"use client"
+"use client";
 import Navbar from "@/components/Navbar.jsx";
 import Footer from "@/components/Footer.jsx";
 import Loader from "@/components/Loader";
-import { useSelector } from 'react-redux';
-import style from "@/components/styles/testsCSS.module.css"
+import style from "@/components/styles/testsCSS.module.css";
 import Link from "next/link";
 import Image from "next/image";
-import React from "react";
+import React, { useState, useEffect } from "react";
 import tests from "@/data/tests";
-import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
 import { useAuthState } from "@/libs/supabase/authClient";
 import { motion } from "framer-motion";
 
-
 export default function TestDetails({ params }) {
   const [userDetails, setUserDetails] = useState(null);
   const [user] = useAuthState();
-  const [isFirstLoad, setIsFirstLoad] = useState(true);
   const pageParams = React.use(params);
-  const [testDetails, setTestDetails] = useState(null);  // State to hold test details
-  const [loadingPage, setLoadingPage] = useState(true);  // State to track loading state
-
+  const [testDetails, setTestDetails] = useState(null);
+  const [loadingPage, setLoadingPage] = useState(true);
+  const [selectedPack, setSelectedPack] = useState("Pack 2");
 
   const pageType = pageParams.id;
-
   const router = useRouter();
-  const [selectedPack, setSelectedPack] = useState('Pack 2');
-
-
-
-  const handlePackSelection = (pack) => {
-    setSelectedPack(pack);
-  };
-
-  const handleProceedToEnrollment = () => {
-    if (!selectedPack) {
-      alert("Please select a package.");
-      return;
-    }
-    // Navigate to enrollment page (Replace with actual navigation logic)
-    window.location.href = `/enrollment?pack=${selectedPack}`;
-  };
 
   const getUser = async (id) => {
     try {
       const res = await fetch("/api/getUser", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ userId: id }),
       });
       const resjson = await res.json();
       if (res.status === 200 && resjson.user) {
         setUserDetails(resjson.user);
-      } else if (res.status !== 200) {
-        toast.error("Failed to get user details.")
       }
     } catch (error) {
       console.error("Error fetching user details:", error);
     }
   };
 
-
   useEffect(() => {
     if (user) {
       getUser(user.uid);
-      setIsFirstLoad(false);
     }
   }, [user]);
 
-  // Filter data based on pageType
   useEffect(() => {
-    const fetchTestDetails = async () => {
-      if (!pageType) return;  // Return if pageType is not available yet
+    if (!pageType) return;
+    setLoadingPage(true);
+    const found = tests.find((t) => t.id === pageType) || null;
+    setTestDetails(found);
+    setLoadingPage(false);
+  }, [pageType]);
 
-      setLoadingPage(true);  // Set loading to true before the async operation
-
-      // Simulate async operation (e.g., fetching or filtering the tests)
-      const test = tests.find((test) => test.id === pageType);
-
-      setTestDetails(test);  // Update state with the found test details
-      setLoadingPage(false);  // Set loading to false once done
-    };
-
-    fetchTestDetails();  // Run the async function
-  }, [pageType]);  // Dependency on pageType, rerun the effect when it changes
-
-  function calculateDiscountedPrice(originalPrice, discount) {
-    const discountRate = discount;
-    const discountAmount = originalPrice * discountRate;
-    const finalPrice = originalPrice - discountAmount;
-    return Math.round(finalPrice);
+  function calculateDiscountedPrice(originalPrice, discountRate) {
+    return Math.round(originalPrice - originalPrice * discountRate);
   }
 
+  const isAlreadyRegistered = (packChoice) => {
+    if (!userDetails?.registeredTests || !testDetails) return false;
+    const normalizePack = (pack) => (pack?.includes("Both") ? "Pack 1 + Pack 2" : pack);
+    const selectedNormalized =
+      packChoice === "Both Packs" ? "Pack 1 + Pack 2" : normalizePack(packChoice);
 
+    for (const reg of userDetails.registeredTests) {
+      const [regName, regPack] = (reg.test || "").split(", ");
+      const regNormalized = normalizePack(regPack || "");
+      if (testDetails.title === regName) {
+        if (
+          selectedNormalized === "Pack 1 + Pack 2" &&
+          (regNormalized === "Pack 1" || regNormalized === "Pack 2")
+        ) {
+          return true;
+        }
+        if (
+          regNormalized === "Pack 1 + Pack 2" &&
+          (selectedNormalized === "Pack 1" || selectedNormalized === "Pack 2")
+        ) {
+          return true;
+        }
+        if (selectedNormalized === regNormalized) {
+          return true;
+        }
+      }
+    }
+    return false;
+  };
+
+  const handleEnroll = () => {
+    if (!testDetails?.isRegistrationOpen) {
+      toast.error("Registrations for this pack are currently closed.");
+      return;
+    }
+
+    if (!userDetails) {
+      toast("Please login or sign up to enroll!", { icon: "ℹ️" });
+      router.push("/sign-in");
+      return;
+    }
+
+    if (isAlreadyRegistered(selectedPack)) {
+      toast.success("You are already registered for this pack!");
+      router.push("/registered-tests");
+      return;
+    }
+
+    router.push(`/tests/${testDetails.id}/enroll?pack=${encodeURIComponent(selectedPack)}`);
+  };
 
   if (loadingPage) {
     return (
-      <div>
-        <div className="min-h-screen topSection flex flex-col items-center w-full mx-auto pb-20">
-          <Navbar />
-          <div className={`grid grid-cols-1 items-center pt-8`}>
-            <div className={`max-w-7xl mx-auto px-4 md:px-10 lg:px-10`}>
-              <Loader />
-            </div>
-          </div>
+      <div className="min-h-screen flex flex-col bg-slate-50">
+        <Navbar />
+        <div className="flex-1 flex items-center justify-center py-20">
+          <Loader />
         </div>
-      </div>);
+        <Footer />
+      </div>
+    );
   }
 
+  if (!testDetails) {
+    return (
+      <div className="min-h-screen flex flex-col bg-slate-50">
+        <Navbar />
+        <div className="flex-1 flex flex-col items-center justify-center px-4 text-center py-20">
+          <h1 className="text-3xl font-extrabold text-slate-900">Test Series Not Found</h1>
+          <p className="text-slate-600 mt-2">
+            The requested GATE 2027 mock package does not exist.
+          </p>
+          <Link
+            href="/tests"
+            className="mt-6 px-6 py-3 rounded-full bg-indigo-600 text-white font-bold hover:bg-indigo-700 transition"
+          >
+            Back to All Tests
+          </Link>
+        </div>
+        <Footer />
+      </div>
+    );
+  }
 
+  const originalFee =
+    selectedPack === "Both Packs" ? testDetails.pricePerPack * 2 : testDetails.pricePerPack;
+  const discountRate =
+    selectedPack === "Both Packs" ? testDetails.comboDiscountRate : testDetails.discountRate;
+  const finalFee = calculateDiscountedPrice(originalFee, discountRate);
+  const alreadyOwned = isAlreadyRegistered(selectedPack);
+
+  const PurchaseCard = () => (
+    <div className="bg-white text-slate-900 rounded-3xl border border-slate-200 shadow-xl overflow-hidden">
+      <div className="bg-slate-50 border-b border-slate-100 py-8 px-6 flex flex-col items-center justify-center relative">
+        <span className="absolute top-4 left-4 text-xs font-extrabold px-2.5 py-1 rounded-full bg-slate-900 text-amber-300">
+          {testDetails.code}
+        </span>
+        <span className="text-xs font-bold px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-800 absolute top-4 right-4">
+          {Math.round(discountRate * 100)}% OFF
+        </span>
+        <Image
+          src={testDetails.imageUrl}
+          width={120}
+          height={120}
+          alt={testDetails.title}
+        />
+      </div>
+
+      <div className="p-6 space-y-5">
+        <div>
+          <p className="text-xs font-bold uppercase tracking-wider text-emerald-700">
+            Special Discounted Fee
+          </p>
+          <div className="flex items-baseline gap-3 mt-1">
+            <span className="text-lg text-slate-400 line-through">₹{originalFee}</span>
+            <span className="text-4xl font-extrabold text-slate-900">₹{finalFee}/-</span>
+            <span className="text-xs font-semibold text-slate-500">
+              {selectedPack === "Both Packs" ? "for 6 mocks" : "for 3 mocks"}
+            </span>
+          </div>
+        </div>
+
+        <div className="space-y-2.5">
+          <p className="text-sm font-bold text-slate-800">Select Your Package</p>
+          <div className="grid grid-cols-3 gap-2">
+            {[
+              { id: "Pack 1", label: "Pack 1", sub: "3 Tests" },
+              { id: "Pack 2", label: "Pack 2", sub: "3 Tests" },
+              { id: "Both Packs", label: "Combo", sub: "6 Tests" },
+            ].map((pkg) => {
+              const active = selectedPack === pkg.id;
+              return (
+                <button
+                  key={pkg.id}
+                  type="button"
+                  onClick={() => setSelectedPack(pkg.id)}
+                  className={`py-2.5 px-2 rounded-xl border text-center transition ${
+                    active
+                      ? "bg-indigo-600 border-indigo-600 text-white shadow-sm"
+                      : "bg-slate-50 border-slate-200 text-slate-700 hover:border-indigo-300"
+                  }`}
+                >
+                  <span className="block text-xs sm:text-sm font-extrabold">{pkg.label}</span>
+                  <span
+                    className={`block text-[11px] ${
+                      active ? "text-indigo-100" : "text-slate-500"
+                    }`}
+                  >
+                    {pkg.sub}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        {alreadyOwned ? (
+          <button
+            type="button"
+            onClick={() => router.push("/registered-tests")}
+            className="w-full py-3.5 px-6 rounded-full font-bold text-white bg-emerald-600 hover:bg-emerald-700 transition shadow-md"
+          >
+            Already Registered · Go to Your Tests →
+          </button>
+        ) : testDetails.isRegistrationOpen ? (
+          <button
+            type="button"
+            onClick={handleEnroll}
+            className="w-full py-3.5 px-6 rounded-full font-bold text-white bg-gradient-to-r from-[#4f46e5] to-[#674cee] hover:from-[#4338ca] hover:to-[#5b3fe3] transition shadow-md shadow-indigo-500/20"
+          >
+            Enroll Now · ₹{finalFee} →
+          </button>
+        ) : (
+          <button
+            type="button"
+            disabled
+            className="w-full py-3.5 px-6 rounded-full font-bold text-slate-500 bg-slate-200 cursor-not-allowed"
+          >
+            Registration Closed
+          </button>
+        )}
+
+        <p className="text-[11px] text-slate-500 text-center">
+          Instant activation via Razorpay UPI / Cards · Laptop or Tablet required for live tests
+        </p>
+      </div>
+    </div>
+  );
 
   return (
-    <div>
-      <div className="min-h-screen bg-gray-50 flex flex-col items-center w-full mx-auto pb-20">
+    <div className="min-h-screen flex flex-col bg-slate-50">
+      <Navbar />
 
-        <Navbar />
-        <motion.div
-          className={`w-full`}
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          transition={{ duration: 0.4 }}
-        >
-          <div className={`w-full min-h-screen space-y-2`}>
-            {testDetails &&
-              <section className={`${style.topSection} w-full overflow-visible`}>
-                <section className="sm:max-w-2xl md:max-w-4xl lg:max-w-screen-xl xl:max-w-screen-xl space-y-8 px-3 md:px-20 lg:px-5 mx-auto py-10">
-                  <motion.div
-                    className="grid grid-cols-1 lg:grid-cols-3 lg:gap-8"
-                    initial={{ opacity: 0, y: 10 }}    // Start below with opacity 0
-                    animate={{ opacity: 1, y: 0 }}     // Fade in and move to original position
-                    exit={{ opacity: 0, y: 10 }}       // Exit by fading out and moving down
-                    transition={{ duration: 0.3 }}     // Duration of the animation
-                  >
-                    <div className={`flex flex-col justify-between col-span-1 lg:col-span-2 gap-5 md:gap-8`}>
-                      {/* Page Title */}
-                      <div className="text-sm flex flex-wrap gap-2 text-white">
-                        <Link href="/">Home</Link> /
-                        <Link href="/tests">GATE Mock Test</Link> /
-                        <Link href={`/tests/${testDetails.id}`}>{testDetails.title}</Link>
-                      </div>
-                      <div>
-                        <h1 className="text-2xl md:text-5xl font-extrabold text-white">
-                          GATE Mock for {testDetails.title}
-                        </h1>
-                      </div>
-                      {/* Test Details Box small screens*/}
-                      <div className={`lg:hidden inline-block`}>
-                        <div className="text-neutral-800 col-span-1 pt-8 pb-2 mx-auto relative overflow-hidden border border-neutral-500 rounded-xl bg-[#f1f7fe] px-6">
-                          <div className="flex flex-col gap-8">
-                            <div className="w-full flex justify-center items-center py-12 md:py-10 bg-white rounded-2xl">
-                              <Image
-                                src={testDetails.imageUrl}
-                                width={150}
-                                height={150}
-                                alt={testDetails.title}
-                              />
-                            </div>
-                            <div className="pb-4 md:pb-0 flex flex-col gap-6 justify-between pt-2 w-full">
-                              <div className="flex flex-col gap-3">
-                                <p className={`text-md text-green-700 font-semibold`}>Special Discount for limited time only*</p>
-                                <div className={`flex items-center justify-between sm:justify-start sm:gap-10 pr-3`}>
-                                  <div className={`flex items-center justify-center gap-4`}>
-                                    <p className={`text-neutral-500 line-through font-hairline text-strike text-xl md:text-lg lg:text-2xl`}>
-                                      {selectedPack === 'Pack 1' && `₹ ${testDetails.pricePerPack}`}{selectedPack === 'Pack 2' && `₹ ${testDetails.pricePerPack}`}
-                                      {selectedPack === 'Both Packs' && `₹ ${testDetails.pricePerPack * 2}`}
-                                    </p>
-                                    <p className={`text-neutral-800 text-strike font-extrabold text-4xl md:text-3xl lg::text-5xl`}>
-                                      {selectedPack === 'Pack 1' && `₹ ${calculateDiscountedPrice(testDetails.pricePerPack, testDetails.discountRate)}`}{selectedPack === 'Pack 2' && `₹ ${calculateDiscountedPrice(testDetails.pricePerPack, testDetails.discountRate)}`}
-                                      {selectedPack === 'Both Packs' && `₹ ${calculateDiscountedPrice(testDetails.pricePerPack * 2, testDetails.comboDiscountRate)}`}
-                                    </p>
-                                  </div>
-                                  <div className={`px-3 py-1 bg-green-100 border border-green-900 text-green-900 text-sm font-semibold rounded-full`}>
-                                    {selectedPack === 'Pack 1' && `${testDetails.discountRate * 100}% OFF`}
-                                    {selectedPack === 'Pack 2' && `${testDetails.discountRate * 100}% OFF`}
-                                    {selectedPack === 'Both Packs' && `${Math.round(testDetails.comboDiscountRate * 100)}% OFF`}
-                                  </div>
-                                </div>
-                              </div>
-                              <div className={`flex flex-col gap-4`}>
-                                <p className="text-md font-semibold">Please choose your package:</p>
-                                <div className="flex items-center gap-5">
-                                  <button
-                                    onClick={() => handlePackSelection('Pack 1')}
-                                    className={`px-3 font-semibold text-sm md:text-md md:px-4 py-2 rounded-md ${selectedPack === 'Pack 1' ? 'bg-[#0072bb] border border-neutral-700 text-white' : 'bg-gray-200'}`}
-                                  >
-                                    Pack 1 <br /> (3 Tests)
-                                  </button>
-                                  <button
-                                    onClick={() => handlePackSelection('Pack 2')}
-                                    className={`px-3 font-semibold text-sm md:text-md md:px-4 py-2 rounded-md ${selectedPack === 'Pack 2' ? 'bg-[#0072bb] border border-neutral-700 text-white' : 'bg-gray-200'}`}
-                                  >
-                                    Pack 2 <br /> (3 Tests)
-                                  </button>
-                                  <button
-                                    onClick={() => handlePackSelection('Both Packs')}
-                                    className={`px-3 font-semibold text-sm md:text-md md:px-4 py-2 rounded-md ${selectedPack === 'Both Packs' ? 'bg-[#0072bb] border border-neutral-700 text-white' : 'bg-gray-200'}`}
-                                  >
-                                    Both Packs <br /> (6 Tests)
-                                  </button>
-                                </div>
-                              </div>
-                              <div className="flex items-center justify-center">
-                                <button
-                                  className="px-8 w-full py-3 text-lg flex justify-center items-center font-extrabold rounded-xl text-center text-white bg-gradient-to-b from-[#1e91d6] to-[#0072bb] hover:bg-[#0072bb]"
-                                  onClick={
-                                    () => {
-                                      if (userDetails) {
-                                        const encodedPack = encodeURIComponent(selectedPack); // Properly encode the query parameter
-                                        var modifiedSelectedPack = '';
-                                        if (selectedPack === "Both Packs") {
-                                          modifiedSelectedPack = ("Pack 1 + Pack 2 (Both)");
-                                        }
-                                        else {
-                                          modifiedSelectedPack = (selectedPack);
-                                        }
+      <main className="flex-1 w-full pb-20">
+        {/* Top Cosmic Section */}
+        <section className={`${style.topSection} relative overflow-hidden w-full text-white`}>
+          <div className="cosmicGrid absolute inset-0 opacity-50 pointer-events-none" />
+          <div className="relative max-w-screen-xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-14">
+            <motion.div
+              className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start"
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.35 }}
+            >
+              <div className="lg:col-span-8 space-y-6">
+                <div className="text-xs sm:text-sm flex flex-wrap items-center gap-2 text-slate-300">
+                  <Link href="/" className="hover:text-white transition">
+                    Home
+                  </Link>
+                  <span>/</span>
+                  <Link href="/tests" className="hover:text-white transition">
+                    GATE 2027 Mock Tests
+                  </Link>
+                  <span>/</span>
+                  <span className="text-amber-300 font-semibold">{testDetails.shortName}</span>
+                </div>
 
-                                        const selectedTestPack = `${testDetails.title}, ${modifiedSelectedPack}`;
+                <div>
+                  <span className="inline-block text-xs font-bold uppercase tracking-widest text-amber-300 bg-amber-400/15 border border-amber-400/30 px-3 py-1 rounded-full mb-3">
+                    Dhanak 2027 · GATE 2027 Edition
+                  </span>
+                  <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight leading-tight">
+                    GATE Mock for {testDetails.title}
+                  </h1>
+                  <p className="mt-3 text-slate-300 text-base sm:text-lg max-w-2xl">
+                    {testDetails.description}
+                  </p>
+                </div>
 
-                                        console.log(selectedTestPack);
-                                        console.log(userDetails.registeredTests);
+                {/* Mobile Purchase Card */}
+                <div className="lg:hidden">
+                  <PurchaseCard />
+                </div>
 
-                                        // Function to check if the user is already registered
-                                        const isAlreadyRegistered = (selectedTestPack, registeredTests) => {
-                                          const [testName, selectedPack] = selectedTestPack.split(", ");
-
-                                          // Normalize pack types for comparison
-                                          const normalizePack = (pack) => {
-                                            if (pack.includes("Both")) return "Pack 1 + Pack 2";
-                                            return pack;
-                                          };
-
-                                          const selectedNormalizedPack = normalizePack(selectedPack);
-
-                                          // Check if the user is already registered
-                                          for (const test of registeredTests) {
-                                            const [registeredTestName, registeredPack] = test.test.split(", ");
-                                            const registeredNormalizedPack = normalizePack(registeredPack);
-
-                                            if (testName === registeredTestName) {
-                                              if (
-                                                selectedNormalizedPack === "Pack 1 + Pack 2" &&
-                                                (registeredNormalizedPack === "Pack 1" || registeredNormalizedPack === "Pack 2")
-                                              ) {
-                                                return true; // Already registered for one of the individual packs
-                                              }
-
-                                              if (
-                                                registeredNormalizedPack === "Pack 1 + Pack 2" &&
-                                                (selectedNormalizedPack === "Pack 1" || selectedNormalizedPack === "Pack 2")
-                                              ) {
-                                                return true; // Already registered for both packs
-                                              }
-
-                                              if (selectedNormalizedPack === registeredNormalizedPack) {
-                                                return true; // Exact match
-                                              }
-                                            }
-                                          }
-
-                                          return false;
-                                        };
-
-                                        if (isAlreadyRegistered(selectedTestPack, userDetails.registeredTests)) {
-                                          toast.success("You're already registered for this test.");
-                                        }
-                                        else if (selectedPack === 'Pack 1') {
-                                          toast.error("Registration Closed for " + selectedPack);
-                                        }
-                                        else if (selectedPack === 'Both Packs') {
-                                          toast.error("Registration Closed for Combo Pack");
-                                        }
-                                        else if (selectedPack === 'Pack 2') {
-                                          // const url = `https://igts.dhanakiist.co.in/tests/${testDetails.id}/enroll?pack=${encodedPack}`;
-                                          router.push(`/tests/${testDetails.id}/enroll?pack=${encodedPack}`);
-                                          // window.location.href = url; // Redirect to the correct URL
-                                        }
-                                      }
-                                      else {
-                                        if (selectedPack === 'Pack 2') {
-                                          toast.error('Please register/login first!');
-                                        }
-                                        if (selectedPack === 'Pack 1') {
-                                          toast.error("Registration Closed for " + selectedPack);
-                                        }
-                                        else if (selectedPack === 'Both Packs') {
-                                          toast.error("Registration Closed for Combo Pack");
-                                        }
-                                        else if (selectedPack === 'Pack 2') {
-                                          router.push(`/sign-in`);
-                                        }
-                                      }
-                                    }
-                                  }
-                                >
-
-                                  {selectedPack === 'Pack 1' && 'Registration Closed'}
-                                  {selectedPack === 'Both Packs' && 'Registration Closed'}
-                                  {selectedPack === 'Pack 2' && 'Enroll Now'}
-
-                                </button>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-
-
-                      {/* Description Section */}
-                      <div className="hidden lg:flex text-[15px] md:text-[18px] flex-col gap-4 text-white text-justify">
-                        <p className={`text-white`}>
-                          Special Discounted Price for Limited Time
-                        </p>
-                        <div className={`flex items-center w-full gap-5 pr-3`}>
-                          <div className={`flex items-center justify-center gap-4`}>
-                            <p className={`text-gray-200 line-through font-hairline text-strike text-2xl xl:text-2xl`}>
-                              {selectedPack === 'Pack 1' && `₹ ${testDetails.pricePerPack}`}{selectedPack === 'Pack 2' && `₹ ${testDetails.pricePerPack}`}
-                              {selectedPack === 'Both Packs' && `₹ ${testDetails.pricePerPack}`}
-                            </p>
-                            <p className={`text-white text-strike font-extrabold text-4xl xl:text-4xl`}>
-                              ₹ {calculateDiscountedPrice(testDetails.pricePerPack, testDetails.discountRate)}
-                            </p>
-                          </div>
-                          <p>
-                            Per Package
-                          </p>
-                          <p className={`px-4 py-2 bg-white text-gray-900 text-md font-extrabold rounded-md`}>
-                            {testDetails.discountRate * 100}% OFF
-                          </p>
-                        </div>
-                      </div>
-                      <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
-                        {Object.entries(testDetails.testSchedule).map(([pack, schedule], index) => (
-                          index <= 1 &&
-                          <div
-                            key={`${testDetails.id}-${pack}`}
-                            className="flex flex-col bg-[#f1f7fe] hover:shadow-md transition ease-in-out duration-200 border border-black rounded-xl px-6 py-6 lg:py-6 lg:px-10"
+                {/* Test Schedules (Pack 1 & Pack 2) */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-5 pt-2">
+                  {["pack1", "pack2"].map((packKey, index) => {
+                    const schedule = testDetails.testSchedule[packKey];
+                    const isHighlighted =
+                      selectedPack === "Both Packs" ||
+                      selectedPack === `Pack ${index + 1}`;
+                    return (
+                      <div
+                        key={packKey}
+                        className={`rounded-2xl p-6 transition border backdrop-blur-md ${
+                          isHighlighted
+                            ? "bg-white text-slate-900 border-amber-300 shadow-lg"
+                            : "bg-white/10 text-white border-white/15"
+                        }`}
+                      >
+                        <div className="flex items-center justify-between mb-4">
+                          <span className="text-lg font-extrabold">{`Pack ${index + 1}`}</span>
+                          <span
+                            className={`text-xs font-bold px-2.5 py-1 rounded-full ${
+                              isHighlighted
+                                ? "bg-indigo-100 text-indigo-700"
+                                : "bg-white/15 text-slate-100"
+                            }`}
                           >
-                            <div className="flex items-center gap-3 text-xl lg:text-2xl text-[#2c14a8] font-bold mb-4">
-                              {/* SVG Icon */}
-                              <svg
-                                xmlns="http://www.w3.org/2000/svg"
-                                height="32px"
-                                viewBox="0 -960 960 960"
-                                width="32px"
-                                fill="#2c14a8"
-                                className="flex-shrink-0"
-                              >
-                                <path d="m400-570 80-40 80 40v-190H400v190ZM280-280v-80h200v80H280Zm-80 160q-33 0-56.5-23.5T120-200v-560q0-33 23.5-56.5T200-840h560q33 0 56.5 23.5T840-760v560q0 33-23.5 56.5T760-120H200Zm0-640v560-560Zm0 560h560v-560H640v320l-160-80-160 80v-320H200v560Z" />
-                              </svg>
-
-                              {/* Pack Name */}
-                              <span className="whitespace-nowrap">{`Pack ${index + 1}`}</span>
-
-                              {/* Gradient Line */}
-                              <div className="flex-1 h-[2px] bg-gradient-to-r from-[#2c14a8] via-red-400 to-[#ffffff]"></div>
-                            </div>
-
-                            <ul className="text-md lg:text-lg text-black space-y-3">
-                              <li className="flex items-start">
-                                <span className="font-bold">Includes 3 GATE Mock</span>
-                              </li>
-                              {Object.entries(schedule).map(([key, value], idx) => {
-                                if (key.startsWith("test")) {
-                                  return (
-                                    <li key={idx} className="flex items-center gap-2">
-                                      <span className="flex items-center">
-                                        <svg
-                                          xmlns="http://www.w3.org/2000/svg"
-                                          viewBox="0 -960 960 960"
-                                          fill="#343434"
-                                          className="h-[24px] w-[24px] md:h-[22px] md:w-[22px] xl:h-[24px] xl:w-[24px]"
-                                        >
-                                          <path d="M200-80q-33 0-56.5-23.5T120-160v-560q0-33 23.5-56.5T200-800h40v-80h80v80h320v-80h80v80h40q33 0 56.5 23.5T840-720v200h-80v-40H200v400h280v80H200Zm0-560h560v-80H200v80Zm0 0v-80 80ZM560-80v-123l221-220q9-9 20-13t22-4q12 0 23 4.5t20 13.5l37 37q8 9 12.5 20t4.5 22q0 11-4 22.5T903-300L683-80H560Zm300-263-37-37 37 37ZM620-140h38l121-122-18-19-19-18-122 121v38Zm141-141-19-18 37 37-18-19Z" />
-                                        </svg>
-                                      </span>
-                                      <span>
-                                        <span className="font-bold text-lg md:text-[16px] xl:text-lg">{`Test ${idx + 1}:`}</span>
-                                        <span className="text-neutral-700 ml-1 text-lg md:text-[16px] xl:text-lg">{value}</span>
-                                      </span>
-                                    </li>
-
-                                  );
-                                }
-                                return null;
-                              })}
-                            </ul>
-                          </div>
-                        ))}
-                      </div>
-
-                    </div>
-
-                    {/* Test Details Box Larger screens*/}
-                    <div className={`hidden lg:inline-block`}>
-                      <div className="text-neutral-800 col-span-1 pt-8 pb-6 mx-auto relative overflow-hidden border border-neutral-500 rounded-xl bg-[#f1f7fe] px-6">
-                        <div className="flex flex-col gap-2">
-                          <div className="w-full flex justify-center items-center py-12 md:py-10 bg-white rounded-2xl">
-                            <Image
-                              src={testDetails.imageUrl}
-                              width={150}
-                              height={150}
-                              alt={testDetails.title}
-                            />
-                          </div>
-                          <div className="pb-4 md:pb-0 flex flex-col gap-4 md:gap-3 justify-between pt-2 w-full">
-                            <div className="flex flex-col gap-3">
-                              <p className={`text-md text-green-700 font-semibold`}>Special Discount for limited time only*</p>
-                              <div className={`flex items-center justify-between pr-3`}>
-                                <div className={`flex items-center justify-center gap-4`}>
-                                  <p className={`text-neutral-500 line-through font-hairline text-strike lg:text-lg xl:text-xl`}>
-                                    {selectedPack === 'Pack 1' && `₹ ${testDetails.pricePerPack}`}{selectedPack === 'Pack 2' && `₹ ${testDetails.pricePerPack}`}
-                                    {selectedPack === 'Both Packs' && `₹ ${testDetails.pricePerPack * 2}`}
-                                  </p>
-                                  <p className={`text-neutral-800 text-strike font-extrabold lg:text-3xl xl:text-4xl`}>
-                                    {selectedPack === 'Pack 1' && `₹ ${calculateDiscountedPrice(testDetails.pricePerPack, testDetails.discountRate)}`}{selectedPack === 'Pack 2' && `₹ ${calculateDiscountedPrice(testDetails.pricePerPack, testDetails.discountRate)}`}
-                                    {selectedPack === 'Both Packs' && `₹ ${calculateDiscountedPrice(testDetails.pricePerPack * 2, testDetails.comboDiscountRate)}`}
-                                  </p>
-                                </div>
-                                <div className={`px-3 py-1 bg-green-100 border border-green-900 text-green-900 text-sm font-semibold rounded-full`}>
-
-                                  {selectedPack === 'Pack 1' && `${testDetails.discountRate * 100}% OFF`}
-                                  {selectedPack === 'Pack 2' && `${testDetails.discountRate * 100}% OFF`}
-                                  {selectedPack === 'Both Packs' && `${Math.round(testDetails.comboDiscountRate * 100)}% OFF`}
-
-                                </div>
-                              </div>
-                            </div>
-                            <div className={`flex flex-col gap-2`}>
-                              <p className="text-md font-semibold">Please choose a package:</p>
-                              <div className="flex gap-5">
-                                <button
-                                  onClick={() => handlePackSelection('Pack 1')}
-                                  className={`lg:px-2 xl:px-3 xl:text-md lg:text-sm font-semibold py-2 rounded-md ${selectedPack === 'Pack 1' ? 'bg-[#674cee] border border-neutral-700 text-white' : 'bg-gray-200'}`}
-                                >
-                                  Pack 1 <br /> (3 Tests)
-                                </button>
-                                <button
-                                  onClick={() => handlePackSelection('Pack 2')}
-                                  className={`lg:px-2 xl:px-3 xl:text-md lg:text-sm font-semibold py-2 rounded-md ${selectedPack === 'Pack 2' ? 'bg-[#674cee] border border-neutral-700 text-white' : 'bg-gray-200'}`}
-                                >
-                                  Pack 2 <br /> (3 Tests)
-                                </button>
-                                <button
-                                  onClick={() => handlePackSelection('Both Packs')}
-                                  className={`lg:px-2 xl:px-3 xl:text-md lg:text-sm font-semibold py-2 rounded-md ${selectedPack === 'Both Packs' ? 'bg-[#674cee] border border-neutral-700 text-white' : 'bg-gray-200'}`}
-                                >
-                                  Both Packs <br /> (6 Tests)
-                                </button>
-                              </div>
-                            </div>
-                            <div className="flex items-center justify-center">
-                              {/* <button
-                                className={`${selectedPack === 'Pack 1' && 'cursor-not-allowed'} ${selectedPack === 'Both Packs' && 'cursor-not-allowed'} px-8 w-full py-3 text-lg flex justify-center items-center font-extrabold rounded-xl text-center text-white bg-gradient-to-b from-[#7c65f1] to-[#674cee] hover:from-[#674cee] hover:to-[#674cee]`}
-                                onClick={
-                                  () => {
-                                    if (userDetails) {
-                                      const encodedPack = encodeURIComponent(selectedPack); // Properly encode the query parameter
-                                      var modifiedSelectedPack = '';
-                                      if (selectedPack === "Both Packs") {
-                                        modifiedSelectedPack = ("Pack 1 + Pack 2 (Both)");
-                                      }
-                                      else {
-                                        modifiedSelectedPack = (selectedPack);
-                                      }
-
-                                      const selectedTestPack = `${testDetails.title}, ${modifiedSelectedPack}`;
-
-                                      console.log(selectedTestPack);
-                                      console.log(userDetails.registeredTests);
-
-                                      // Function to check if the user is already registered
-                                      const isAlreadyRegistered = (selectedTestPack, registeredTests) => {
-                                        const [testName, selectedPack] = selectedTestPack.split(", ");
-
-                                        // Normalize pack types for comparison
-                                        const normalizePack = (pack) => {
-                                          if (pack.includes("Both")) return "Pack 1 + Pack 2";
-                                          return pack;
-                                        };
-
-                                        const selectedNormalizedPack = normalizePack(selectedPack);
-
-                                        // Check if the user is already registered
-                                        for (const test of registeredTests) {
-                                          const [registeredTestName, registeredPack] = test.test.split(", ");
-                                          const registeredNormalizedPack = normalizePack(registeredPack);
-
-                                          if (testName === registeredTestName) {
-                                            if (
-                                              selectedNormalizedPack === "Pack 1 + Pack 2" &&
-                                              (registeredNormalizedPack === "Pack 1" || registeredNormalizedPack === "Pack 2")
-                                            ) {
-                                              return true; // Already registered for one of the individual packs
-                                            }
-
-                                            if (
-                                              registeredNormalizedPack === "Pack 1 + Pack 2" &&
-                                              (selectedNormalizedPack === "Pack 1" || selectedNormalizedPack === "Pack 2")
-                                            ) {
-                                              return true; // Already registered for both packs
-                                            }
-
-                                            if (selectedNormalizedPack === registeredNormalizedPack) {
-                                              return true; // Exact match
-                                            }
-                                          }
-                                        }
-
-                                        return false;
-                                      };
-
-                                      if (isAlreadyRegistered(selectedTestPack, userDetails.registeredTests)) {
-                                        toast.success("You're already registered for this test.");
-                                      }
-                                      else if (selectedPack === 'Pack 1') {
-                                        toast.error("Registration Closed for " + selectedPack);
-                                      }
-                                      else if (selectedPack === 'Both Packs') {
-                                        toast.error("Registration Closed for Combo Pack");
-                                      }
-                                      else if (selectedPack === 'Pack 2') {
-                                        // const url = `https://igts.dhanakiist.co.in/tests/${testDetails.id}/enroll?pack=${encodedPack}`;
-                                        router.push(`/tests/${testDetails.id}/enroll?pack=${encodedPack}`);
-                                        // window.location.href = url; // Redirect to the correct URL
-                                      }
-                                    }
-                                    else {
-                                      if (selectedPack === 'Pack 2') {
-                                        toast.error('Please register/login first!');
-                                      }
-                                      if (selectedPack === 'Pack 1') {
-                                        toast.error("Registration Closed for " + selectedPack);
-                                      }
-                                      else if (selectedPack === 'Both Packs') {
-                                        toast.error("Registration Closed for Combo Pack");
-                                      }
-                                      else if (selectedPack === 'Pack 2') {
-                                        router.push(`/sign-in`);
-                                      }
-                                    }
-                                  }
-                                }
-                              >
-
-                                {selectedPack === 'Pack 1' && 'Registration Closed'}
-                                {selectedPack === 'Both Packs' && 'Registration Closed'}
-                                {selectedPack === 'Pack 2' && 'Enroll Now'}
-
-                              </button> */}
-                              <button
-                                className={`cursor-not-allowed px-8 w-full py-3 text-lg flex justify-center items-center font-extrabold rounded-xl text-center text-white bg-gradient-to-b from-[#7c65f1] to-[#674cee] hover:from-[#674cee] hover:to-[#674cee]`}
-                              >
-                                Registration Closed
-                              </button>
-                            </div>
-                          </div>
+                            3 Full Mocks
+                          </span>
                         </div>
+                        <ul className="space-y-2.5 text-sm">
+                          {Object.entries(schedule).map(([k, dateVal], idx) => (
+                            <li key={k} className="flex items-center justify-between border-b border-current/10 pb-2 last:border-none last:pb-0">
+                              <span className="font-bold">Test {idx + 1}</span>
+                              <span className={isHighlighted ? "text-slate-600 font-medium" : "text-slate-200"}>
+                                {dateVal}
+                              </span>
+                            </li>
+                          ))}
+                        </ul>
                       </div>
-                    </div>
-                  </motion.div>
-                </section>
-              </section>
-            }
-
-            <section className={`sm:max-w-xl md:max-w-4xl lg:max-w-screen-xl xl:max-w-screen-xl space-y-8 md:px-0 px-3 md:px-8 lg:px-5 mx-auto pt-10`}>
-              <div className="mb-2">
-                <h2 className="text-3xl lg:text-4xl text-[#2c14a8] font-bold mb-6 text-center lg:text-left">
-                  Test Details
-                </h2>
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                  <ul className="space-y-4 w-full">
-                    <li className="flex items-start gap-3">
-                      {/* Spark Icon */}
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        height="28px"
-                        width="28px"
-                        viewBox="0 0 100 100"
-                        fill="#FFB258"
-                      >
-                        <path d="M85.998,50C68.02,50,50.042,32.042,50,14.063V14c0,0.01-0.001,0.021-0.001,0.031c0-0.011-0.001-0.021-0.001-0.032v0.063  
-  C49.956,32.042,31.979,50,14,50c18,0,36,18,36,36l0,0c0-18,18-36,36-36H85.998z" />
-                      </svg>
-                      <span className="text-lg lg:text-xl text-gray-800 font-medium"><p> <strong>Total Questions:</strong> 65 (10 Aptitude & 55 from Subject)
-                      </p></span>
-                    </li>
-                    <li className="flex items-start gap-3 w-full">
-                      {/* Spark Icon */}
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        height="28px"
-                        width="28px"
-                        viewBox="0 0 100 100"
-                        fill="#FFB258"
-                      >
-                        <path d="M85.998,50C68.02,50,50.042,32.042,50,14.063V14c0,0.01-0.001,0.021-0.001,0.031c0-0.011-0.001-0.021-0.001-0.032v0.063  
-  C49.956,32.042,31.979,50,14,50c18,0,36,18,36,36l0,0c0-18,18-36,36-36H85.998z" />
-                      </svg>
-                      <span className="text-lg lg:text-xl text-gray-800 font-medium"><p> <strong>Types of Questions:</strong> MCQ - Single correct, Multiple Correct & Numerical Answer Type
-                      </p></span>
-                    </li>
-                  </ul>
-                  <ul className="space-y-4 w-full">
-                    <li className="flex items-start gap-3">
-                      {/* Spark Icon */}
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        height="28px"
-                        width="28px"
-                        viewBox="0 0 100 100"
-                        fill="#FFB258"
-                      >
-                        <path d="M85.998,50C68.02,50,50.042,32.042,50,14.063V14c0,0.01-0.001,0.021-0.001,0.031c0-0.011-0.001-0.021-0.001-0.032v0.063  
-  C49.956,32.042,31.979,50,14,50c18,0,36,18,36,36l0,0c0-18,18-36,36-36H85.998z" />
-                      </svg>
-                      <span className="text-lg lg:text-xl text-gray-800 font-medium"><p> <strong>Test Time: </strong>
-
-                        5:30 PM - 8:30 PM</p></span>
-                    </li>
-                    <li className="flex items-start gap-3">
-                      {/* Spark Icon */}
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        height="28px"
-                        width="28px"
-                        viewBox="0 0 100 100"
-                        fill="#FFB258"
-                      >
-                        <path d="M85.998,50C68.02,50,50.042,32.042,50,14.063V14c0,0.01-0.001,0.021-0.001,0.031c0-0.011-0.001-0.021-0.001-0.032v0.063  
-  C49.956,32.042,31.979,50,14,50c18,0,36,18,36,36l0,0c0-18,18-36,36-36H85.998z" />
-                      </svg>
-                      <span className="text-lg lg:text-xl text-gray-800 font-medium"><p> <strong>Test Duration: </strong>3 Hrs</p></span>
-                    </li>
-                  </ul>
+                    );
+                  })}
                 </div>
               </div>
 
-            </section>
-
-            <section className={`sm:max-w-xl md:max-w-4xl lg:max-w-screen-xl xl:max-w-screen-xl space-y-8 md:px-0 px-3 md:px-8 lg:px-5 mx-auto`}>
-              <div className="mb-2">
-                <h2 className="text-3xl lg:text-4xl text-[#2c14a8] font-bold mb-6 text-center lg:text-left">
-                  Questions type & Marking Scheme
-                </h2>
-                <div className="grid grid-cols-1 lg:grid-cols-1 gap-6">
-                  <ul className="space-y-4">
-                    <li className="flex items-start gap-3">
-                      {/* Spark Icon */}
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        height="28px"
-                        width="28px"
-                        viewBox="0 0 100 100"
-                        fill="#FFB258"
-                      >
-                        <path d="M85.998,50C68.02,50,50.042,32.042,50,14.063V14c0,0.01-0.001,0.021-0.001,0.031c0-0.011-0.001-0.021-0.001-0.032v0.063  
-  C49.956,32.042,31.979,50,14,50c18,0,36,18,36,36l0,0c0-18,18-36,36-36H85.998z" />
-                      </svg>
-                      <span className="text-lg lg:text-xl text-gray-800 font-medium"><p> <strong>Aptitude: </strong>
-
-                        5 Questions with <strong className={`text-green-600`}>+1</strong> for each correct & <strong className={`text-red-600`}>-1/3</strong> for each incorrect</p></span>
-                    </li>
-
-                    <li className="flex items-start gap-3">
-                      {/* Spark Icon */}
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        height="28px"
-                        width="28px"
-                        viewBox="0 0 100 100"
-                        fill="#FFB258"
-                      >
-                        <path d="M85.998,50C68.02,50,50.042,32.042,50,14.063V14c0,0.01-0.001,0.021-0.001,0.031c0-0.011-0.001-0.021-0.001-0.032v0.063  
-  C49.956,32.042,31.979,50,14,50c18,0,36,18,36,36l0,0c0-18,18-36,36-36H85.998z" />
-                      </svg>
-                      <span className="text-lg lg:text-xl text-gray-800 font-medium"><p> <strong>Aptitude: </strong>
-
-                        5 Questions with <strong className={`text-green-600`}>+2</strong> for each correct & <strong className={`text-red-600`}>-2/3</strong> for each incorrect</p></span>
-                    </li>
-                    <li className="flex items-start gap-3">
-                      {/* Spark Icon */}
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        height="28px"
-                        width="28px"
-                        viewBox="0 0 100 100"
-                        fill="#FFB258"
-                      >
-                        <path d="M85.998,50C68.02,50,50.042,32.042,50,14.063V14c0,0.01-0.001,0.021-0.001,0.031c0-0.011-0.001-0.021-0.001-0.032v0.063  
-  C49.956,32.042,31.979,50,14,50c18,0,36,18,36,36l0,0c0-18,18-36,36-36H85.998z" />
-                      </svg>
-                      <span className="text-lg lg:text-xl text-gray-800 font-medium"><p> <strong>Subject: </strong>
-
-                        25 Questions with <strong className={`text-green-600`}>+1</strong> for each correct & <strong className={`text-red-600`}>-1/3</strong> for each incorrect</p></span>
-                    </li>
-                    <li className="flex items-start gap-3">
-                      {/* Spark Icon */}
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        height="28px"
-                        width="28px"
-                        viewBox="0 0 100 100"
-                        fill="#FFB258"
-                      >
-                        <path d="M85.998,50C68.02,50,50.042,32.042,50,14.063V14c0,0.01-0.001,0.021-0.001,0.031c0-0.011-0.001-0.021-0.001-0.032v0.063  
-  C49.956,32.042,31.979,50,14,50c18,0,36,18,36,36l0,0c0-18,18-36,36-36H85.998z" />
-                      </svg>
-                      <span className="text-lg lg:text-xl text-gray-800 font-medium"><p> <strong>Subject: </strong>
-
-                        30 Questions with <strong className={`text-green-600`}>+2</strong> for each correct & <strong className={`text-red-600`}>-2/3</strong> for each incorrect</p></span>
-                    </li>
-
-                    <li className="flex items-start gap-3">
-                      {/* Spark Icon */}
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        height="28px"
-                        width="28px"
-                        viewBox="0 0 100 100"
-                        fill="#FFB258"
-                      >
-                        <path d="M85.998,50C68.02,50,50.042,32.042,50,14.063V14c0,0.01-0.001,0.021-0.001,0.031c0-0.011-0.001-0.021-0.001-0.032v0.063  
-  C49.956,32.042,31.979,50,14,50c18,0,36,18,36,36l0,0c0-18,18-36,36-36H85.998z" />
-                      </svg>
-                      <span className="text-lg lg:text-xl text-gray-800 font-medium"><p> <strong>Note: </strong>
-
-                        No negative marks for MSQ & Numerical Type Questions</p></span>
-                    </li>
-
-
-                  </ul>
-
-                </div>
+              {/* Desktop Purchase Card */}
+              <div className="hidden lg:block lg:col-span-4">
+                <PurchaseCard />
               </div>
-
-            </section>
-
-
-
-            <section className={`sm:max-w-xl md:max-w-4xl lg:max-w-screen-xl xl:max-w-screen-xl space-y-8 md:px-0 px-3 md:px-8 lg:px-5 mx-auto py-10`}>
-              <div className="mb-8">
-                <h2 className="text-3xl lg:text-4xl text-[#2c14a8] font-bold mb-6 text-center lg:text-left">
-                  Why Choose Our Test Series?
-                </h2>
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                  <ul className="space-y-4">
-                    {[
-                      "Thorough preparation with a wide variety of questions.",
-                      "Simulated real GATE experience with time constraints.",
-                      "Detailed performance analysis for each test.",
-                      "Boost your problem-solving skills and time management.",
-                      "Updated content aligned with the latest GATE syllabus.",
-                      "Opportunity to benchmark against thousands of aspirants.",
-                    ].map((benefit, index) => (
-                      <li key={index} className="flex items-start gap-3">
-                        {/* Spark Icon */}
-                        <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          height="28px"
-                          width="28px"
-                          viewBox="0 0 100 100"
-                          fill="#FFB258"
-                        >
-                          <path d="M85.998,50C68.02,50,50.042,32.042,50,14.063V14c0,0.01-0.001,0.021-0.001,0.031c0-0.011-0.001-0.021-0.001-0.032v0.063  
-  C49.956,32.042,31.979,50,14,50c18,0,36,18,36,36l0,0c0-18,18-36,36-36H85.998z" />
-                        </svg>
-                        <span className="text-lg lg:text-xl text-gray-800 font-medium">{benefit}</span>
-                      </li>
-                    ))}
-                  </ul>
-                  <ul className="space-y-4">
-                    {[
-                      "Learn from in-depth solutions provided for every test.",
-                      "Identify weak areas with targeted improvement strategies.",
-                      "Experience an engaging and user-friendly test interface.",
-                      "Gain confidence with comprehensive test coverage.",
-                      "Unlock advanced tips and tricks for solving complex problems.",
-                    ].map((benefit, index) => (
-                      <li key={index} className="flex items-start gap-3">
-                        {/* Spark Icon */}
-                        <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          height="28px"
-                          width="28px"
-                          viewBox="0 0 100 100"
-                          fill="#FFB258"
-                        >
-                          <path d="M85.998,50C68.02,50,50.042,32.042,50,14.063V14c0,0.01-0.001,0.021-0.001,0.031c0-0.011-0.001-0.021-0.001-0.032v0.063  
-  C49.956,32.042,31.979,50,14,50c18,0,36,18,36,36l0,0c0-18,18-36,36-36H85.998z" />
-                        </svg>
-
-
-                        <span className="text-lg lg:text-xl text-gray-800 font-medium">{benefit}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              </div>
-
-            </section>
+            </motion.div>
           </div>
-        </motion.div>
-      </div>
+        </section>
+
+        {/* Exam Pattern & Marking Scheme */}
+        <section className="max-w-screen-xl mx-auto px-4 sm:px-6 lg:px-8 pt-14 space-y-10">
+          <div className="bg-white rounded-3xl border border-slate-200 shadow-sm p-6 sm:p-10">
+            <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-900 mb-6">
+              GATE 2027 Test Pattern &amp; Structure
+            </h2>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+              {[
+                { label: "Total Questions", value: "65 Qs (10 GA + 55 Core)" },
+                { label: "Question Types", value: "MCQ, MSQ & NAT" },
+                { label: "Live Test Window", value: "5:30 PM – 11:30 PM IST" },
+                { label: "Test Duration", value: "3 Hours (180 Mins)" },
+              ].map((stat) => (
+                <div
+                  key={stat.label}
+                  className="rounded-2xl bg-slate-50 border border-slate-200 p-4"
+                >
+                  <p className="text-xs font-bold uppercase tracking-wider text-indigo-600">
+                    {stat.label}
+                  </p>
+                  <p className="mt-1 text-base font-bold text-slate-900">{stat.value}</p>
+                </div>
+              ))}
+            </div>
+
+            <div className="mt-8 pt-8 border-t border-slate-200">
+              <h3 className="text-xl font-extrabold text-slate-900 mb-4">
+                Marking Scheme Breakdown
+              </h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm sm:text-base text-slate-700">
+                <div className="rounded-2xl bg-slate-50 p-4 border border-slate-200">
+                  <strong>General Aptitude (5 Qs):</strong>{" "}
+                  <span className="text-emerald-700 font-bold">+1</span> correct ·{" "}
+                  <span className="text-rose-600 font-bold">-1/3</span> incorrect
+                </div>
+                <div className="rounded-2xl bg-slate-50 p-4 border border-slate-200">
+                  <strong>General Aptitude (5 Qs):</strong>{" "}
+                  <span className="text-emerald-700 font-bold">+2</span> correct ·{" "}
+                  <span className="text-rose-600 font-bold">-2/3</span> incorrect
+                </div>
+                <div className="rounded-2xl bg-slate-50 p-4 border border-slate-200">
+                  <strong>Core Subject (25 Qs):</strong>{" "}
+                  <span className="text-emerald-700 font-bold">+1</span> correct ·{" "}
+                  <span className="text-rose-600 font-bold">-1/3</span> incorrect
+                </div>
+                <div className="rounded-2xl bg-slate-50 p-4 border border-slate-200">
+                  <strong>Core Subject (30 Qs):</strong>{" "}
+                  <span className="text-emerald-700 font-bold">+2</span> correct ·{" "}
+                  <span className="text-rose-600 font-bold">-2/3</span> incorrect
+                </div>
+              </div>
+              <p className="mt-4 text-sm font-semibold text-indigo-700 bg-indigo-50 border border-indigo-200 rounded-xl px-4 py-3 inline-block">
+                Note: Zero negative marking applies to Multiple Select (MSQ) and Numerical Answer Type (NAT) questions.
+              </p>
+            </div>
+          </div>
+
+          {/* Why Choose Section */}
+          <div className="bg-white rounded-3xl border border-slate-200 shadow-sm p-6 sm:p-10">
+            <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-900 mb-6">
+              Why Choose Our Test Series?
+            </h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {[
+                "Thorough preparation with a wide spectrum of concept-testing questions.",
+                "Simulated official GATE CBT experience with strict 180-minute timing.",
+                "Detailed section-wise accuracy charts & projected GATE rank analysis.",
+                "Updated content calibrated to the latest GATE 2027 syllabus.",
+                "Full mathematical KaTeX typesetting for clear equations and diagrams.",
+                "Benchmark yourself against engineering peers nationwide.",
+                "Review exact solutions and identify weak areas immediately post-test.",
+                "Organized by IIST students at student-friendly subsidized pricing.",
+              ].map((benefit) => (
+                <div
+                  key={benefit}
+                  className="flex items-start gap-3 p-3.5 rounded-2xl bg-slate-50 border border-slate-100"
+                >
+                  <span className="w-6 h-6 rounded-full bg-amber-100 text-amber-700 font-bold text-xs flex items-center justify-center flex-shrink-0 mt-0.5">
+                    ✓
+                  </span>
+                  <span className="text-sm sm:text-base text-slate-700">{benefit}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+      </main>
+
       <Footer />
     </div>
   );

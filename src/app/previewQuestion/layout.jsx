@@ -1,13 +1,13 @@
 export const metadata = {
-    title: "Preview Question - IGTS",
+    title: "Preview Question - IGTS | Dhanak 2k27",
     description:
-      "Dhanak 2k25 is a cultural fest organised by the students of Indian Institute of Space Science and Technology, Thiruvananthapuram.",
+      "IGTS - Dhanak 2k27 is the official GATE 2027 Mock Test Series organised by the students of Indian Institute of Space Science and Technology (IIST), Thiruvananthapuram.",
     icons: {
       icon: "/images/icon.png", // /public path
     },
     url: "https://igts.dhanakiist.co.in",
     type: "website",
-    siteName: "IGTS - Dhanak 2k25",
+    siteName: "IGTS - Dhanak 2k27",
   };
 
 export default function PreviewQuestion({ children }) {

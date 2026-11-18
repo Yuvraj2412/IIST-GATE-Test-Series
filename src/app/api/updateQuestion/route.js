@@ -9,19 +9,21 @@ export async function POST(req) {
         const { questionId, questionText, options } = await req.json();
 
         // Validate request payload
-        if (!questionId || !questionText || !Array.isArray(options) || options.length === 0) {
+        if (!questionId || !questionText) {
             return new Response(
                 JSON.stringify({
-                    error: "Question ID, question text, and valid options are required.",
+                    error: "Question ID and question text are required.",
                 }),
                 { status: 400 }
             );
         }
 
+        const safeOptions = Array.isArray(options) ? options : [];
+
         // Update the question row
         const { data: updatedQuestion, error } = await getSupabaseAdmin()
             .from("questions")
-            .update({ questionText, options })
+            .update({ questionText, options: safeOptions })
             .eq("questionId", questionId)
             .select()
             .maybeSingle();

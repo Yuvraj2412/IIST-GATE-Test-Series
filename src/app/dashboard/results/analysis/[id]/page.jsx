@@ -304,7 +304,7 @@ export default function ResultsAnalysis({ params }) {
             callbacks: {
               label: function (tooltipItem) {
                 const value = tooltipItem.raw;
-                const percentage = ((value / totalScore) * 100).toFixed(1);
+                const percentage = totalScore > 0 ? ((value / totalScore) * 100).toFixed(1) : "0.0";
                 return `Score: ${value} (${percentage}%)`;
               },
             },
@@ -367,7 +367,8 @@ export default function ResultsAnalysis({ params }) {
             callbacks: {
               label: function (tooltipItem) {
                 const value = tooltipItem.raw;
-                const percentage = ((value / totalScoreAptitude) * 100).toFixed(1);
+                const percentage =
+                  totalScoreAptitude > 0 ? ((value / totalScoreAptitude) * 100).toFixed(1) : "0.0";
                 return `Score: ${value} (${percentage}%)`;
               },
             },
@@ -427,7 +428,8 @@ export default function ResultsAnalysis({ params }) {
             callbacks: {
               label: function (tooltipItem) {
                 const value = tooltipItem.raw;
-                const percentage = ((value / totalScoreSubject) * 100).toFixed(1);
+                const percentage =
+                  totalScoreSubject > 0 ? ((value / totalScoreSubject) * 100).toFixed(1) : "0.0";
                 return `Score: ${value} (${percentage}%)`;
               },
             },

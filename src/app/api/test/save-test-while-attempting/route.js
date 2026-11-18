@@ -21,7 +21,7 @@ export async function POST(req) {
         // Find the test attempt for the signed-in user
         const { data: existingAttempt, error: findErr } = await supabase
             .from("test_attempts")
-            .select("id, status")
+            .select("id, status, endTime")
             .eq("userId", profile.id)
             .eq("registeredTestId", registeredTestId)
             .eq("domainId", domainId)
@@ -49,6 +49,13 @@ export async function POST(req) {
         if (existingAttempt.status !== "attempting") {
             return new Response(
                 JSON.stringify({ error: "Test attempt has already been completed." }),
+                { status: 409 }
+            );
+        }
+
+        if (new Date(existingAttempt.endTime).getTime() + 5 * 60 * 1000 < Date.now()) {
+            return new Response(
+                JSON.stringify({ error: "The allowed test duration has expired." }),
                 { status: 409 }
             );
         }

@@ -92,7 +92,10 @@ export default function PreviewQuestion() {
     };
 
     const handleUpdateQuestion = async () => {
-        if (!editedQuestionText || editedOptions.length === 0) {
+        if (
+            !editedQuestionText ||
+            (questionData?.type !== "NUMERICAL" && editedOptions.length === 0)
+        ) {
             toast.error("Please provide valid question text and options.");
             return;
         }

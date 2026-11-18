@@ -1,57 +1,75 @@
 import nodemailer from "nodemailer";
 
-export async function sendMail({
-    to,
-    name = "Recipient",
-    subject,
-    body
-}) {
-    // For Gmail SMTP
-    // const { SMTP_PASSWORD, SMTP_EMAIL } = process.env;
+function buildTransports() {
+  const transports = [];
 
-    // // Check if SMTP credentials are available
-    // if (!SMTP_EMAIL || !SMTP_PASSWORD) {
-    //     console.error("SMTP credentials are missing.");
-    //     return;
-    // }
-
-    // const transport = nodemailer.createTransport({
-    //     service: "gmail",
-    //     auth: {
-    //         user: SMTP_EMAIL,
-    //         pass: SMTP_PASSWORD,
-    //     }
-    // });
-
-    // For GoDaddy Professional Email SMTP
-    let transport = nodemailer.createTransport({
-        host: process.env.MAIL_HOST,
-        port: process.env.MAIL_PORT,
+  if (process.env.MAIL_HOST && process.env.MAIL_USER && process.env.MAIL_PASS) {
+    const port = Number(process.env.MAIL_PORT || 465);
+    transports.push({
+      name: "primary-smtp",
+      from: process.env.MAIL_USER,
+      transport: nodemailer.createTransport({
+        host: process.env.MAIL_HOST.trim(),
+        port,
+        secure: port === 465,
         auth: {
-            user: process.env.MAIL_USER,
-            pass: process.env.MAIL_PASS,
+          user: process.env.MAIL_USER.trim(),
+          pass: process.env.MAIL_PASS.trim(),
         },
+        connectionTimeout: 10000,
+      }),
     });
+  }
 
-    // Verify the transport connection
-    try {
-        const testResult = await transport.verify();
-        console.log("SMTP connection verified:", testResult);
-    } catch (error) {
-        console.error("SMTP connection verification failed:", error);
-        return;
-    }
+  if (process.env.SMTP_EMAIL && process.env.SMTP_PASSWORD) {
+    transports.push({
+      name: "gmail-smtp",
+      from: process.env.SMTP_EMAIL.trim(),
+      transport: nodemailer.createTransport({
+        service: "gmail",
+        auth: {
+          user: process.env.SMTP_EMAIL.trim(),
+          pass: process.env.SMTP_PASSWORD.trim(),
+        },
+        connectionTimeout: 10000,
+      }),
+    });
+  }
 
-    // Send the email
+  return transports;
+}
+
+export async function sendMail({
+  to,
+  name = "IGTS Dhanak 2027",
+  subject,
+  body,
+  replyTo,
+}) {
+  const transports = buildTransports();
+
+  if (transports.length === 0) {
+    throw new Error("No SMTP email transport is configured.");
+  }
+
+  let lastError = null;
+  for (const entry of transports) {
     try {
-        const sendResult = await transport.sendMail({
-            from: process.env.MAIL_USER,
-            to,
-            subject,
-            html: `<p>${body}</p>`
-        });
-        console.log("Email sent successfully:", sendResult);
+      await entry.transport.verify();
+      const sendResult = await entry.transport.sendMail({
+        from: `"IGTS · Dhanak 2027" <${entry.from}>`,
+        to,
+        ...(replyTo ? { replyTo } : {}),
+        subject,
+        html: body,
+      });
+      console.log(`Email sent via ${entry.name}:`, sendResult.messageId);
+      return sendResult;
     } catch (error) {
-        console.error("Failed to send email:", error);
+      lastError = error;
+      console.warn(`Email attempt via ${entry.name} failed:`, error.message);
     }
+  }
+
+  throw lastError || new Error("Failed to send email via configured transports.");
 }

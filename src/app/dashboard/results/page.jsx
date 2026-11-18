@@ -4,234 +4,188 @@ import Footer from "@/components/Footer";
 import Loader from "@/components/Loader";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import React from "react";
-import { useState, useEffect } from "react";
-import style from "@/components/styles/attemptTest.module.css";
+import React, { useState, useEffect, useCallback } from "react";
 import toast from "react-hot-toast";
 import { useAuthState } from "@/libs/supabase/authClient";
 
 export default function DashboardResults() {
-    const router = useRouter();
-    const [userDetails, setUserDetails] = useState(null);
-    const [user, authLoading] = useAuthState();
-    const [testAttempts, setTestAttempts] = useState([]);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(null);
-    const [userObjectId, setUserObjectId] = useState(null);
-    const [isFirstLoad, setIsFirstLoad] = useState(true);
+  const router = useRouter();
+  const [user, authLoading] = useAuthState();
+  const [testAttempts, setTestAttempts] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [userObjectId, setUserObjectId] = useState(null);
 
-
-    const getUser = async (id) => {
-        try {
-            const res = await fetch("/api/getUser", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify({ userId: id }),
-            });
-            const resjson = await res.json();
-            if (res.status === 200 && resjson.user) {
-                setUserDetails(resjson.user);
-                setUserObjectId(resjson.user._id);
-            } else if (resjson.msg === "No user found") {
-                router.push("/sign-up?oauth=google");
-            } else {
-                toast.error("Failed to get user details.")
-            }
-        } catch (error) {
-            console.error("Error fetching user details:", error);
+  const getUser = useCallback(
+    async (id) => {
+      try {
+        const res = await fetch("/api/getUser", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ userId: id }),
+        });
+        const resjson = await res.json();
+        if (res.status === 200 && resjson.user) {
+          setUserObjectId(resjson.user._id);
+        } else if (resjson.msg === "No user found") {
+          router.push("/sign-up?oauth=google");
+        } else {
+          toast.error("Failed to get user details.");
+          setLoading(false);
         }
-    };
+      } catch (err) {
+        console.error("Error fetching user details:", err);
+        setLoading(false);
+      }
+    },
+    [router]
+  );
 
-    useEffect(() => {
-        if (user) {
-            getUser(user.uid);
-            setIsFirstLoad(false);
-        } else if (!authLoading) {
-            router.push("/sign-in");
-        }
-    }, [user, authLoading, router]);
-
-    useEffect(() => {
-        const fetchTestAttempts = async () => {
-            try {
-                // Replace with the actual user ID (get it from the user session or context)
-                // const userId = "676964ed22977aaa57c67eaf"; // Example user ID
-                console.log(userObjectId);
-                const userId = userObjectId;
-                // const userId = userDetails._id;
-                // Make a POST request to fetch the test attempts
-                const response = await fetch("/api/fetchAllAttempts", {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json",
-                    },
-                    body: JSON.stringify({ userId }),
-                });
-
-                if (!response.ok) {
-                    throw new Error("Failed to fetch attempts");
-                }
-
-                const data = await response.json();
-                setTestAttempts(data);
-            } catch (error) {
-                console.error("Error fetching test attempts:", error);
-                setError("An error occurred while fetching the test attempts.");
-            } finally {
-                setLoading(false);
-            }
-        };
-        if (userObjectId) {
-            fetchTestAttempts();
-        }
-    }, [userObjectId]);
-
-    const convertToSeconds = (timeString) => {
-        const [hours, minutes, seconds] = timeString.split(":").map(Number);
-        return hours * 3600 + minutes * 60 + seconds;
-    };
-
-    const formatTime = (seconds) => {
-        const hours = Math.floor(seconds / 3600);
-        const minutes = Math.floor((seconds % 3600) / 60);
-        const secondsLeft = seconds % 60;
-        return `${hours.toString().padStart(2, "0")}:${minutes
-            .toString()
-            .padStart(2, "0")}:${secondsLeft.toString().padStart(2, "0")}`;
-    };
-
-    const calculateTimeTaken = (timeRemaining) => {
-        const totalTime = convertToSeconds("03:00:00");
-        const timeRemainingInSeconds = convertToSeconds(timeRemaining);
-        const timeTakenInSeconds = totalTime - timeRemainingInSeconds;
-        return formatTime(timeTakenInSeconds);
-    };
-
-    if (loading) {
-        return (
-            <div className="bg-white min-h-screen bg-gray-100">
-                <Navbar />
-                <div className="min-h-[calc(100vh-150px)] lg:min-h-[calc(100vh-150px)] xl:min-h-[calc(100vh-170px)] container min-h-screen flex flex-col items-center mt-32 max-w-4xl lg:max-w-7xl mx-auto px-4 md:px-8">
-                    <div className="bg-white font-bold rounded-2xl shadow-lg border border-gray-300 p-6 md:py-10 md:px-20">
-                        <div className="flex flex-col justify-center items-center px-4 md:px-8 lg:px-16 space-y-6">
-                            <div className={``}><Loader /></div>
-                        </div>
-                    </div>
-                </div>
-                <Footer />
-            </div>
-        )
+  useEffect(() => {
+    if (user) {
+      getUser(user.uid);
+    } else if (!authLoading) {
+      router.push("/sign-in");
     }
+  }, [user, authLoading, router, getUser]);
 
-    if (error) {
-        return (
-            <div className="bg-white min-h-screen bg-gray-100">
-                <Navbar />
-                <div className="min-h-[calc(100vh-150px)] lg:min-h-[calc(100vh-150px)] xl:min-h-[calc(100vh-170px)] container min-h-screen flex flex-col items-center mt-32 max-w-4xl lg:max-w-7xl mx-auto px-4 md:px-8">
-                    <div className="bg-white font-bold rounded-2xl shadow-lg border border-gray-300 p-6 md:py-10 md:px-20">
-                        <div className="flex flex-col justify-center items-center px-4 md:px-8 lg:px-16 space-y-6">
-                            <div className={``}>{error}</div>
+  useEffect(() => {
+    if (!userObjectId) return;
+    const fetchTestAttempts = async () => {
+      try {
+        const response = await fetch("/api/fetchAllAttempts", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ userId: userObjectId }),
+        });
+
+        if (!response.ok) {
+          throw new Error("Failed to fetch attempts");
+        }
+
+        const data = await response.json();
+        setTestAttempts(Array.isArray(data) ? data : []);
+      } catch (err) {
+        console.error("Error fetching test attempts:", err);
+        setError("An error occurred while fetching your test attempts.");
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchTestAttempts();
+  }, [userObjectId]);
+
+  return (
+    <div className="min-h-screen flex flex-col bg-slate-50 topSection">
+      <Navbar />
+
+      <main className="flex-1 max-w-screen-xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 lg:py-12">
+        {loading ? (
+          <div className="bg-white rounded-3xl border border-slate-200 p-16 flex justify-center">
+            <Loader />
+          </div>
+        ) : error ? (
+          <div className="bg-white rounded-3xl border border-rose-200 p-12 text-center">
+            <p className="text-rose-600 font-bold">{error}</p>
+            <Link
+              href="/dashboard"
+              className="mt-4 inline-block px-6 py-2.5 rounded-full bg-indigo-600 text-white font-bold"
+            >
+              Back to Dashboard
+            </Link>
+          </div>
+        ) : (
+          <div className="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden">
+            <div className="cosmicHeader px-6 sm:px-8 py-6 text-white flex flex-wrap items-center justify-between gap-3">
+              <div>
+                <p className="text-xs font-bold uppercase tracking-widest text-amber-300">
+                  IGTS Analytics
+                </p>
+                <h1 className="text-2xl sm:text-3xl font-extrabold mt-0.5">Your Test Attempts</h1>
+              </div>
+              <Link
+                href="/dashboard"
+                className="text-xs font-bold px-4 py-2 rounded-full bg-white/15 hover:bg-white/25 transition"
+              >
+                ← Back to Dashboard
+              </Link>
+            </div>
+
+            <div className="p-6 sm:p-8">
+              {testAttempts.length === 0 ? (
+                <div className="text-center py-14 bg-slate-50 rounded-2xl border border-slate-200">
+                  <p className="text-lg font-extrabold text-slate-800">
+                    No test attempts recorded yet.
+                  </p>
+                  <p className="text-sm text-slate-500 mt-1 mb-5">
+                    Attempt a scheduled GATE 2027 mock test to inspect your scores and detailed report.
+                  </p>
+                  <Link
+                    href="/registered-tests"
+                    className="inline-block px-6 py-3 rounded-full font-bold text-white bg-indigo-600 hover:bg-indigo-700 transition"
+                  >
+                    Go to Your Tests →
+                  </Link>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {testAttempts.map((attempt) => (
+                    <div
+                      key={attempt._id}
+                      className="bg-slate-50 hover:bg-white rounded-2xl p-5 border border-slate-200 hover:border-indigo-300 shadow-sm hover:shadow-md transition flex flex-col md:flex-row md:items-center justify-between gap-4"
+                    >
+                      <div className="flex items-start gap-3.5">
+                        <img
+                          src="/images/assignTestIcons.svg"
+                          alt="Attempt Icon"
+                          className="w-11 h-11 object-contain hidden sm:block flex-shrink-0"
+                        />
+                        <div className="space-y-1.5">
+                          <h2 className="text-lg sm:text-xl font-extrabold text-slate-900">
+                            GATE Mock for {attempt.domainId}
+                          </h2>
+                          <div className="flex flex-wrap items-center gap-2 text-xs sm:text-sm">
+                            <span className="font-bold text-indigo-700 bg-indigo-50 border border-indigo-200 px-3 py-0.5 rounded-full">
+                              {attempt.packId}
+                            </span>
+                            <span className="font-semibold text-slate-800">{attempt.testId}</span>
+                            <span
+                              className={`font-bold px-2.5 py-0.5 rounded-full text-xs ${
+                                attempt.status === "attempting"
+                                  ? "bg-amber-100 text-amber-800"
+                                  : "bg-emerald-100 text-emerald-800"
+                              }`}
+                            >
+                              {attempt.status.charAt(0).toUpperCase() + attempt.status.slice(1)}
+                            </span>
+                          </div>
+                          <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-slate-500">
+                            <span>Started: {new Date(attempt.startTime).toLocaleString()}</span>
+                            <span>Ends: {new Date(attempt.endTime).toLocaleString()}</span>
+                          </div>
                         </div>
+                      </div>
+
+                      <Link
+                        className="inline-flex items-center justify-center px-5 py-2.5 rounded-full font-bold text-sm text-white bg-gradient-to-r from-[#4f46e5] to-[#674cee] hover:from-[#4338ca] hover:to-[#5b3fe3] transition shadow-sm flex-shrink-0"
+                        href={`/dashboard/results/analysis/${attempt._id}?domain=${encodeURIComponent(
+                          attempt.domainId
+                        )}&pack=${encodeURIComponent(attempt.packId)}&test=${encodeURIComponent(
+                          attempt.testId
+                        )}`}
+                      >
+                        View Result &amp; Report →
+                      </Link>
                     </div>
+                  ))}
                 </div>
-                <Footer />
+              )}
             </div>
-        );
-    }
+          </div>
+        )}
+      </main>
 
-    return (
-
-
-        <div className="topSection min-h-screen bg-gray-100">
-            <Navbar />
-            <div className="max-w-7xl min-h-[calc(100vh-150px)] lg:min-h-[calc(100vh-150px)] xl:min-h-[calc(100vh-170px)] container min-h-screen flex flex-col items-center mt-6 mb-8 mx-auto px-4 md:px-8">
-                <div className="w-full min-h-screen pt-10 pb-6 px-4 md:px-10 bg-white font-semibold traking-wider rounded-md shadow-xs border border-gray-300 mx-auto">
-                    <h2 className="font-bold text-3xl mb-6 text-center">Your Test Attempts</h2>
-                    {testAttempts.length === 0 ? (
-                        <div>No test attempt found.</div>
-                    ) : (
-                        <div className="space-y-6">
-                            {testAttempts.map((attempt) => {
-                                return (
-                                    <div
-                                        key={attempt._id}
-                                        className="schedule-card bg-neutral-50 rounded-xl pt-4 pb-3 px-4 md:py-6 md:px-4 shadow-sm hover:shadow-md transition ease-in-out duration-100 border"
-                                    >
-                                        <div className="flex-col space-y-4 md:space-y-0 md:flex md:flex-row justify-between md:px-4">
-                                            <div className={`flex md:gap-3`}>
-                                                <div className="h-full hidden md:inline-block">
-                                                    <img
-                                                        src="/images/assignTestIcons.svg"
-                                                        alt="Assign Test Icon"
-                                                        className="w-12 object-contain"
-                                                    />
-                                                </div>
-                                                <div className="flex flex-col gap-2 md:gap-0">
-                                                    <h2 className="text-xl font-semibold text-gray-800">
-                                                        GATE Mock for {attempt.domainId}
-                                                    </h2>
-                                                    <div className="flex-col md:flex md:flex-row md:items-center items-center space-y-2 md:space-y-0 md:gap-2">
-                                                        <p className="text-[#1d7dea] font-semibold text-sm bg-gray-50 rounded-full px-4 border border-gray-300">
-                                                            {attempt.packId}
-                                                        </p>
-                                                        <p className="text-neutral-600 font-normal text-2xl hidden md:inline-block">•</p>
-                                                        <p className="text-[#222222] font-semibold text-md flex items-center gap-2">
-                                                            {attempt.testId}
-                                                        </p>
-
-                                                    </div>
-
-                                                    <div className="flex-col md:flex md:flex-row md:items-center items-center space-y-2 md:space-y-0 md:gap-2">
-                                                        <p className="text-[#1d7dea] font-normal text-2xl hidden md:inline-block">•</p>
-                                                        <p className="text-[#1d7dea] font-semibold text-md flex items-center gap-2">
-                                                            Status:
-                                                            {attempt.status === 'completed' ? <span className={`font-normal text-green-600`}>{attempt.status.charAt(0).toUpperCase() + attempt.status.slice(1)}</span> : ''}
-                                                            {attempt.status === 'attempting' ? <span className={`font-normal text-orange-600`}>{attempt.status.charAt(0).toUpperCase() + attempt.status.slice(1)}</span> : ''}
-                                                            {attempt.status === 'evaluated' ? <span className={`font-normal text-green-600`}>{attempt.status.charAt(0).toUpperCase() + attempt.status.slice(1)}</span> : ''}
-                                                            {/* <span className={`text-[#222222]`}>{attempt.status}</span> */}
-                                                        </p>
-                                                        <p className="text-[#1d7dea] font-normal text-2xl hidden md:inline-block">•</p>
-                                                        <p className={`text-[#1d7dea] font-semibold text-md flex items-center gap-2`}>
-                                                            Test Mode:
-                                                            <span className={`rounded-sm border text-sm text-purple-500 border-neutral-300 px-2`}>
-                                                                Online
-                                                            </span>
-                                                        </p>
-                                                    </div>
-                                                    <div className="flex-col md:flex md:flex-row md:items-center items-center space-y-2 md:space-y-0 md:gap-2">
-                                                        <p className="text-[#1d7dea] font-normal text-2xl hidden md:inline-block">•</p>
-                                                        <p className="text-[#222222] font-normal text-md flex items-center gap-2">
-                                                            <span className={`text-[#1d7dea] font-semibold`}>Start Time:</span> {new Date(attempt.startTime).toLocaleString()}
-                                                        </p>
-                                                        <p className="text-[#1d7dea] font-normal text-2xl hidden md:inline-block">•</p>
-                                                        <p className="text-[#222222] font-normal text-md flex items-center gap-2">
-                                                            <span className={`text-[#1d7dea] font-semibold`}>End Time:</span> {new Date(attempt.endTime).toLocaleString()}
-                                                        </p>
-                                                    </div>
-                                                    <div className={`flex gap-2 mt-2 text-[#222222] text-sm font-normal`}>
-
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            <div className={`flex items-center justify-center`}>
-                                                <Link
-                                                    className={`text-[#1d7dea] text-md hover:underline `}
-                                                    href={`/dashboard/results/analysis/${attempt._id}?domain=${encodeURIComponent(attempt.domainId)}&pack=${encodeURIComponent(attempt.packId)}&test=${encodeURIComponent(attempt.testId)}`}
-                                                >
-                                                    View Result
-                                                </Link>
-                                            </div>
-                                        </div>
-                                    </div>
-                                );
-                            })}
-                        </div>
-                    )}
-                </div>
-            </div>
-            <Footer />
-        </div>
-    );
+      <Footer />
+    </div>
+  );
 }

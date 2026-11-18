@@ -2,7 +2,7 @@
 import { useRouter } from "next/navigation";
 import React from "react";
 import Link from "next/link";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import Image from 'next/image';
 import { useSearchParams } from 'next/navigation';
 import style from "@/components/styles/attemptTest.module.css";
@@ -10,6 +10,7 @@ import NavbarLite from "@/components/NavbarLite";
 import Footer from "@/components/Footer";
 import Loader from "@/components/Loader";
 import tests from "@/data/tests";
+import { parseTestWindow } from "@/utils/dateParser";
 import toast from "react-hot-toast";
 import axios from "axios";
 import useScreenSize from "@/hooks/useMobile";
@@ -45,14 +46,29 @@ export default function AttemptLive({ params }) {
     const [isTestLoading, setIsTestLoading] = useState(null);
     const [testQuestions, setTestQuestions] = useState([]);
     const [expandedSection, setExpandedSection] = useState("aptitude"); // Default to Aptitude
-    const aptitudeQuestions = testQuestions.slice(0, 10);
-    const subjectQuestions = testQuestions.slice(10);
+    const indexedQuestions = testQuestions.map((q, idx) => ({ ...q, _idx: idx }));
+    const aptitudeQuestions = indexedQuestions.filter((q) => q.section === "aptitude");
+    const subjectQuestions = indexedQuestions.filter((q) => q.section !== "aptitude");
     const [testStartTime, setTestStartTime] = useState(null);
     const [testEndTime, setTestEndTime] = useState(null);
     const [testTimeRemaining, setTestTimeRemaining] = useState("");
     const [isTestOver, setIsTestOver] = useState(false);
     const [isAlreadyAttempted, setIsAlreadyAttempted] = useState(false);
     const [isSubmitted, setIsSubmitted] = useState(false);
+    const hasSubmittedRef = useRef(false);
+
+    const requestFullscreenSafe = () => {
+        const el = document.documentElement;
+        if (el.requestFullscreen) {
+            el.requestFullscreen();
+        } else if (el.webkitRequestFullscreen) {
+            el.webkitRequestFullscreen();
+        } else if (el.mozRequestFullScreen) {
+            el.mozRequestFullScreen();
+        } else if (el.msRequestFullscreen) {
+            el.msRequestFullscreen();
+        }
+    };
 
 
 
@@ -339,18 +355,12 @@ export default function AttemptLive({ params }) {
         }
     }, [domain, testPack, testNumber]);
 
-    const formatDateString = (dateString) => {
-        return dateString.replace(/(\d+)(st|nd|rd|th)/, "$1"); // Remove ordinal suffix
-    };
-
-
     useEffect(() => {
         const calculateTimeRemaining = () => {
             if (testDate) {
-                // Parse and format the test date
-                const formattedDate = formatDateString(testDate);
-                const testDateTime = new Date(`${formattedDate} 17:30:00`);
-                const testEndDateTime = new Date(`${formattedDate} 23:30:00`);
+                const parsedWindow = parseTestWindow(testDate);
+                if (!parsedWindow) return;
+                const { start: testDateTime, end: testEndDateTime } = parsedWindow;
                 const now = new Date();
 
                 if (now >= testDateTime && now <= testEndDateTime) {
@@ -467,13 +477,9 @@ export default function AttemptLive({ params }) {
 
 
     useEffect(() => {
-        if (selectedQuestionIndex <= 9) {
-            setExpandedSection('aptitude');
-        }
-        else if (selectedQuestionIndex > 9) {
-            setExpandedSection('subject');
-        }
-    }, [selectedQuestionIndex]);
+        if (!selectedQuestion) return;
+        setExpandedSection(selectedQuestion.section === "aptitude" ? "aptitude" : "subject");
+    }, [selectedQuestionIndex, selectedQuestion]);
 
     const handleClearSelection = (questionId) => {
         setResponses((prevResponses) => ({
@@ -582,83 +588,66 @@ export default function AttemptLive({ params }) {
 
 
 
-    const endTest = async (responses) => {
-        // Format the payload data
+    const endTest = async (responsesToSave) => {
+        if (hasSubmittedRef.current) return true;
+        hasSubmittedRef.current = true;
+
         const payloadTemp = formatTestData(RegisteredTestId, testPack, testNumber, domain);
         const payload = {
-            userId: userDetails._id, // Replace with actual user ID
-            registeredTestId: payloadTemp.RegisteredTestId, // Replace with actual registered test ID
-            domainId: payloadTemp.domain, // Replace with actual domain ID
-            packId: payloadTemp.testPack, // Replace with actual pack ID
-            testId: payloadTemp.testNumber, // Replace with actual test ID
-            responses, // User's responses
+            userId: userDetails._id,
+            registeredTestId: payloadTemp.RegisteredTestId,
+            domainId: payloadTemp.domain,
+            packId: payloadTemp.testPack,
+            testId: payloadTemp.testNumber,
+            responses: responsesToSave,
             timeRemainingOnCompletion: testTimeRemaining,
         };
 
         try {
-            // Call the API
             const response = await fetch("/api/test/end-test-attempt", {
                 method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
+                headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(payload),
             });
 
-            // Parse the response
             const result = await response.json();
 
             if (response.ok) {
-                // Success message
-                toast.success("Test ended successfully.");
-                setIsTestOver(true);
                 setIsSubmitted(true);
+                return true;
             } else {
-                // Handle API errors
+                hasSubmittedRef.current = false;
                 console.error("Error ending test:", result.error);
                 toast.error(`Error: ${result.error}`);
+                return false;
             }
         } catch (error) {
-            // Handle network or other unexpected errors
+            hasSubmittedRef.current = false;
             console.error("Failed to end test:", error);
             toast.error("An unexpected error occurred while ending the test.");
+            return false;
         }
     };
 
-
-
     useEffect(() => {
-        if (isTestOver) {
-            toast.loading("Saving your Test Responses.. Please don't refresh the page...");
-            endTest(responses);
-            toast.dismiss();
+        if (isTestOver && !hasSubmittedRef.current) {
+            const tid = toast.loading("Time is up! Submitting your test responses...");
+            endTest(responses).then((ok) => {
+                toast.dismiss(tid);
+                if (ok) toast.success("Test submitted automatically!");
+            });
         }
     }, [isTestOver]);
 
-    const handleSubmit = () => {
-        // Ask for confirmation
+    const handleSubmit = async () => {
         const isConfirmed = confirm("Are you sure you want to end and submit the test?");
-        if (!isConfirmed) return; // If the user cancels, exit the function
+        if (!isConfirmed) return;
 
-        // Show loading toast
-        const toastId = toast.loading("Saving Your test...");
-        try {
-            // Call endTest with responses
-            endTest(responses);
-
-            // Simulate a delay if needed (e.g., API call)
-            setTimeout(() => {
-                // Dismiss loading toast and show success message
-                toast.dismiss(toastId);
-                toast.success("Your test has been saved successfully!");
-
-                // Set isSubmitted to true
-                setIsSubmitted(true);
-            }, 1000); // Simulating 1 second delay
-        } catch (error) {
-            // Handle any errors and show an error toast
-            toast.dismiss(toastId);
-            toast.error("An error occurred while saving your test.");
+        const toastId = toast.loading("Saving & submitting your test...");
+        const ok = await endTest(responses);
+        toast.dismiss(toastId);
+        if (ok) {
+            toast.success("Your test has been submitted successfully!");
         }
     };
 
@@ -757,32 +746,7 @@ export default function AttemptLive({ params }) {
         if (!attempting) {
             return (
                 <div>
-                    <nav className={`fixed top-0 left-0 bg-white border-b border-black pt-8 lg:pt-4 pb-4 pr-4 pl-4 items-center sticky`}>
-                        <div className={`mx-0 xl:mx-28 flex items-center`}>
-                            <div className={``}>
-                                <div>
-                                    <Image
-                                        src="/images/logo.png"
-                                        alt="Website Logo"
-                                        className="hidden md:inline-block"
-                                        width={60} // Set width to match the display size of the image
-                                        height={60} // Adjust height based on the aspect ratio of your image
-                                        priority // Optionally, add this if it’s an important image (e.g., above-the-fold content)
-                                    />
-                                </div>
-                                <div>
-                                    <Image
-                                        src="/images/logo_half.png"
-                                        alt="Website Logo"
-                                        className="md:hidden"
-                                        width={60} // Set width to match the display size of the image
-                                        height={60} // Adjust height based on the aspect ratio of your image
-                                        priority // Optionally, add this if it’s an important image (e.g., above-the-fold content)
-                                    />
-                                </div>
-                            </div>
-                        </div>
-                    </nav>
+                    <NavbarLite />
                     <section className={`${style.topSection} w-full text-white pt-6 pb-3`}>
                         <div
                             className={`sm:max-w-xl md:max-w-4xl lg:max-w-5xl xl:max-w-7xl md:px-0 px-3 md:px-8 lg:px-5 mx-auto pt-10 pb-5`}
@@ -879,15 +843,7 @@ export default function AttemptLive({ params }) {
                                                     onClick={() => {
                                                         setAttempting(true);
                                                         setIsFullscreen(true);
-                                                        if (document.documentElement.requestFullscreen) {
-                                                            document.documentElement.requestFullscreen(); // Standard Fullscreen API
-                                                        } else if (element.webkitRequestFullscreen) {
-                                                            document.documentElement.webkitRequestFullscreen(); // Safari
-                                                        } else if (element.mozRequestFullScreen) {
-                                                            document.documentElement.mozRequestFullScreen(); // Firefox
-                                                        } else if (element.msRequestFullscreen) {
-                                                            document.documentElement.msRequestFullscreen(); // IE/Edge
-                                                        }
+                                                        requestFullscreenSafe();
                                                         setIsTestLoading(true);
                                                         startTest();
                                                     }}
@@ -940,17 +896,7 @@ export default function AttemptLive({ params }) {
                                 Please switch to full-screen mode to continue.
                             </p>
                             <button
-                                onClick={() => {
-                                    if (document.documentElement.requestFullscreen) {
-                                        document.documentElement.requestFullscreen(); // Standard Fullscreen API
-                                    } else if (element.webkitRequestFullscreen) {
-                                        document.documentElement.webkitRequestFullscreen(); // Safari
-                                    } else if (element.mozRequestFullScreen) {
-                                        document.documentElement.mozRequestFullScreen(); // Firefox
-                                    } else if (element.msRequestFullscreen) {
-                                        document.documentElement.msRequestFullscreen(); // IE/Edge
-                                    }
-                                }}
+                                onClick={requestFullscreenSafe}
                                 style={{
                                     padding: '10px 20px',
                                     fontSize: '1rem',
@@ -1022,16 +968,16 @@ export default function AttemptLive({ params }) {
                                                             {...collapseAnimation}
                                                         >
                                                             <ul className="list-none p-0 m-0">
-                                                                {aptitudeQuestions.map((question, index) => (
+                                                                {aptitudeQuestions.map((question) => (
                                                                     <li
                                                                         key={question._id}
-                                                                        onClick={() => setSelectedQuestionIndex(index)}
-                                                                        className={`p-4 cursor-pointer transition ease-in-out duration-200 ${index === selectedQuestionIndex
+                                                                        onClick={() => setSelectedQuestionIndex(question._idx)}
+                                                                        className={`p-4 cursor-pointer transition ease-in-out duration-200 ${question._idx === selectedQuestionIndex
                                                                             ? "bg-gray-200 text-black hover:bg-gray-300"
                                                                             : "hover:bg-gray-50"
                                                                             } border-b border-gray-300`}
                                                                     >
-                                                                        <b>{`QUESTION ${index + 1}`}</b>
+                                                                        <b>{`QUESTION ${question._idx + 1}`}</b>
                                                                     </li>
                                                                 ))}
                                                             </ul>
@@ -1063,16 +1009,16 @@ export default function AttemptLive({ params }) {
                                                             {...collapseAnimation}
                                                         >
                                                             <ul className="list-none p-0 m-0">
-                                                                {subjectQuestions.map((question, index) => (
+                                                                {subjectQuestions.map((question) => (
                                                                     <li
                                                                         key={question._id}
-                                                                        onClick={() => setSelectedQuestionIndex(index + 10)} // Offset index for Subject questions
-                                                                        className={`p-4 cursor-pointer transition ease-in-out duration-200 ${index + 10 === selectedQuestionIndex
+                                                                        onClick={() => setSelectedQuestionIndex(question._idx)}
+                                                                        className={`p-4 cursor-pointer transition ease-in-out duration-200 ${question._idx === selectedQuestionIndex
                                                                             ? "bg-gray-200 text-black hover:bg-gray-300"
                                                                             : "hover:bg-gray-50"
                                                                             } border-b border-gray-300`}
                                                                     >
-                                                                        <b>{`QUESTION ${index + 11}`}</b>
+                                                                        <b>{`QUESTION ${question._idx + 1}`}</b>
                                                                     </li>
                                                                 ))}
                                                             </ul>
@@ -1160,11 +1106,11 @@ export default function AttemptLive({ params }) {
                                                             className="text-gray-800 text-lg leading-relaxed"
                                                             dangerouslySetInnerHTML={renderLatex(selectedQuestion.questionText)}
                                                         ></div>
-                                                        {selectedQuestion.diagramLink === "" ? ''
-                                                            : <div>
-                                                                <img className={`w-9/12`} src={`${selectedQuestion.diagramLink}`} alt="" />
+                                                        {selectedQuestion.diagramLink ? (
+                                                            <div>
+                                                                <img className={`w-9/12`} src={selectedQuestion.diagramLink} alt="Question diagram" />
                                                             </div>
-                                                        }
+                                                        ) : null}
                                                     </div>
 
                                                     {/* Options */}
@@ -1185,17 +1131,22 @@ export default function AttemptLive({ params }) {
                                                                         )
                                                                     }
                                                                 >
-                                                                    <div className="flex items-center space-x-2">
-                                                                        {responses[selectedQuestion._id] === option.optionId || responses[selectedQuestion._id]?.includes(option.optionId) ? (
-                                                                            <svg xmlns="http://www.w3.org/2000/svg" height={'22px'} width={'22px'} viewBox="0 -960 960 960" fill="#34A399" stroke="currentColor"><path d="M480-96q-79 0-149-30t-122.5-82.5Q156-261 126-331T96-480q0-80 30-149.5t82.5-122Q261-804 331-834t149-30q63 0 120 19t105 54l-52 52q-37-26-81-39.5T480-792q-130 0-221 91t-91 221q0 130 91 221t221 91q130 0 221-91t91-221q0-21-3-41.5t-8-40.5l57-57q13 32 19.5 67t6.5 72q0 79-30 149t-82.5 122.5Q699-156 629.5-126T480-96Zm-55-211L264-468l52-52 110 110 387-387 51 51-439 439Z" /></svg>
-                                                                        ) : (
-                                                                            <svg xmlns="http://www.w3.org/2000/svg" height={'22px'} width={'22px'} viewBox="0 -960 960 960" fill="gray" stroke="currentColor"><path d="M480-96q-79 0-149-30t-122.5-82.5Q156-261 126-331T96-480q0-80 30-149.5t82.5-122Q261-804 331-834t149-30q63 0 120 19t105 54l-52 52q-37-26-81-39.5T480-792q-130 0-221 91t-91 221q0 130 91 221t221 91q130 0 221-91t91-221q0-21-3-41.5t-8-40.5l57-57q13 32 19.5 67t6.5 72q0 79-30 149t-82.5 122.5Q699-156 629.5-126T480-96Zm-55-211L264-468l52-52 110 110 387-387 51 51-439 439Z" /></svg>
-                                                                        )}
-                                                                        <label
-                                                                            htmlFor={`option-${option.optionId}`}
-                                                                            className="text-gray-700 text-base cursor-pointer"
-                                                                            dangerouslySetInnerHTML={renderLatex(option.optionText)}
-                                                                        />
+                                                                    <div className="flex flex-col gap-2 w-full">
+                                                                        <div className="flex items-center space-x-2">
+                                                                            {responses[selectedQuestion._id] === option.optionId || responses[selectedQuestion._id]?.includes(option.optionId) ? (
+                                                                                <svg xmlns="http://www.w3.org/2000/svg" height={'22px'} width={'22px'} viewBox="0 -960 960 960" fill="#34A399" stroke="currentColor"><path d="M480-96q-79 0-149-30t-122.5-82.5Q156-261 126-331T96-480q0-80 30-149.5t82.5-122Q261-804 331-834t149-30q63 0 120 19t105 54l-52 52q-37-26-81-39.5T480-792q-130 0-221 91t-91 221q0 130 91 221t221 91q130 0 221-91t91-221q0-21-3-41.5t-8-40.5l57-57q13 32 19.5 67t6.5 72q0 79-30 149t-82.5 122.5Q699-156 629.5-126T480-96Zm-55-211L264-468l52-52 110 110 387-387 51 51-439 439Z" /></svg>
+                                                                            ) : (
+                                                                                <svg xmlns="http://www.w3.org/2000/svg" height={'22px'} width={'22px'} viewBox="0 -960 960 960" fill="gray" stroke="currentColor"><path d="M480-96q-79 0-149-30t-122.5-82.5Q156-261 126-331T96-480q0-80 30-149.5t82.5-122Q261-804 331-834t149-30q63 0 120 19t105 54l-52 52q-37-26-81-39.5T480-792q-130 0-221 91t-91 221q0 130 91 221t221 91q130 0 221-91t91-221q0-21-3-41.5t-8-40.5l57-57q13 32 19.5 67t6.5 72q0 79-30 149t-82.5 122.5Q699-156 629.5-126T480-96Zm-55-211L264-468l52-52 110 110 387-387 51 51-439 439Z" /></svg>
+                                                                            )}
+                                                                            <label
+                                                                                htmlFor={`option-${option.optionId}`}
+                                                                                className="text-gray-700 text-base cursor-pointer"
+                                                                                dangerouslySetInnerHTML={renderLatex(option.optionText)}
+                                                                            />
+                                                                        </div>
+                                                                        {option.optionImage ? (
+                                                                            <img className="max-w-xs rounded border border-gray-200 ml-7" src={option.optionImage} alt={`Option ${option.optionId}`} />
+                                                                        ) : null}
                                                                     </div>
                                                                 </div>
                                                             ))
@@ -1246,13 +1197,9 @@ export default function AttemptLive({ params }) {
                                                     </button>
                                                     <button
                                                         onClick={handleNextQuestion}
-                                                        disabled={selectedQuestionIndex === testQuestions.length}
-                                                        className={`py-6 px-10 flex gap-2 justify-end items-center text-md w-full text-white border border-neutral-300 transition ease-in-out duration-500 font-semibold rounded-md ${selectedQuestionIndex === testQuestions.length
-                                                            ? "bg-blue-300 cursor-not-allowed"
-                                                            : "bg-blue-500 hover:bg-blue-600"
-                                                            }`}
+                                                        className="py-6 px-10 flex gap-2 justify-end items-center text-md w-full text-white border border-neutral-300 transition ease-in-out duration-500 font-semibold rounded-md bg-blue-500 hover:bg-blue-600"
                                                     >
-                                                        Save & Next
+                                                        {selectedQuestionIndex === testQuestions.length - 1 ? "Save Response" : "Save & Next"}
                                                         <span>
                                                             <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#e8eaed"><path d="m321-80-71-71 329-329-329-329 71-71 400 400L321-80Z" /></svg>
                                                         </span>

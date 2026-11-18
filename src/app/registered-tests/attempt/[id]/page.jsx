@@ -10,6 +10,7 @@ import NavbarLite from "@/components/NavbarLite";
 import Footer from "@/components/Footer";
 import Loader from "@/components/Loader";
 import tests from "@/data/tests";
+import { parseTestWindow } from "@/utils/dateParser";
 import toast from "react-hot-toast";
 import { useAuthState } from "@/libs/supabase/authClient";
 
@@ -111,19 +112,12 @@ export default function AttemptTestLayout({ params }) {
         }
     }, [domain, testPack, testNumber]);
 
-    const formatDateString = (dateString) => {
-        return dateString.replace(/(\d+)(st|nd|rd|th)/, "$1"); // Remove ordinal suffix
-    };
-
-
-
     useEffect(() => {
         const calculateTimeRemaining = () => {
             if (testDate) {
-                // Parse and format the test date
-                const formattedDate = formatDateString(testDate);
-                const testDateTime = new Date(`${formattedDate} 17:30:00`);
-                const testEndDateTime = new Date(`${formattedDate} 23:30:00`);
+                const parsedWindow = parseTestWindow(testDate);
+                if (!parsedWindow) return;
+                const { start: testDateTime, end: testEndDateTime } = parsedWindow;
                 const now = new Date();
 
                 if (now >= testDateTime && now <= testEndDateTime) {
@@ -171,32 +165,7 @@ export default function AttemptTestLayout({ params }) {
     if (verified) {
         return (
             <div>
-                <nav className={`fixed top-0 left-0 bg-white border-b border-black pt-8 lg:pt-4 pb-4 pr-4 pl-4 items-center sticky`}>
-                    <div className={`mx-0 xl:mx-28 flex items-center`}>
-                        <div className={``}>
-                            <div>
-                                <Image
-                                    src="/images/logo.png"
-                                    alt="Website Logo"
-                                    className="hidden md:inline-block"
-                                    width={60} // Set width to match the display size of the image
-                                    height={60} // Adjust height based on the aspect ratio of your image
-                                    priority // Optionally, add this if it’s an important image (e.g., above-the-fold content)
-                                />
-                            </div>
-                            <div>
-                                <Image
-                                    src="/images/logo_half.png"
-                                    alt="Website Logo"
-                                    className="md:hidden"
-                                    width={60} // Set width to match the display size of the image
-                                    height={60} // Adjust height based on the aspect ratio of your image
-                                    priority // Optionally, add this if it’s an important image (e.g., above-the-fold content)
-                                />
-                            </div>
-                        </div>
-                    </div>
-                </nav>
+                <NavbarLite />
                 <section className={`${style.topSection} w-full text-white pt-2 pb-4`}>
                     <div
                         className={`sm:max-w-xl md:max-w-4xl lg:max-w-5xl xl:max-w-7xl md:px-0 px-3 md:px-8 lg:px-5 mx-auto pt-10 pb-5`}

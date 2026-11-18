@@ -31,6 +31,43 @@ export function computeTestAmountInPaise(testString) {
   return rupees && rupees > 0 ? rupees * 100 : null;
 }
 
+/**
+ * Checks whether a user already has an identical or overlapping pack registration
+ * for the same test branch (e.g., owning Pack 1 and attempting Both, or owning Both
+ * and attempting Pack 1 / Pack 2).
+ */
+export async function findOverlappingRegistration(profileId, testString) {
+  const idx = String(testString || "").indexOf(", ");
+  if (idx === -1) return null;
+
+  const targetTitle = testString.slice(0, idx).trim();
+  const targetPack = testString.slice(idx + 2).trim();
+  const normalizePack = (p) => (p.includes("Both") ? "BOTH" : p);
+  const targetNorm = normalizePack(targetPack);
+
+  const { data: registrations, error } = await getSupabaseAdmin()
+    .from("test_registrations")
+    .select("id, test")
+    .eq("userId", profileId);
+
+  if (error) throw error;
+
+  for (const reg of registrations || []) {
+    const rIdx = String(reg.test || "").indexOf(", ");
+    if (rIdx === -1) continue;
+    const regTitle = reg.test.slice(0, rIdx).trim();
+    const regPack = reg.test.slice(rIdx + 2).trim();
+    if (regTitle !== targetTitle) continue;
+
+    const regNorm = normalizePack(regPack);
+    if (regNorm === targetNorm) return reg;
+    if (regNorm === "BOTH" && (targetNorm === "Pack 1" || targetNorm === "Pack 2")) return reg;
+    if (targetNorm === "BOTH" && (regNorm === "Pack 1" || regNorm === "Pack 2")) return reg;
+  }
+
+  return null;
+}
+
 /** Verifies that `registeredTestId` belongs to `profileId` and optionally covers `(domainId, packId)`. */
 export async function getOwnedRegistration(profileId, registeredTestId, { domainId, packId } = {}) {
   const { data: registration, error } = await getSupabaseAdmin()

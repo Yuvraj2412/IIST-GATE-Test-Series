@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import crypto from "crypto";
 import { getSupabaseAdmin, withId } from "@/libs/supabase/admin";
 import { requireProfile } from "@/libs/supabase/server";
+import { findOverlappingRegistration } from "@/libs/supabase/testAccess";
 import { sendMail } from "@/libs/mail";
 import { registrationEmail } from "@/components/registrationEmail";
 
@@ -42,15 +43,8 @@ export async function POST(req) {
             );
         }
 
-        // Check if a registration for the same test already exists for the user
-        const { data: existingRegistration, error: regCheckErr } = await supabase
-            .from("test_registrations")
-            .select("id")
-            .eq("userId", profile.id)
-            .eq("test", test)
-            .maybeSingle();
-        if (regCheckErr) throw regCheckErr;
-
+        // Check if an exact or overlapping registration already exists for the user
+        const existingRegistration = await findOverlappingRegistration(profile.id, test);
         if (existingRegistration) {
             return NextResponse.json(
                 { message: "User is already registered for this test." },
@@ -109,12 +103,22 @@ export async function POST(req) {
         }
 
         const [testName, pack] = test.split(",").map((part) => part.trim());
-        await sendMail({
-            to: `${profile.email}, aadityatheperfect1@gmail.com, mohinthaKumar12gd@gmail.com `,
-            name: profile.name,
-            subject: "IGTS Registration Successful",
-            body: registrationEmail(name, pid, testName, pack, payment.amount, profile.email),
-        });
+        const adminCopies = (process.env.ADMIN_NOTIFICATION_EMAILS || "")
+            .split(",")
+            .map((e) => e.trim())
+            .filter(Boolean);
+        const recipients = [profile.email, ...adminCopies].join(", ");
+
+        try {
+            await sendMail({
+                to: recipients,
+                name: profile.name,
+                subject: "IGTS Dhanak 2027 · Registration Confirmed",
+                body: registrationEmail(name, pid, testName, pack, payment.amount, profile.email),
+            });
+        } catch (mailError) {
+            console.error("Confirmation email failed (non-fatal):", mailError);
+        }
 
         return NextResponse.json(
             {

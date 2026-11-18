@@ -1,8 +1,9 @@
 "use client";
 import { useState, useEffect, useRef } from "react";
 import NavbarLite from "@/components/NavbarLite";
-import style from "@/components/styles/SignUpCSS.module.css";
 import Footer from "@/components/Footer";
+import BrandLogo from "@/components/BrandLogo";
+import Link from "next/link";
 import {
   getSupabaseBrowserClient,
   onAuthStateChanged,
@@ -19,9 +20,7 @@ const SignIn = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [rEmail, setREmail] = useState("");
-
   const isFirstRef = useRef(true);
-
   const [inValidEmailId, setInValidEmailId] = useState(false);
   const [resetPassword, setResetPassword] = useState(false);
 
@@ -38,8 +37,7 @@ const SignIn = () => {
   };
 
   function validateEmail(val) {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return emailRegex.test(val);
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val);
   }
 
   const getUser = async () => {
@@ -87,7 +85,7 @@ const SignIn = () => {
   const handleSignIn = async () => {
     isFirstRef.current = false;
     setInValidEmailId(false);
-    const loadingToast = toast.loading("Please wait...");
+    const loadingToast = toast.loading("Signing you in...");
 
     if (!email || !password) {
       toast.error("Please enter email and password");
@@ -95,7 +93,7 @@ const SignIn = () => {
       return;
     }
 
-    if (!validateEmail(email)) {
+    if (!validateEmail(email.trim())) {
       toast.error("Invalid email address");
       toast.dismiss(loadingToast);
       return;
@@ -113,7 +111,7 @@ const SignIn = () => {
         toast.dismiss(loadingToast);
         return;
       }
-    } catch (error) {
+    } catch {
       toast.error("Error checking email. Please try again.");
       toast.dismiss(loadingToast);
       return;
@@ -159,13 +157,13 @@ const SignIn = () => {
   };
 
   const handlePasswordReset = async () => {
-    const k = toast.loading("Please wait...");
+    const k = toast.loading("Sending reset link...");
     if (!rEmail) {
       toast.error("Please enter email");
       toast.dismiss(k);
       return;
     }
-    if (!validateEmail(rEmail)) {
+    if (!validateEmail(rEmail.trim())) {
       toast.error("Invalid email address");
       toast.dismiss(k);
       return;
@@ -182,217 +180,188 @@ const SignIn = () => {
   };
 
   return (
-    <div className={`min-h-screen topSection`}>
+    <div className="min-h-screen flex flex-col bg-slate-50 topSection">
       <NavbarLite />
-      <motion.div
-        className={`min-h-screen flex flex-col items-center mt-20 sm:mt-20 md:mt-14`}
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        exit={{ opacity: 0 }}
-        transition={{ duration: 0.4 }}
-      >
-        {resetPassword ? (
-          <motion.div
-            className={`${style.formBox} border border-black`}
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.4 }}
-          >
-            <div className={`${style.form}`}>
-              <span className={`${style.title}`}>Reset Password</span>
-              <span className={`${style.subtitle} px-14`}>
-                Please enter your email
-              </span>
-              <div className={`${style.formContainer} w-full px-1`}>
-                <p
-                  className={`text-left text-md ${style.fonttAverta} text-[#0072bb] font-bold mb-1`}
-                  htmlFor="rEmail"
-                >
-                  Email
-                </p>
-                <input
-                  onChange={(e) => setREmail(e.target.value)}
-                  type="email"
-                  value={rEmail}
-                  className={`${style.input} w-full p-2.5 mb-3 border-2 focus:border-blue-400 border-gray-700 rounded-md placeholder-gray-800 text-gray-700 focus:outline-none focus:ring-1 focus:ring-blue-400`}
-                  placeholder="Enter Your Email"
-                  onKeyUp={(e) => {
-                    if (e.key === "Enter") {
-                      handlePasswordReset();
-                    }
-                  }}
-                />
-              </div>
-              <button
-                id="resetpassbtn"
-                className={`${style.formButton} border border-[#343434] flex gap-2 justify-center items-center`}
-                onClick={handlePasswordReset}
-              >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  height="24px"
-                  viewBox="0 -960 960 960"
-                  width="24px"
-                  fill="#FFFFFF"
-                >
-                  <path d="M120-160v-640l760 320-760 320Zm80-120 474-200-474-200v140l240 60-240 60v140Zm0 0v-400 400Z" />
-                </svg>
-                Send reset link
-              </button>
-            </div>
-            <div className={`${style.formSection}`}>
-              <p>
-                Remember your password?{" "}
-                <span
-                  className={`${style.smallLink} cursor-pointer`}
-                  onClick={() => {
-                    setResetPassword(false);
-                  }}
-                >
-                  Sign in
-                </span>
-              </p>
-            </div>
-          </motion.div>
-        ) : (
-          <div className={`${style.formBox} border border-black`}>
-            <div className={`${style.form}`}>
-              <span className={`${style.title}`}>Sign in</span>
-              <span className={`${style.subtitle} px-14`}>
-                Sign into your account
-              </span>
-              {inValidEmailId && (
-                <div
-                  role="alert"
-                  className="bg-red-100 w-[268px] border-l-4 border-red-500 text-red-900 p-2 rounded-lg flex items-center transition duration-300 ease-in-out"
-                >
-                  <svg
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    className="h-5 w-5 flex-shrink-0 mr-2 text-red-600"
-                    xmlns="http://www.w3.org/2000/svg"
-                  >
-                    <path
-                      d="M13 16h-1v-4h1m0-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                      strokeWidth="2"
-                      strokeLinejoin="round"
-                      strokeLinecap="round"
-                    ></path>
-                  </svg>
-                  <p className="text-xs text-justify text-left">
-                    Please provide a valid email address and password. If you had
-                    signed up using google, please use &apos;continue with
-                    google&apos;. If you continue to have issues logging into
-                    your account, contact us.
+
+      <main className="flex-1 flex items-center justify-center px-4 py-12">
+        <motion.div
+          className="w-full max-w-md"
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.35 }}
+        >
+          {resetPassword ? (
+            <div className="bg-white rounded-3xl border border-slate-200 shadow-xl overflow-hidden">
+              <div className="p-7 sm:p-8 space-y-5">
+                <div className="flex justify-center">
+                  <BrandLogo variant="light" size="sm" href={null} />
+                </div>
+                <div className="text-center">
+                  <h1 className="text-2xl font-extrabold text-slate-900">Reset Password</h1>
+                  <p className="text-sm text-slate-500 mt-1">
+                    Enter your registered email to receive a reset link.
                   </p>
                 </div>
-              )}
-              <div className={`${style.formContainer} w-full px-1`}>
-                <p
-                  className={`text-left text-[#0072bb] text-md ${style.fonttAverta} font-bold mb-1`}
-                  htmlFor="email"
-                >
-                  Email
-                </p>
-                <input
-                  onChange={(e) => setEmail(e.target.value)}
-                  type="email"
-                  value={email}
-                  className={`${style.input} w-full p-2.5 mb-3 border-2 focus:border-blue-400 border-gray-700 rounded-md placeholder-gray-800 text-gray-700 focus:outline-none focus:ring-1 focus:ring-blue-400`}
-                  placeholder="Enter Your Email"
-                  onKeyUp={(e) => {
-                    if (e.key === "Enter") {
-                      handleSignIn();
-                    }
-                  }}
-                />
-                <p
-                  className={`text-left text-[#0072bb] text-md ${style.fonttAverta} font-bold mb-1`}
-                  htmlFor="password"
-                >
-                  Password
-                </p>
-                <input
-                  onChange={(e) => setPassword(e.target.value)}
-                  type="password"
-                  required
-                  value={password}
-                  className={`${style.input} w-full p-2.5 mb-3 border-2 focus:border-blue-400 border-gray-700 rounded-md placeholder-gray-800 text-black focus:outline-none focus:ring-1 focus:ring-blue-400`}
-                  placeholder="Password"
-                  onKeyUp={(e) => {
-                    if (e.key === "Enter") {
-                      handleSignIn();
-                    }
-                  }}
-                />
-              </div>
-              <button
-                className={`${style.formButton} border border-[#343434] flex gap-2 justify-center items-center`}
-                onClick={handleSignIn}
-              >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  height="24px"
-                  viewBox="0 -960 960 960"
-                  width="24px"
-                  fill="#FFFFFF"
-                >
-                  <path d="M480-120v-80h280v-560H480v-80h280q33 0 56.5 23.5T840-760v560q0 33-23.5 56.5T760-120H480Zm-80-160-55-58 102-102H120v-80h327L345-622l55-58 200 200-200 200Z" />
-                </svg>
-                Sign in
-              </button>
-              <button
-                className={`${style.forgotBtn}`}
-                onClick={() => {
-                  setResetPassword(true);
-                }}
-              >
-                Forgot password?
-              </button>
-              <div className={`${style.dividerContainer}`}>
-                <div className={`${style.divider} text-xs`}>
-                  Or use google account
+
+                <div>
+                  <label className="block text-sm font-bold text-slate-700 mb-1.5" htmlFor="rEmail">
+                    Email
+                  </label>
+                  <input
+                    id="rEmail"
+                    type="email"
+                    value={rEmail}
+                    onChange={(e) => setREmail(e.target.value)}
+                    onKeyUp={(e) => {
+                      if (e.key === "Enter") handlePasswordReset();
+                    }}
+                    placeholder="you@example.com"
+                    className="w-full px-4 py-2.5 rounded-xl border border-slate-300 bg-slate-50 focus:bg-white text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  />
                 </div>
-              </div>
-              <button
-                onClick={handleGoogle}
-                className={`${style.GoogleButton} justify-center`}
-              >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  preserveAspectRatio="xMidYMid"
-                  viewBox="0 0 256 262"
+
+                <button
+                  id="resetpassbtn"
+                  type="button"
+                  onClick={handlePasswordReset}
+                  className="w-full py-3 rounded-full font-bold text-white bg-gradient-to-r from-[#4f46e5] to-[#674cee] hover:from-[#4338ca] hover:to-[#5b3fe3] shadow-md transition"
                 >
-                  <path
-                    fill="#4285F4"
-                    d="M255.878 133.451c0-10.734-.871-18.567-2.756-26.69H130.55v48.448h71.947c-1.45 12.04-9.283 30.172-26.69 42.356l-.244 1.622 38.755 30.023 2.685.268c24.659-22.774 38.875-56.282 38.875-96.027"
-                  ></path>
-                  <path
-                    fill="#34A853"
-                    d="M130.55 261.1c35.248 0 64.839-11.605 86.453-31.622l-41.196-31.913c-11.024 7.688-25.82 13.055-45.257 13.055-34.523 0-63.824-22.773-74.269-54.25l-1.531.13-40.298 31.187-.527 1.465C35.393 231.798 79.49 261.1 130.55 261.1"
-                  ></path>
-                  <path
-                    fill="#FBBC05"
-                    d="M56.281 156.37c-2.756-8.123-4.351-16.827-4.351-25.82 0-8.994 1.595-17.697 4.206-25.82l-.073-1.73L15.26 71.312l-1.335.635C5.077 89.644 0 109.517 0 130.55s5.077 40.905 13.925 58.602l42.356-32.782"
-                  ></path>
-                  <path
-                    fill="#EB4335"
-                    d="M130.55 50.479c24.514 0 41.05 10.589 50.479 19.438l36.844-35.974C195.245 12.91 165.798 0 130.55 0 79.49 0 35.393 29.301 13.925 71.947l42.211 32.783c10.59-31.477 39.891-54.251 74.414-54.251"
-                  ></path>
-                </svg>
-                Continue with Google
-              </button>
+                  Send Reset Link
+                </button>
+              </div>
+              <div className="px-6 py-4 bg-slate-50 border-t border-slate-200 text-center text-sm text-slate-600">
+                Remember your password?{" "}
+                <button
+                  type="button"
+                  onClick={() => setResetPassword(false)}
+                  className="font-bold text-indigo-600 hover:underline"
+                >
+                  Sign in
+                </button>
+              </div>
             </div>
-            <div className={`${style.formSection}`}>
-              <p>
-                Not registered? <a href="/sign-up">Sign up</a>{" "}
-              </p>
+          ) : (
+            <div className="bg-white rounded-3xl border border-slate-200 shadow-xl overflow-hidden">
+              <div className="p-7 sm:p-8 space-y-5">
+                <div className="flex justify-center">
+                  <BrandLogo variant="light" size="sm" href={null} />
+                </div>
+                <div className="text-center">
+                  <h1 className="text-2xl font-extrabold text-slate-900">Welcome Back</h1>
+                  <p className="text-sm text-slate-500 mt-1">
+                    Sign in to your IGTS · Dhanak 2027 account
+                  </p>
+                </div>
+
+                {inValidEmailId && (
+                  <div
+                    role="alert"
+                    className="bg-rose-50 border border-rose-200 text-rose-800 p-3.5 rounded-2xl text-xs leading-relaxed"
+                  >
+                    Incorrect email or password. If you originally signed up with Google, please click{" "}
+                    <strong>Continue with Google</strong> below.
+                  </div>
+                )}
+
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-bold text-slate-700 mb-1.5" htmlFor="email">
+                      Email Address
+                    </label>
+                    <input
+                      id="email"
+                      type="email"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      onKeyUp={(e) => {
+                        if (e.key === "Enter") handleSignIn();
+                      }}
+                      placeholder="you@example.com"
+                      className="w-full px-4 py-2.5 rounded-xl border border-slate-300 bg-slate-50 focus:bg-white text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    />
+                  </div>
+
+                  <div>
+                    <div className="flex items-center justify-between mb-1.5">
+                      <label className="block text-sm font-bold text-slate-700" htmlFor="password">
+                        Password
+                      </label>
+                      <button
+                        type="button"
+                        onClick={() => setResetPassword(true)}
+                        className="text-xs font-bold text-indigo-600 hover:underline"
+                      >
+                        Forgot password?
+                      </button>
+                    </div>
+                    <input
+                      id="password"
+                      type="password"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      onKeyUp={(e) => {
+                        if (e.key === "Enter") handleSignIn();
+                      }}
+                      placeholder="Enter your password"
+                      className="w-full px-4 py-2.5 rounded-xl border border-slate-300 bg-slate-50 focus:bg-white text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    />
+                  </div>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={handleSignIn}
+                  className="w-full py-3 rounded-full font-bold text-white bg-gradient-to-r from-[#4f46e5] to-[#674cee] hover:from-[#4338ca] hover:to-[#5b3fe3] shadow-md shadow-indigo-500/20 transition"
+                >
+                  Sign In
+                </button>
+
+                <div className="relative flex py-1 items-center">
+                  <div className="flex-grow border-t border-slate-200" />
+                  <span className="flex-shrink mx-3 text-xs font-semibold text-slate-400 uppercase">
+                    Or continue with
+                  </span>
+                  <div className="flex-grow border-t border-slate-200" />
+                </div>
+
+                <button
+                  type="button"
+                  onClick={handleGoogle}
+                  className="w-full py-2.5 px-4 rounded-full border border-slate-300 bg-white hover:bg-slate-50 text-slate-700 font-bold text-sm flex items-center justify-center gap-3 transition shadow-sm"
+                >
+                  <svg className="w-5 h-5" preserveAspectRatio="xMidYMid" viewBox="0 0 256 262">
+                    <path
+                      fill="#4285F4"
+                      d="M255.878 133.451c0-10.734-.871-18.567-2.756-26.69H130.55v48.448h71.947c-1.45 12.04-9.283 30.172-26.69 42.356l-.244 1.622 38.755 30.023 2.685.268c24.659-22.774 38.875-56.282 38.875-96.027"
+                    />
+                    <path
+                      fill="#34A853"
+                      d="M130.55 261.1c35.248 0 64.839-11.605 86.453-31.622l-41.196-31.913c-11.024 7.688-25.82 13.055-45.257 13.055-34.523 0-63.824-22.773-74.269-54.25l-1.531.13-40.298 31.187-.527 1.465C35.393 231.798 79.49 261.1 130.55 261.1"
+                    />
+                    <path
+                      fill="#FBBC05"
+                      d="M56.281 156.37c-2.756-8.123-4.351-16.827-4.351-25.82 0-8.994 1.595-17.697 4.206-25.82l-.073-1.73L15.26 71.312l-1.335.635C5.077 89.644 0 109.517 0 130.55s5.077 40.905 13.925 58.602l42.356-32.782"
+                    />
+                    <path
+                      fill="#EB4335"
+                      d="M130.55 50.479c24.514 0 41.05 10.589 50.479 19.438l36.844-35.974C195.245 12.91 165.798 0 130.55 0 79.49 0 35.393 29.301 13.925 71.947l42.211 32.783c10.59-31.477 39.891-54.251 74.414-54.251"
+                    />
+                  </svg>
+                  <span>Continue with Google</span>
+                </button>
+              </div>
+
+              <div className="px-6 py-4 bg-slate-50 border-t border-slate-200 text-center text-sm text-slate-600">
+                New to IGTS?{" "}
+                <Link href="/sign-up" className="font-bold text-indigo-600 hover:underline">
+                  Create an account
+                </Link>
+              </div>
             </div>
-          </div>
-        )}
-      </motion.div>
+          )}
+        </motion.div>
+      </main>
+
       <Footer />
     </div>
   );

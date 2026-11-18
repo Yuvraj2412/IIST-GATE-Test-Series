@@ -1,48 +1,21 @@
+"use client";
 import Link from "next/link";
-import Image from 'next/image';
+import BrandLogo from "./BrandLogo";
 
-const Navbar = () => {
+const NavbarLite = () => {
+  return (
+    <header className="sticky top-0 z-50 w-full bg-white/90 backdrop-blur-xl border-b border-slate-200/80 shadow-sm">
+      <div className="max-w-screen-xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+        <BrandLogo variant="light" size="sm" href="/" />
+        <Link
+          href="/tests"
+          className="text-xs sm:text-sm font-semibold text-slate-600 hover:text-indigo-700 transition px-3 py-1.5 rounded-full hover:bg-slate-100"
+        >
+          ← Back to Site
+        </Link>
+      </div>
+    </header>
+  );
+};
 
-    return (
-        <nav className={`bg-white border-b border-black pt-8 lg:pt-4 pb-4 pr-4 pl-4 items-center`}>
-            <div className={`mx-0 xl:mx-28 flex items-center`}>
-                <div className={``}>
-                    <Link href="/">
-
-                        <Image
-                            src="/images/logo.png"
-                            alt="Website Logo"
-                            className="hidden md:inline-block"
-                            width={60} // Set width to match the display size of the image
-                            height={60} // Adjust height based on the aspect ratio of your image
-                            priority // Optionally, add this if it’s an important image (e.g., above-the-fold content)
-                        />
-
-                    </Link>
-                    <Link href="/">
-                        <Image
-                            src="/images/logo_half.png"
-                            alt="Website Logo"
-                            className="md:hidden"
-                            width={60} // Set width to match the display size of the image
-                            height={60} // Adjust height based on the aspect ratio of your image
-                            priority // Optionally, add this if it’s an important image (e.g., above-the-fold content)
-                        />
-                    </Link>
-                </div>
-
-
-            </div>
-
-        </nav>
-    );
-}
-
-export default Navbar;
-
-
-
-
-
-
-
+export default NavbarLite;

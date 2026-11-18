@@ -1,8 +1,9 @@
 .topSection {
   overflow: visible;
-  background: url("/images/sectionMask.png") center center no-repeat #674cee;
-  background-size: cover;
-  background-repeat: no-repeat;
+  background:
+    radial-gradient(circle at 20% 25%, rgba(103, 76, 238, 0.34) 0%, transparent 46%),
+    radial-gradient(circle at 85% 30%, rgba(245, 158, 11, 0.18) 0%, transparent 42%),
+    linear-gradient(135deg, #070b18 0%, #111635 55%, #1e1650 100%);
 }
 
 @font-face {
@@ -12,69 +13,46 @@
 }
 
 .fonttAverta {
-  font-family: "Averta";
-  font-weight: bolder;
+  font-family: "Averta", sans-serif;
+  font-weight: 700;
 }
 
-/* From Uiverse.io by asgardOP */
+/* Social circle buttons */
 .button {
   cursor: pointer;
-  width: 50px;
-  height: 50px;
-  border-radius: 50px;
-  border: none;
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.15);
   background: linear-gradient(120deg, #833ab4, #fd1d1d, #fcb045);
   position: relative;
   z-index: 0;
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-left: 10px;
-  transition: 0.1s;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
+
+.button:hover {
+  transform: translateY(-2px) scale(1.06);
+  box-shadow: 0 10px 24px rgba(245, 158, 11, 0.25);
+}
+
 .button svg {
   color: white;
-  width: 30px;
-  height: 30px;
+  width: 26px;
+  height: 26px;
   z-index: 9;
 }
 
-.button:nth-child(3) {
-  background: rgb(255, 33, 33);
-}
 .button:nth-child(2) {
-  background: black;
+  background: #0f172a;
+}
+
+.button:nth-child(3) {
+  background: #dc2626;
 }
 
 .button:nth-child(4) {
   background: #1877f2;
-}
-
-.button:nth-child(5) {
-  background: rgb(255, 33, 33);
-}
-
-.button:nth-child(6) {
-  background: black;
-}
-
-.button:active {
-  transform: scale(0.85);
-}
-
-.button::before {
-  content: "";
-  position: absolute;
-  width: 55px;
-  height: 55px;
-  background-color: #212121;
-  border-radius: 50px;
-  z-index: -1;
-  border: 0px solid rgba(255, 255, 255, 0.411);
-  transition: 0.4s;
-}
-
-.button:hover::before {
-  width: 0px;
-  height: 0px;
 }

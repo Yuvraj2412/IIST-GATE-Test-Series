@@ -5,12 +5,13 @@
 }
 
 .fonttAverta {
-  font-family: "Averta";
+  font-family: "Averta", sans-serif;
 }
 
 .topSection {
   overflow: visible;
-  background: url("/images/sectionMask.png") center center no-repeat #674cee;
-  background-size: cover;
-  background-repeat: no-repeat;
+  background:
+    radial-gradient(circle at 20% 25%, rgba(103, 76, 238, 0.34) 0%, transparent 46%),
+    radial-gradient(circle at 85% 30%, rgba(245, 158, 11, 0.18) 0%, transparent 42%),
+    linear-gradient(135deg, #070b18 0%, #111635 55%, #1e1650 100%);
 }

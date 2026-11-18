@@ -1,150 +1,123 @@
-import Link from 'next/link';
-import React from 'react';
-import style from '@/components/styles/FooterCSS.module.css';
+import Link from "next/link";
+import React from "react";
+import BrandLogo from "./BrandLogo";
 
 const Footer = () => {
-    return (
-        <footer className="flex flex-col border-t border-black items-center bg-gray-800 text-center text-surface">
-            <div className="max-w-7xl w-full pt-6 pb-4 lg:pb-0 px-4 md:px-16 flex flex-col gap-2 lg:gap-0 lg:flex-row justify-between items-center border-b border-gray-600 mx-auto">
-                <div className="lg:hidden flex flex-wrap justify-center space-x-10 md:space-x-14 mb-4">
-                    <div>
-                        <a className={`${style.BtnSmall}`} href='https://x.com/dhanakiist' target='_blank'>
-                            <div className={style.sign}>
-                                <svg xmlns="http://www.w3.org/2000/svg" fill="red" viewBox="0 0 513 512">
-                                    <path d="M389.2 48h70.6L305.6 224.2 487 464H345L233.7 318.6 106.5 464H35.8L200.7 275.5 26.8 48H172.4L272.9 180.9 389.2 48zM364.4 421.8h39.1L151.1 88h-42L364.4 421.8z" />
-                                </svg>
-                            </div>
-                        </a>
-                    </div>
-                    <div>
-                        <a className={`${style.BtnSmall}`} href='https://www.facebook.com/@iist.dhanak' target='_blank'>
-                            <div className={style.sign}>
-                                <svg
-                                    xmlns="http://www.w3.org/2000/svg"
-                                    fill="currentColor"
-                                    viewBox="0 0 448 512"
-                                >
-                                    <path
-                                        d="M279.14 288l14.22-92.66h-88.91V117.24c0-25.35 12.42-50.06 52.24-50.06H295V3.1S277.43 0 248.36 0c-73.07 0-121.4 44.38-121.4 124.72v70.62H72.22V288h54.74v224h100.32V288z"
-                                    />
-                                </svg>
-
-                            </div>
-                        </a>
-                    </div>
-                    <div>
-                        <a className={`${style.BtnSmall}`} href='https://www.instagram.com/dhanak.iist/' target='_blank' id="insta">
-                            <div className={style.sign}><svg
-                                xmlns="http://www.w3.org/2000/svg"
-                                fill="currentColor"
-                                viewBox="0 0 448 512">
-                                <path
-                                    d="M224.1 141c-63.6 0-114.9 51.3-114.9 114.9s51.3 114.9 114.9 114.9S339 319.5 339 255.9 287.7 141 224.1 141zm0 189.6c-41.1 0-74.7-33.5-74.7-74.7s33.5-74.7 74.7-74.7 74.7 33.5 74.7 74.7-33.6 74.7-74.7 74.7zm146.4-194.3c0 14.9-12 26.8-26.8 26.8-14.9 0-26.8-12-26.8-26.8s12-26.8 26.8-26.8 26.8 12 26.8 26.8zm76.1 27.2c-1.7-35.9-9.9-67.7-36.2-93.9-26.2-26.2-58-34.4-93.9-36.2-37-2.1-147.9-2.1-184.9 0-35.8 1.7-67.6 9.9-93.9 36.1s-34.4 58-36.2 93.9c-2.1 37-2.1 147.9 0 184.9 1.7 35.9 9.9 67.7 36.2 93.9s58 34.4 93.9 36.2c37 2.1 147.9 2.1 184.9 0 35.9-1.7 67.7-9.9 93.9-36.2 26.2-26.2 34.4-58 36.2-93.9 2.1-37 2.1-147.8 0-184.8zM398.8 388c-7.8 19.6-22.9 34.7-42.6 42.6-29.5 11.7-99.5 9-132.1 9s-102.7 2.6-132.1-9c-19.6-7.8-34.7-22.9-42.6-42.6-11.7-29.5-9-99.5-9-132.1s-2.6-102.7 9-132.1c7.8-19.6 22.9-34.7 42.6-42.6 29.5-11.7 99.5-9 132.1-9s102.7-2.6 132.1 9c19.6 7.8 34.7 22.9 42.6 42.6 11.7 29.5 9 99.5 9 132.1s2.7 102.7-9 132.1z" />
-                            </svg>
-                            </div>
-                        </a>
-                    </div>
-                    <div>
-                        <a className={`${style.BtnSmall}`} href='https://www.linkedin.com/in/dhanak-iist-b2ba83bb/' target='_blank'>
-                            <div className={style.sign}><svg
-                                xmlns="http://www.w3.org/2000/svg"
-                                fill="currentColor"
-                                viewBox="0 0 448 512">
-                                <path
-                                    d="M100.3 448H7.4V148.9h92.9zM53.8 108.1C24.1 108.1 0 83.5 0 53.8a53.8 53.8 0 0 1 107.6 0c0 29.7-24.1 54.3-53.8 54.3zM447.9 448h-92.7V302.4c0-34.7-.7-79.2-48.3-79.2-48.3 0-55.7 37.7-55.7 76.7V448h-92.8V148.9h89.1v40.8h1.3c12.4-23.5 42.7-48.3 87.9-48.3 94 0 111.3 61.9 111.3 142.3V448z" />
-                            </svg>
-                            </div>
-                        </a>
-                    </div>
-                </div>
-                {/* Footer Links */}
-                <div className="flex flex-wrap justify-center gap-6 md:gap-0 md:flex md:justify-around md:space-x-12">
-                    <Link
-                        href={'/privacy-policy'}
-                        className={`${style.bbtn} text-md`}>Privacy Policy
-                    </Link>
-                    <Link
-                        href={'/about'}
-                        className={`${style.bbtn} text-md`}>About
-                    </Link>
-                    <Link
-                        href={'/contact-us'}
-                        className={`${style.bbtn} text-md`}>Contact Us
-                    </Link>
-                    <Link
-                        href={'/faqs'}
-                        className={`${style.bbtn} text-md`}>FAQs
-                    </Link>
-
-                </div>
-                {/* Social Media Buttons */}
-                <div className="hidden lg:flex lg:flex-wrap justify-center space-x-10 md:space-x-14 mb-4">
-                    <div>
-                        <a className={`${style.Btn}`} href='https://x.com/dhanakiist' target='_blank'>
-                            <div className={style.sign}>
-                                <svg xmlns="http://www.w3.org/2000/svg" fill="red" viewBox="0 0 513 512">
-                                    <path d="M389.2 48h70.6L305.6 224.2 487 464H345L233.7 318.6 106.5 464H35.8L200.7 275.5 26.8 48H172.4L272.9 180.9 389.2 48zM364.4 421.8h39.1L151.1 88h-42L364.4 421.8z" />
-                                </svg>
-                            </div>
-                            <div className={style.text}>Twitter</div>
-                        </a>
-                    </div>
-                    <div>
-                        <a className={`${style.Btn}`} href='https://www.facebook.com/@iist.dhanak' target='_blank'>
-                            <div className={style.sign}>
-                                <svg
-                                    xmlns="http://www.w3.org/2000/svg"
-                                    fill="currentColor"
-                                    viewBox="0 0 448 512"
-                                >
-                                    <path
-                                        d="M279.14 288l14.22-92.66h-88.91V117.24c0-25.35 12.42-50.06 52.24-50.06H295V3.1S277.43 0 248.36 0c-73.07 0-121.4 44.38-121.4 124.72v70.62H72.22V288h54.74v224h100.32V288z"
-                                    />
-                                </svg>
-
-                            </div>
-                            <div className={style.text}>Facebook</div>
-                        </a>
-                    </div>
-                    <div>
-                        <a className={`${style.Btn}`} href='https://www.instagram.com/dhanak.iist/' target='_blank' id="insta">
-                            <div className={style.sign}><svg
-                                xmlns="http://www.w3.org/2000/svg"
-                                fill="currentColor"
-                                viewBox="0 0 448 512">
-                                <path
-                                    d="M224.1 141c-63.6 0-114.9 51.3-114.9 114.9s51.3 114.9 114.9 114.9S339 319.5 339 255.9 287.7 141 224.1 141zm0 189.6c-41.1 0-74.7-33.5-74.7-74.7s33.5-74.7 74.7-74.7 74.7 33.5 74.7 74.7-33.6 74.7-74.7 74.7zm146.4-194.3c0 14.9-12 26.8-26.8 26.8-14.9 0-26.8-12-26.8-26.8s12-26.8 26.8-26.8 26.8 12 26.8 26.8zm76.1 27.2c-1.7-35.9-9.9-67.7-36.2-93.9-26.2-26.2-58-34.4-93.9-36.2-37-2.1-147.9-2.1-184.9 0-35.8 1.7-67.6 9.9-93.9 36.1s-34.4 58-36.2 93.9c-2.1 37-2.1 147.9 0 184.9 1.7 35.9 9.9 67.7 36.2 93.9s58 34.4 93.9 36.2c37 2.1 147.9 2.1 184.9 0 35.9-1.7 67.7-9.9 93.9-36.2 26.2-26.2 34.4-58 36.2-93.9 2.1-37 2.1-147.8 0-184.8zM398.8 388c-7.8 19.6-22.9 34.7-42.6 42.6-29.5 11.7-99.5 9-132.1 9s-102.7 2.6-132.1-9c-19.6-7.8-34.7-22.9-42.6-42.6-11.7-29.5-9-99.5-9-132.1s-2.6-102.7 9-132.1c7.8-19.6 22.9-34.7 42.6-42.6 29.5-11.7 99.5-9 132.1-9s102.7-2.6 132.1 9c19.6 7.8 34.7 22.9 42.6 42.6 11.7 29.5 9 99.5 9 132.1s2.7 102.7-9 132.1z" />
-                            </svg>
-                            </div>
-                            <div className={style.text}>Instagram</div>
-                        </a>
-                    </div>
-                    <div>
-                        <a className={`${style.Btn}`} href='https://www.linkedin.com/in/dhanak-iist-b2ba83bb/' target='_blank'>
-                            <div className={style.sign}><svg
-                                xmlns="http://www.w3.org/2000/svg"
-                                fill="currentColor"
-                                viewBox="0 0 448 512">
-                                <path
-                                    d="M100.3 448H7.4V148.9h92.9zM53.8 108.1C24.1 108.1 0 83.5 0 53.8a53.8 53.8 0 0 1 107.6 0c0 29.7-24.1 54.3-53.8 54.3zM447.9 448h-92.7V302.4c0-34.7-.7-79.2-48.3-79.2-48.3 0-55.7 37.7-55.7 76.7V448h-92.8V148.9h89.1v40.8h1.3c12.4-23.5 42.7-48.3 87.9-48.3 94 0 111.3 61.9 111.3 142.3V448z" />
-                            </svg>
-                            </div>
-                            <div className={style.text}>LinkedIn</div>
-                        </a>
-                    </div>
-                </div>
-
-
-
-
+  return (
+    <footer className="bg-[#070b18] text-slate-300 border-t border-slate-800/80">
+      <div className="max-w-screen-xl mx-auto px-6 sm:px-8 lg:px-10 py-12">
+        <div className="grid grid-cols-1 md:grid-cols-12 gap-10 pb-10 border-b border-slate-800/80">
+          {/* Brand Column */}
+          <div className="md:col-span-5 space-y-4">
+            <BrandLogo variant="dark" size="md" href="/" />
+            <p className="text-sm leading-relaxed text-slate-400 max-w-md">
+              Official GATE 2027 Mock Test Series organised as part of{" "}
+              <span className="text-amber-300 font-semibold">Dhanak 2027</span> by students of the
+              Indian Institute of Space Science and Technology (IIST), Valiamala, Thiruvananthapuram.
+            </p>
+            <div className="inline-flex items-center gap-2 text-xs font-medium text-sky-300 bg-sky-500/10 border border-sky-400/20 px-3 py-1.5 rounded-full">
+              <span>Department of Space, Govt. of India · IIST Campus</span>
             </div>
+          </div>
 
-            {/* Footer Copyright */}
-            <div className="text-center pt-2 pb-4 text-[#9ca3af] text-sm sm:text-base">
-                Copyright © 2024 Dhanak
+          {/* Navigation Column */}
+          <div className="md:col-span-3 space-y-3">
+            <h3 className="text-xs font-bold uppercase tracking-widest text-white">Platform</h3>
+            <ul className="space-y-2.5 text-sm">
+              <li>
+                <Link href="/tests" className="text-slate-400 hover:text-white transition">
+                  GATE 2027 Mock Tests
+                </Link>
+              </li>
+              <li>
+                <Link href="/about" className="text-slate-400 hover:text-white transition">
+                  About Dhanak 2027
+                </Link>
+              </li>
+              <li>
+                <Link href="/faqs" className="text-slate-400 hover:text-white transition">
+                  FAQs
+                </Link>
+              </li>
+              <li>
+                <Link href="/contact-us" className="text-slate-400 hover:text-white transition">
+                  Contact Us
+                </Link>
+              </li>
+              <li>
+                <Link href="/privacy-policy" className="text-slate-400 hover:text-white transition">
+                  Privacy Policy
+                </Link>
+              </li>
+            </ul>
+          </div>
+
+          {/* Social & Support Column */}
+          <div className="md:col-span-4 space-y-4">
+            <h3 className="text-xs font-bold uppercase tracking-widest text-white">Connect with Dhanak</h3>
+            <div className="flex flex-wrap gap-2.5">
+              <a
+                href="https://www.instagram.com/dhanak.iist/"
+                target="_blank"
+                rel="noreferrer"
+                aria-label="Instagram"
+                className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-xs font-semibold text-white transition"
+              >
+                <span>Instagram</span>
+              </a>
+              <a
+                href="https://x.com/dhanakiist"
+                target="_blank"
+                rel="noreferrer"
+                aria-label="X (Twitter)"
+                className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-xs font-semibold text-white transition"
+              >
+                <span>X / Twitter</span>
+              </a>
+              <a
+                href="https://www.youtube.com/@DhanakIIST"
+                target="_blank"
+                rel="noreferrer"
+                aria-label="YouTube"
+                className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-xs font-semibold text-white transition"
+              >
+                <span>YouTube</span>
+              </a>
+              <a
+                href="https://www.linkedin.com/in/dhanak-iist-b2ba83bb/"
+                target="_blank"
+                rel="noreferrer"
+                aria-label="LinkedIn"
+                className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-xs font-semibold text-white transition"
+              >
+                <span>LinkedIn</span>
+              </a>
+              <a
+                href="https://www.facebook.com/@iist.dhanak"
+                target="_blank"
+                rel="noreferrer"
+                aria-label="Facebook"
+                className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-xs font-semibold text-white transition"
+              >
+                <span>Facebook</span>
+              </a>
             </div>
-        </footer>
-    );
+            <p className="text-xs text-slate-400">
+              Official Support:{" "}
+              <Link href="/contact-us" className="text-amber-300 hover:underline">
+                Reach IGTS Team
+              </Link>
+            </p>
+          </div>
+        </div>
+
+        <div className="pt-6 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-slate-500">
+          <p>Copyright © 2027 Dhanak · Indian Institute of Space Science and Technology (IIST)</p>
+          <p>IGTS GATE 2027 Portal</p>
+        </div>
+      </div>
+    </footer>
+  );
 };
 
 export default Footer;

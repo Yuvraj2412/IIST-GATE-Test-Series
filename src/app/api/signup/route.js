@@ -63,14 +63,21 @@ export async function POST(req) {
             // Google OAuth (already authenticated via Supabase session cookie)
             const authEmail = normalizeEmail(authUser.email);
 
-            const { data: existing, error: existErr } = await supabase
+            const { data: existingByUid, error: uidErr } = await supabase
                 .from("users")
                 .select("id")
-                .or(`userId.eq.${authUser.id},email.eq.${authEmail}`)
+                .eq("userId", authUser.id)
                 .maybeSingle();
-            if (existErr) throw existErr;
+            if (uidErr) throw uidErr;
 
-            if (existing) {
+            const { data: existingByEmail, error: emailErr } = await supabase
+                .from("users")
+                .select("id")
+                .eq("email", authEmail)
+                .maybeSingle();
+            if (emailErr) throw emailErr;
+
+            if (existingByUid || existingByEmail) {
                 return NextResponse.json({ msg: "User already exists" }, { status: 201 });
             }
 

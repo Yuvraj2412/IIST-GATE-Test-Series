@@ -13,7 +13,7 @@ export async function POST(req) {
     const { data: user, error } = await getSupabaseAdmin()
       .from("users")
       .select("id")
-      .eq("email", String(email).toLowerCase())
+      .eq("email", String(email).trim().toLowerCase())
       .maybeSingle();
 
     if (error) throw error;

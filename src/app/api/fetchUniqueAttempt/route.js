@@ -3,39 +3,59 @@ import { requireProfile } from "@/libs/supabase/server";
 
 const rankRanges = {
   Aerospace: [
-    { minScore: 80, maxScore: 100, rankRange: "1-500" },
-    { minScore: 70, maxScore: 79, rankRange: "500-1000" },
-    { minScore: 60, maxScore: 69, rankRange: "1000-2000" },
-    { minScore: 50, maxScore: 59, rankRange: "2000-5000" },
-    { minScore: 40, maxScore: 49, rankRange: "5000-10000" },
-    { minScore: 30, maxScore: 39, rankRange: "10000-15000" },
-    { minScore: 20, maxScore: 29, rankRange: "15000-20000" },
-    { minScore: 10, maxScore: 19, rankRange: "20000-30000" },
-    { minScore: 0, maxScore: 9, rankRange: "30000+" },
+    { minScore: 80, rankRange: "1-500" },
+    { minScore: 70, rankRange: "500-1000" },
+    { minScore: 60, rankRange: "1000-2000" },
+    { minScore: 50, rankRange: "2000-5000" },
+    { minScore: 40, rankRange: "5000-10000" },
+    { minScore: 30, rankRange: "10000-15000" },
+    { minScore: 20, rankRange: "15000-20000" },
+    { minScore: 10, rankRange: "20000-30000" },
+    { minScore: 0, rankRange: "30000+" },
   ],
   Mechanical: [
-    { minScore: 85, maxScore: 100, rankRange: "1-500" },
-    { minScore: 75, maxScore: 84, rankRange: "500-1000" },
-    { minScore: 65, maxScore: 74, rankRange: "1000-2000" },
-    { minScore: 55, maxScore: 64, rankRange: "2000-5000" },
-    { minScore: 45, maxScore: 54, rankRange: "5000-10000" },
-    { minScore: 35, maxScore: 44, rankRange: "10000-15000" },
-    { minScore: 25, maxScore: 34, rankRange: "15000-20000" },
-    { minScore: 15, maxScore: 24, rankRange: "20000-30000" },
-    { minScore: 0, maxScore: 14, rankRange: "30000+" },
+    { minScore: 85, rankRange: "1-500" },
+    { minScore: 75, rankRange: "500-1000" },
+    { minScore: 65, rankRange: "1000-2000" },
+    { minScore: 55, rankRange: "2000-5000" },
+    { minScore: 45, rankRange: "5000-10000" },
+    { minScore: 35, rankRange: "10000-15000" },
+    { minScore: 25, rankRange: "15000-20000" },
+    { minScore: 15, rankRange: "20000-30000" },
+    { minScore: 0, rankRange: "30000+" },
   ],
   ECE: [
-    { minScore: 90, maxScore: 100, rankRange: "1-500" },
-    { minScore: 80, maxScore: 89, rankRange: "500-1000" },
-    { minScore: 70, maxScore: 79, rankRange: "1000-2000" },
-    { minScore: 60, maxScore: 69, rankRange: "2000-5000" },
-    { minScore: 50, maxScore: 59, rankRange: "5000-10000" },
-    { minScore: 40, maxScore: 49, rankRange: "10000-15000" },
-    { minScore: 30, maxScore: 39, rankRange: "15000-20000" },
-    { minScore: 20, maxScore: 29, rankRange: "20000-30000" },
-    { minScore: 0, maxScore: 19, rankRange: "30000+" },
+    { minScore: 90, rankRange: "1-500" },
+    { minScore: 80, rankRange: "500-1000" },
+    { minScore: 70, rankRange: "1000-2000" },
+    { minScore: 60, rankRange: "2000-5000" },
+    { minScore: 50, rankRange: "5000-10000" },
+    { minScore: 40, rankRange: "10000-15000" },
+    { minScore: 30, rankRange: "15000-20000" },
+    { minScore: 20, rankRange: "20000-30000" },
+    { minScore: 0, rankRange: "30000+" },
   ],
 };
+
+function isNumericalMatch(response, expectedRaw) {
+  const resStr = String(response ?? "").trim();
+  const expStr = String(expectedRaw ?? "").trim();
+  if (!resStr || !expStr) return false;
+  if (resStr === expStr) return true;
+
+  const resNum = Number(resStr);
+  if (Number.isNaN(resNum)) return false;
+
+  const rangeMatch = expStr.match(/^(-?\d+(?:\.\d+)?)\s*(?:-|to|:)\s*(-?\d+(?:\.\d+)?)$/i);
+  if (rangeMatch) {
+    const low = Number(rangeMatch[1]);
+    const high = Number(rangeMatch[2]);
+    return resNum >= Math.min(low, high) && resNum <= Math.max(low, high);
+  }
+
+  const expNum = Number(expStr);
+  return !Number.isNaN(expNum) && Math.abs(resNum - expNum) < 1e-6;
+}
 
 const emptySection = () => ({
   correctedQuestions: [],
@@ -97,7 +117,10 @@ class EvaluatedResult {
           }
         } else {
           // MCQ_SINGLE / NUMERICAL – single correct answer
-          const isCorrect = String(response) === String(question.correctAnswers[0]);
+          const isCorrect =
+            question.type === "NUMERICAL"
+              ? isNumericalMatch(response, question.correctAnswers[0])
+              : String(response) === String(question.correctAnswers[0]);
 
           if (isCorrect) {
             this[section].correctedQuestions.push({
@@ -167,7 +190,7 @@ class EvaluatedResult {
     const rankTable = rankRanges[domain] || [];
     const totalScore = this.score.total;
     for (const range of rankTable) {
-      if (totalScore >= range.minScore && totalScore <= range.maxScore) {
+      if (totalScore >= range.minScore) {
         this.gateRank = range.rankRange;
         break;
       }

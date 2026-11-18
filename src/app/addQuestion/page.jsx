@@ -160,16 +160,20 @@ export default function AddQuestionPage() {
         setError("");
         setSuccess("");
 
-        setFormData({ ...formData, uploadedBy: userEmail });
+        const payloadToSubmit = {
+            ...formData,
+            uploadedBy: userEmail,
+            options: formData.type === "NUMERICAL" ? [] : formData.options,
+        };
 
         // Validation for required fields
-        if (!formData.questionId || !formData.domainId || !formData.packId || !formData.testId || !formData.questionText) {
+        if (!payloadToSubmit.questionId || !payloadToSubmit.domainId || !payloadToSubmit.packId || !payloadToSubmit.testId || !payloadToSubmit.questionText) {
             setError("Please fill in all required fields.");
             toast.error("Please fill in all required fields.");
             return;
         }
 
-        if (formData.type !== "NUMERICAL" && formData.options.length < 2) {
+        if (payloadToSubmit.type !== "NUMERICAL" && payloadToSubmit.options.length < 2) {
             setError("MCQ questions must have at least two options.");
             toast.error("MCQ questions must have at least two options.");
             return;
@@ -178,7 +182,7 @@ export default function AddQuestionPage() {
         try {
             const k = toast.loading("Saving the question, Please wait!");
             // Send POST request to your API endpoint
-            const response = await axios.post("/api/addQuestion", formData);
+            const response = await axios.post("/api/addQuestion", payloadToSubmit);
             setSuccess("Question added successfully!");
             toast.dismiss(k);
             toast.success("Question added successfully!");
@@ -356,7 +360,7 @@ export default function AddQuestionPage() {
                                                     }}
                                                     onSuccess={(res) => {
                                                         setDiagramText(true);
-                                                        formData.diagramLink = res.url;
+                                                        setFormData((prev) => ({ ...prev, diagramLink: res.url }));
                                                         toast.dismiss();
                                                         toast.success("Uploaded!");
                                                     }}
@@ -448,7 +452,8 @@ export default function AddQuestionPage() {
                                         </select>
                                     </div>
 
-                                    {/* Options */}
+                                    {/* Options (only for MCQ types) */}
+                                    {formData.type !== "NUMERICAL" && (
                                     <div className="mt-4">
                                         <h2 className="text-xl font-semibold mb-2">Options</h2>
                                         {formData.options.map((option, index) => (
@@ -482,7 +487,6 @@ export default function AddQuestionPage() {
                                                         <IKUpload
                                                             folder="questionsData"
                                                             onChange={() => {
-                                                                // Display a loading toast when the file is selected
                                                                 toast.loading("Uploading, please wait");
                                                             }}
                                                             onError={() => {
@@ -490,13 +494,6 @@ export default function AddQuestionPage() {
                                                                 toast.error("Problem in uploading image");
                                                             }}
                                                             onSuccess={(res) => {
-                                                                // Update the option object
-                                                                option.optionImage = res.url;
-
-                                                                // Dynamically update the input field value
-                                                                document.getElementById(`option-image-${index}`).value = res.url;
-
-                                                                // Trigger the state update to reflect changes in the UI
                                                                 handleOptionChange(index, "optionImage", res.url);
                                                                 toast.dismiss();
                                                                 toast.success("Uploaded!");
@@ -511,7 +508,7 @@ export default function AddQuestionPage() {
                                                     value={option.optionImage}
                                                     onChange={(e) => handleOptionChange(index, "optionImage", e.target.value)}
                                                     className="border p-2 col-span-4 text-neutral-700"
-                                                    id={`option-image-${index}`} // Add an ID to target the input field
+                                                    id={`option-image-${index}`}
                                                 />
                                                 <button
                                                     type="button"
@@ -530,6 +527,7 @@ export default function AddQuestionPage() {
                                             Add Option
                                         </button>
                                     </div>
+                                    )}
 
 
                                     {/* Correct Answers */}

@@ -1,169 +1,185 @@
 "use client";
-import { useState, useEffect, useLayoutEffect } from 'react';
-import Navbar from '@/components/Navbar';
-import Footer from '@/components/Footer';
-import Loader from '@/components/Loader';
-import style from '@/components/styles/faqCSS.module.css';
-import { motion } from 'framer-motion';
-import Link from 'next/link';
-
+import { useState, useEffect } from "react";
+import Navbar from "@/components/Navbar";
+import Footer from "@/components/Footer";
+import Loader from "@/components/Loader";
+import style from "@/components/styles/faqCSS.module.css";
+import { motion } from "framer-motion";
+import Link from "next/link";
 
 export default function FAQPage() {
-
   const [faqsByCategory, setFAQsByCategory] = useState({});
   const [openIndexes, setOpenIndexes] = useState([]);
-
   const [isLoading, setIsLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState("");
 
-  useLayoutEffect(() => {
-    fetchFAQs();
-    // Set a timeout for 500ms to hide the loading screen
-    const timer = setTimeout(() => {
-      setIsLoading(false);
-    }, 300);
-    // Clear the timeout if the component unmounts to avoid memory leaks
-    return () => clearTimeout(timer);
+  useEffect(() => {
+    let active = true;
+    async function load() {
+      try {
+        const response = await fetch("/api/faqs/getFAQ");
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        const data = await response.json();
+        if (!active) return;
+
+        const grouped = (Array.isArray(data) ? data : []).reduce((acc, faq) => {
+          const cat = faq.category || "General";
+          if (!acc[cat]) acc[cat] = [];
+          acc[cat].push(faq);
+          return acc;
+        }, {});
+        setFAQsByCategory(grouped);
+      } catch (err) {
+        console.error("Error fetching FAQs:", err);
+      } finally {
+        if (active) setIsLoading(false);
+      }
+    }
+    load();
+    return () => {
+      active = false;
+    };
   }, []);
 
-  function groupFAQsByCategory(faqs) {
-    return faqs.reduce((acc, faq) => {
-      const category = faq.category || "Uncategorized"; // Default to "Uncategorized" if no category
-      if (!acc[category]) {
-        acc[category] = [];
-      }
-      acc[category].push(faq);
-      return acc;
-    }, {});
-  }
-
-  async function fetchFAQs() {
-    try {
-      const response = await fetch('/api/faqs/getFAQ');
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-      const data = await response.json();
-
-      setFAQsByCategory(groupFAQsByCategory(data)); // Organize FAQs by category
-    } catch (error) {
-      console.error("Error fetching FAQs:", error);
-    }
-  }
-
   const toggleFAQ = (faqId) => {
-    setOpenIndexes((prevIndexes) =>
-      prevIndexes.includes(faqId)
-        ? prevIndexes.filter((id) => id !== faqId)
-        : [...prevIndexes, faqId]
+    setOpenIndexes((prev) =>
+      prev.includes(faqId) ? prev.filter((id) => id !== faqId) : [...prev, faqId]
     );
   };
 
-
+  const filteredEntries = Object.entries(faqsByCategory)
+    .map(([category, list]) => {
+      const q = searchQuery.trim().toLowerCase();
+      const filtered = !q
+        ? list
+        : list.filter(
+            (f) =>
+              f.question.toLowerCase().includes(q) || f.answer.toLowerCase().includes(q)
+          );
+      return [category, filtered];
+    })
+    .filter(([, list]) => list.length > 0);
 
   return (
-    <div>
-      <div className="min-h-screen flex flex-col items-center w-full mx-auto pb-20">
-        <Navbar />
-        <motion.div className={`grid grid-cols-1 items-center w-full`}
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          transition={{ duration: 0.3 }}
-        >
-          <section className={`${style.topSection} w-full`}>
-            <section className={`sm:max-w-xl md:max-w-4xl lg:max-w-5xl xl:max-w-7xl md:px-0 px-3 md:px-8 lg:px-5 mx-auto pt-10 pb-5`}>
-              <div className={`flex flex-col gap-6 md:gap-6`}>
-                <div className={`text-sm flex gap-2 text-white`}>
-                  <Link href={'/'}>
-                    Home
-                  </Link> /
-                  <Link href={'/faqs'}>
-                    FAQs
-                  </Link>
-                </div>
-                <div>
-                  <h1 className={`text-4xl md:text-5xl font-bold text-white`}>
-                    FREQUENTLY ASKED QUESTIONS
-                  </h1>
-                </div>
-                <div className={`text-[17px] md:text-[18px] text-white text-justify`}>
-                  <p>
-                    Welcome to our FAQ page! Here you&#39;ll find answers to common questions about our services, features, and support options. We hope this helps make your experience as smooth as possible. If you need any further assistance, please don&#39;t hesitate to <Link href={'/contact-us'} className='underline '>contact us</Link>.
-                  </p>
-                </div>
+    <div className="min-h-screen flex flex-col bg-slate-50">
+      <Navbar />
+
+      <main className="flex-1 w-full pb-20">
+        <section className={`${style.topSection} relative overflow-hidden w-full text-white`}>
+          <div className="cosmicGrid absolute inset-0 opacity-50 pointer-events-none" />
+          <div className="relative max-w-screen-xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16">
+            <div className="flex flex-col gap-5 max-w-3xl">
+              <div className="text-xs sm:text-sm flex items-center gap-2 text-slate-300">
+                <Link href="/" className="hover:text-white transition">
+                  Home
+                </Link>
+                <span>/</span>
+                <span className="text-amber-300 font-semibold">FAQs</span>
               </div>
-            </section>
-          </section>
-          {!isLoading && faqsByCategory ?
-            <div className="md:px-10 flex flex-col items-center gap-0 md:gap-4">
-              <div className={`bg-white rounded-md min-h-screen px-4 md:px-28 md:rounded-lg pb-16 pt-5 md:pt-14`}>
-                {Object.entries(faqsByCategory).map(([category, faqs]) => (
-                  <motion.div
-                    key={category}
-                    className="flex flex-col w-full pt-5 space-y-3 md:space-y-6"
-                    initial={{ opacity: 0, y: 20 }}    // Start below with opacity 0
-                    animate={{ opacity: 1, y: 0 }}     // Fade in and move to original position
-                    exit={{ opacity: 0, y: 20 }}       // Exit by fading out and moving down
-                    transition={{ duration: 0.3 }}     // Duration of the animation
-                  >
-                    <div>
-                      <p className={`text-2xl text-gray-700 font-bold ${style.fonttAverta}`}>{category} FAQs</p>
-                    </div>
 
+              <h1 className="text-4xl sm:text-5xl font-extrabold tracking-tight">
+                Frequently Asked <span className="text-amber-300">Questions</span>
+              </h1>
 
-                    {faqs.map((faq, index) => {
-                      const faqId = `${category}-${index}`; // Unique identifier for each FAQ
-                      const isOpen = openIndexes.includes(faqId); // Check if the FAQ is open
+              <p className="text-base sm:text-lg text-slate-200 leading-relaxed">
+                Answers to common questions about IGTS GATE 2027 mock series, payments, and test
+                access for Dhanak 2027. Need more help?{" "}
+                <Link href="/contact-us" className="text-amber-300 underline hover:text-amber-200">
+                  Contact us
+                </Link>
+                .
+              </p>
 
-                      return (
-                        <div
-                          key={faq._id}
-                          className="bg-white border-[1.6px] rounded-xl border-gray-400 transition-all duration-300 ease-in-out"
-                        >
-                          <button
-                            className="w-full px-5 pt-3 pb-3 md:pt-5 md:pb-4 flex justify-between items-center text-[14px] sm:text-md md:text-lg text-left font-semibold text-gray-800 focus:outline-none"
-                            onClick={() => toggleFAQ(faqId)} // Use faqId as the unique identifier
-                          >
-                            Q. {faq.question}
-                            <span
-                              className={`ml-2 transform transition-transform duration-300 ${isOpen ? "rotate-180" : "rotate-0"
-                                }`}
-                            >
-                              <svg
-                                xmlns="http://www.w3.org/2000/svg"
-                                height="28px"
-                                viewBox="0 -960 960 960"
-                                width="28px"
-                                fill="#565656"
-                              >
-                                <path d="m480-340 180-180-57-56-123 123-123-123-57 56 180 180Zm0 260q-83 0-156-31.5T197-197q-54-54-85.5-127T80-480q0-83 31.5-156T197-763q54-54 127-85.5T480-880q83 0 156 31.5T763-763q54 54 85.5 127T880-480q0 83-31.5 156T763-197q-54 54-127 85.5T480-80Zm0-80q134 0 227-93t93-227q0-134-93-227t-227-93q-134 0-227 93t-93 227q0 134 93 227t227 93Zm0-320Z" />
-                              </svg>
-                            </span>
-                          </button>
-
-
-                          <motion.div
-                            initial={{ height: 0, opacity: 0 }}
-                            animate={isOpen ? { height: "auto", opacity: 1 } : { height: 0, opacity: 0 }}
-                            transition={{ duration: 0.2, ease: "easeInOut" }}
-                            className="overflow-hidden"
-                          >
-                            <p className="text-black pt-2 pb-4 pl-6 md:pl-10 pr-6">{faq.answer}</p>
-                          </motion.div>
-                        </div>
-                      );
-                    })}
-
-                  </motion.div>
-                ))}
+              <div className="pt-2 max-w-md">
+                <input
+                  type="text"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  placeholder="Search questions..."
+                  className="w-full px-4 py-2.5 rounded-full bg-white/15 border border-white/25 text-white placeholder-slate-300 focus:outline-none focus:ring-2 focus:ring-amber-300"
+                />
               </div>
-            </div> :
-            <div className={`max-w-7xl mx-auto px-4 md:px-10 lg:px-10 mt-20`}>
+            </div>
+          </div>
+        </section>
+
+        <section className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 mt-10">
+          {isLoading ? (
+            <div className="flex justify-center py-20">
               <Loader />
             </div>
-          }
-        </motion.div>
-      </div>
+          ) : filteredEntries.length === 0 ? (
+            <div className="bg-white rounded-3xl border border-slate-200 p-10 text-center shadow-sm">
+              <p className="text-lg font-bold text-slate-800">
+                {searchQuery ? "No matching FAQs found." : "No FAQs published yet."}
+              </p>
+              <p className="text-sm text-slate-500 mt-1">
+                Still have a question?{" "}
+                <Link href="/contact-us" className="text-indigo-600 font-semibold hover:underline">
+                  Reach out to our team
+                </Link>
+                .
+              </p>
+            </div>
+          ) : (
+            <div className="space-y-8">
+              {filteredEntries.map(([category, faqs]) => (
+                <motion.div
+                  key={category}
+                  initial={{ opacity: 0, y: 12 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.25 }}
+                  className="space-y-3"
+                >
+                  <h2 className="text-xl font-extrabold text-slate-900 flex items-center gap-2">
+                    <span className="w-2 h-2 rounded-full bg-indigo-600" />
+                    {category} FAQs
+                  </h2>
+
+                  {faqs.map((faq, index) => {
+                    const faqId = `${category}-${index}`;
+                    const isOpen = openIndexes.includes(faqId);
+                    return (
+                      <div
+                        key={faq._id || faqId}
+                        className="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-sm transition hover:border-indigo-200"
+                      >
+                        <button
+                          type="button"
+                          onClick={() => toggleFAQ(faqId)}
+                          className="w-full px-5 py-4 flex justify-between items-center text-left font-bold text-slate-800 text-sm sm:text-base focus:outline-none"
+                        >
+                          <span>{faq.question}</span>
+                          <span
+                            className={`ml-3 flex-shrink-0 transition-transform duration-200 text-indigo-600 ${
+                              isOpen ? "rotate-180" : "rotate-0"
+                            }`}
+                          >
+                            ▾
+                          </span>
+                        </button>
+
+                        <motion.div
+                          initial={false}
+                          animate={isOpen ? { height: "auto", opacity: 1 } : { height: 0, opacity: 0 }}
+                          transition={{ duration: 0.2 }}
+                          className="overflow-hidden"
+                        >
+                          <p className="px-5 pb-4 pt-1 text-sm sm:text-base text-slate-600 leading-relaxed border-t border-slate-100">
+                            {faq.answer}
+                          </p>
+                        </motion.div>
+                      </div>
+                    );
+                  })}
+                </motion.div>
+              ))}
+            </div>
+          )}
+        </section>
+      </main>
+
       <Footer />
-    </div>);
+    </div>
+  );
 }
