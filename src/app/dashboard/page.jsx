@@ -7,7 +7,6 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState, useCallback } from "react";
 import Loader from "@/components/Loader";
 import Link from "next/link";
-import { motion } from "framer-motion";
 
 const STANDARD_BRANCHES = ["ECE", "Aerospace", "Mechanical", "Physics"];
 
@@ -156,30 +155,30 @@ export default function Dashboard() {
   const isAdmin = userRole === "testAdmin" || userRole === "admin";
 
   return (
-    <div className="min-h-screen flex flex-col bg-slate-50 topSection">
+    <div className="min-h-screen flex flex-col bg-[#f8fafc] topSection">
       <Navbar />
 
-      <main className="flex-1 max-w-screen-xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 lg:py-12">
+      <main className="flex-1 max-w-screen-xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 lg:py-10">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-start">
           {/* Sidebar */}
           <aside className="lg:col-span-3 space-y-4">
-            <div className="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden">
+            <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
               <div className="cosmicHeader px-5 py-4 text-white">
-                <p className="text-[11px] uppercase tracking-widest text-amber-300 font-bold">
-                  IGTS · Dhanak &apos;27
+                <p className="text-[11px] font-mono uppercase tracking-wider text-slate-400">
+                  IGTS · Dhanak 2027
                 </p>
-                <h2 className="text-xl font-extrabold mt-0.5">Candidate Portal</h2>
+                <h2 className="text-lg font-bold mt-0.5">Candidate Portal</h2>
               </div>
 
               <div className="p-4 space-y-2">
                 <Link
                   href="/registered-tests"
-                  className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-full font-bold text-sm text-white bg-gradient-to-r from-[#4f46e5] to-[#674cee] hover:from-[#4338ca] hover:to-[#5b3fe3] shadow-sm transition"
+                  className="w-full flex items-center justify-center px-4 py-2.5 rounded-lg font-semibold text-sm text-white bg-[#0f4c81] hover:bg-[#0a3963] transition"
                 >
-                  Your Live Tests →
+                  Open Live Tests
                 </Link>
 
-                <div className="grid grid-cols-2 lg:grid-cols-1 gap-1.5 pt-2">
+                <div className="grid grid-cols-2 lg:grid-cols-1 gap-1 pt-2">
                   {[
                     { id: "account", label: "Profile" },
                     { id: "registrations", label: "Registrations" },
@@ -189,10 +188,10 @@ export default function Dashboard() {
                       key={item.id}
                       type="button"
                       onClick={() => setCurrOption(item.id)}
-                      className={`w-full text-left px-3.5 py-2.5 rounded-xl text-sm font-semibold transition ${
+                      className={`w-full text-left px-3.5 py-2 rounded-lg text-sm font-medium transition ${
                         currOption === item.id
-                          ? "bg-indigo-50 text-indigo-700"
-                          : "text-slate-700 hover:bg-slate-100"
+                          ? "bg-slate-100 text-[#0f4c81] font-semibold"
+                          : "text-slate-700 hover:bg-slate-50"
                       }`}
                     >
                       {item.label}
@@ -201,7 +200,7 @@ export default function Dashboard() {
 
                   <Link
                     href="/dashboard/results"
-                    className="w-full text-left px-3.5 py-2.5 rounded-xl text-sm font-semibold text-slate-700 hover:bg-slate-100 transition block"
+                    className="w-full text-left px-3.5 py-2 rounded-lg text-sm font-medium text-slate-700 hover:bg-slate-50 transition block"
                   >
                     Results &amp; Reports
                   </Link>
@@ -209,42 +208,42 @@ export default function Dashboard() {
                   {isAdmin && (
                     <>
                       <div className="col-span-2 lg:col-span-1 pt-2 mt-1 border-t border-slate-100">
-                        <p className="px-3.5 text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-1">
+                        <p className="px-3.5 text-[11px] font-semibold uppercase tracking-wider text-slate-400 mb-1">
                           Admin Controls
                         </p>
                       </div>
                       <button
                         type="button"
                         onClick={() => setCurrOption("addFaq")}
-                        className={`w-full text-left px-3.5 py-2 rounded-xl text-sm font-semibold transition ${
+                        className={`w-full text-left px-3.5 py-2 rounded-lg text-sm font-medium transition ${
                           currOption === "addFaq"
-                            ? "bg-indigo-50 text-indigo-700"
-                            : "text-slate-700 hover:bg-slate-100"
+                            ? "bg-slate-100 text-[#0f4c81] font-semibold"
+                            : "text-slate-700 hover:bg-slate-50"
                         }`}
                       >
                         Add FAQs
                       </button>
                       <Link
                         href="/addQuestion"
-                        className="w-full text-left px-3.5 py-2 rounded-xl text-sm font-semibold text-slate-700 hover:bg-slate-100 transition block"
+                        className="w-full text-left px-3.5 py-2 rounded-lg text-sm font-medium text-slate-700 hover:bg-slate-50 transition block"
                       >
                         Add Questions
                       </Link>
                       <Link
                         href="/previewQuestion"
-                        className="w-full text-left px-3.5 py-2 rounded-xl text-sm font-semibold text-slate-700 hover:bg-slate-100 transition block"
+                        className="w-full text-left px-3.5 py-2 rounded-lg text-sm font-medium text-slate-700 hover:bg-slate-50 transition block"
                       >
                         Preview Questions
                       </Link>
                       <Link
                         href="/editQuestion"
-                        className="w-full text-left px-3.5 py-2 rounded-xl text-sm font-semibold text-slate-700 hover:bg-slate-100 transition block"
+                        className="w-full text-left px-3.5 py-2 rounded-lg text-sm font-medium text-slate-700 hover:bg-slate-50 transition block"
                       >
                         Edit Questions
                       </Link>
                       <Link
                         href="/deleteQuestion"
-                        className="w-full text-left px-3.5 py-2 rounded-xl text-sm font-semibold text-slate-700 hover:bg-slate-100 transition block"
+                        className="w-full text-left px-3.5 py-2 rounded-lg text-sm font-medium text-slate-700 hover:bg-slate-50 transition block"
                       >
                         Delete Questions
                       </Link>
@@ -259,7 +258,7 @@ export default function Dashboard() {
                       await signOut();
                       window.location.href = "/sign-in";
                     }}
-                    className="w-full px-3.5 py-2 rounded-xl text-sm font-semibold text-rose-600 hover:bg-rose-50 text-left transition"
+                    className="w-full px-3.5 py-2 rounded-lg text-sm font-medium text-rose-600 hover:bg-rose-50 text-left transition"
                   >
                     Logout
                   </button>
@@ -271,65 +270,59 @@ export default function Dashboard() {
           {/* Main Content Panel */}
           <section className="lg:col-span-9">
             {!userDetails ? (
-              <div className="bg-white rounded-3xl border border-slate-200 p-16 flex justify-center">
+              <div className="bg-white rounded-xl border border-slate-200 p-16 flex justify-center">
                 <Loader />
               </div>
             ) : (
-              <motion.div
-                key={currOption}
-                initial={{ opacity: 0, y: 8 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.25 }}
-                className="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden"
-              >
+              <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
                 {currOption === "account" && (
                   <>
-                    <div className="cosmicHeader px-6 py-5 text-white flex items-center justify-between">
-                      <h1 className="text-xl sm:text-2xl font-extrabold">Account Information</h1>
+                    <div className="cosmicHeader px-6 py-4 text-white flex items-center justify-between">
+                      <h1 className="text-lg sm:text-xl font-bold">Account Information</h1>
                       <button
                         type="button"
                         onClick={() => setCurrOption("settings")}
-                        className="text-xs font-bold px-3.5 py-1.5 rounded-full bg-white/15 hover:bg-white/25 transition"
+                        className="text-xs font-semibold px-3 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 border border-white/20 transition"
                       >
                         Edit Profile
                       </button>
                     </div>
                     <div className="p-6 sm:p-8 grid grid-cols-1 md:grid-cols-2 gap-6">
-                      <div className="flex flex-col items-center justify-center bg-slate-50 border border-slate-200 rounded-2xl p-6 text-center">
+                      <div className="flex flex-col items-center justify-center bg-slate-50 border border-slate-200 rounded-xl p-6 text-center">
                         <img
-                          className="w-24 h-24 rounded-full border-4 border-indigo-200 shadow-md object-cover"
+                          className="w-20 h-20 rounded-full border-2 border-slate-300 object-cover"
                           src="/images/profile.png"
                           alt="Profile"
                         />
-                        <h3 className="mt-4 text-xl font-extrabold text-slate-900">
+                        <h3 className="mt-4 text-lg font-bold text-slate-900">
                           {userDetails.name}
                         </h3>
                         <p className="text-sm text-slate-600">{userDetails.email}</p>
-                        <p className="text-sm text-slate-600 mt-0.5">+91 {userDetails.mobile}</p>
+                        <p className="text-sm text-slate-600 mt-0.5 tabular-nums">+91 {userDetails.mobile}</p>
                       </div>
 
-                      <div className="flex flex-col justify-center gap-5 bg-slate-50 border border-slate-200 rounded-2xl p-6">
+                      <div className="flex flex-col justify-center gap-4 bg-slate-50 border border-slate-200 rounded-xl p-6">
                         <div>
-                          <span className="text-xs font-bold uppercase tracking-wider text-indigo-600">
+                          <span className="text-xs font-semibold uppercase tracking-wider text-slate-500">
                             Engineering Branch
                           </span>
-                          <p className="text-base font-bold text-slate-900 mt-1">
+                          <p className="text-sm sm:text-base font-bold text-slate-900 mt-1">
                             {getBranchName(userDetails.branch)}
                           </p>
                         </div>
                         <div className="border-t border-slate-200 pt-4">
-                          <span className="text-xs font-bold uppercase tracking-wider text-indigo-600">
+                          <span className="text-xs font-semibold uppercase tracking-wider text-slate-500">
                             College / Institution
                           </span>
-                          <p className="text-base font-bold text-slate-900 mt-1">
+                          <p className="text-sm sm:text-base font-bold text-slate-900 mt-1">
                             {userDetails.college}
                           </p>
                         </div>
                         <div className="border-t border-slate-200 pt-4 flex items-center justify-between">
-                          <span className="text-xs font-bold uppercase tracking-wider text-indigo-600">
+                          <span className="text-xs font-semibold uppercase tracking-wider text-slate-500">
                             Enrolled Packs
                           </span>
-                          <span className="text-sm font-extrabold text-emerald-700 bg-emerald-100 px-3 py-1 rounded-full">
+                          <span className="text-xs font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200 px-2.5 py-1 rounded-md">
                             {registeredTests.length} Active
                           </span>
                         </div>
@@ -340,18 +333,18 @@ export default function Dashboard() {
 
                 {currOption === "registrations" && (
                   <>
-                    <div className="cosmicHeader px-6 py-5 text-white flex items-center justify-between">
-                      <h1 className="text-xl sm:text-2xl font-extrabold">Your Registrations</h1>
+                    <div className="cosmicHeader px-6 py-4 text-white flex items-center justify-between">
+                      <h1 className="text-lg sm:text-xl font-bold">Your Registrations</h1>
                       <Link
                         href="/tests"
-                        className="text-xs font-bold px-3.5 py-1.5 rounded-full bg-amber-300 text-slate-950 hover:bg-amber-200 transition"
+                        className="text-xs font-semibold px-3 py-1.5 rounded-lg bg-white text-[#0b1526] hover:bg-slate-100 transition"
                       >
                         + Enroll More
                       </Link>
                     </div>
                     <div className="p-6 sm:p-8">
                       {registeredTests.length === 0 ? (
-                        <div className="text-center py-12 bg-slate-50 rounded-2xl border border-slate-200">
+                        <div className="text-center py-12 bg-slate-50 rounded-xl border border-slate-200">
                           <p className="text-base font-bold text-slate-800">
                             You have no active registrations yet.
                           </p>
@@ -360,7 +353,7 @@ export default function Dashboard() {
                           </p>
                           <Link
                             href="/tests"
-                            className="inline-block px-6 py-2.5 rounded-full font-bold text-white bg-indigo-600 hover:bg-indigo-700 transition"
+                            className="inline-block px-5 py-2.5 rounded-lg text-sm font-semibold text-white bg-[#0f4c81] hover:bg-[#0a3963] transition"
                           >
                             Browse GATE 2027 Tests
                           </Link>
@@ -372,14 +365,14 @@ export default function Dashboard() {
                             return (
                               <div
                                 key={reg._id}
-                                className="rounded-2xl border border-slate-200 bg-slate-50 p-5 sm:p-6 space-y-3"
+                                className="rounded-xl border border-slate-200 bg-slate-50 p-5 space-y-3"
                               >
                                 <div className="flex flex-wrap items-center justify-between gap-2">
-                                  <h3 className="text-lg sm:text-xl font-extrabold text-slate-900">
+                                  <h3 className="text-base sm:text-lg font-bold text-slate-900">
                                     GATE Mock for {testName || "Engineering"}
                                   </h3>
-                                  <span className="inline-flex items-center gap-1 text-xs font-bold px-3 py-1 rounded-full bg-emerald-100 text-emerald-800">
-                                    ✓ {reg.payment?.status === "paid" ? "Paid" : "Confirmed"}
+                                  <span className="inline-flex items-center text-xs font-semibold px-2.5 py-1 rounded-md bg-emerald-50 text-emerald-700 border border-emerald-200">
+                                    {reg.payment?.status === "paid" ? "Paid" : "Confirmed"}
                                   </span>
                                 </div>
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm text-slate-600">
@@ -387,7 +380,7 @@ export default function Dashboard() {
                                     <strong className="text-slate-800">Package:</strong>{" "}
                                     {pkgName || "N/A"}
                                   </p>
-                                  <p>
+                                  <p className="tabular-nums">
                                     <strong className="text-slate-800">Amount:</strong> ₹{" "}
                                     {reg.payment?.amount ?? "—"}/-
                                   </p>
@@ -411,28 +404,28 @@ export default function Dashboard() {
 
                 {currOption === "settings" && (
                   <>
-                    <div className="cosmicHeader px-6 py-5 text-white">
-                      <h1 className="text-xl sm:text-2xl font-extrabold">Update Profile</h1>
+                    <div className="cosmicHeader px-6 py-4 text-white">
+                      <h1 className="text-lg sm:text-xl font-bold">Update Profile</h1>
                     </div>
                     <div className="p-6 sm:p-8 max-w-lg mx-auto space-y-4">
                       <div>
-                        <label className="block text-sm font-bold text-slate-700 mb-1">
+                        <label className="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-1">
                           Full Name
                         </label>
                         <input
                           type="text"
                           value={name}
                           onChange={(e) => setName(e.target.value)}
-                          className="w-full px-4 py-2.5 rounded-xl border border-slate-300 bg-slate-50 focus:bg-white text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                          className="w-full px-3.5 py-2.5 rounded-lg border border-slate-300 bg-white text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#0f4c81]"
                         />
                       </div>
 
                       <div>
-                        <label className="block text-sm font-bold text-slate-700 mb-1">
+                        <label className="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-1">
                           Mobile Number *
                         </label>
                         <div className="flex">
-                          <span className="px-3.5 py-2.5 rounded-l-xl border border-r-0 border-slate-300 bg-slate-100 text-slate-600 font-semibold text-sm">
+                          <span className="px-3.5 py-2.5 rounded-l-lg border border-r-0 border-slate-300 bg-slate-100 text-slate-600 font-medium text-sm">
                             +91
                           </span>
                           <input
@@ -440,19 +433,19 @@ export default function Dashboard() {
                             maxLength={10}
                             value={mobileNumber}
                             onChange={(e) => setMobileNumber(e.target.value)}
-                            className="w-full px-4 py-2.5 rounded-r-xl border border-slate-300 bg-slate-50 focus:bg-white text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                            className="w-full px-3.5 py-2.5 rounded-r-lg border border-slate-300 bg-white text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#0f4c81]"
                           />
                         </div>
                       </div>
 
                       <div>
-                        <label className="block text-sm font-bold text-slate-700 mb-1">
+                        <label className="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-1">
                           Branch *
                         </label>
                         <select
                           value={selectedBranch}
                           onChange={(e) => setSelectedBranch(e.target.value)}
-                          className="w-full px-4 py-2.5 rounded-xl border border-slate-300 bg-slate-50 focus:bg-white text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                          className="w-full px-3.5 py-2.5 rounded-lg border border-slate-300 bg-white text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#0f4c81]"
                         >
                           <option value="">Select Branch</option>
                           <option value="ECE">ECE</option>
@@ -465,34 +458,34 @@ export default function Dashboard() {
 
                       {selectedBranch === "other" && (
                         <div>
-                          <label className="block text-sm font-bold text-slate-700 mb-1">
+                          <label className="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-1">
                             Enter Your Branch *
                           </label>
                           <input
                             type="text"
                             value={otherBranch}
                             onChange={(e) => setOtherBranch(e.target.value)}
-                            className="w-full px-4 py-2.5 rounded-xl border border-slate-300 bg-slate-50 focus:bg-white text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                            className="w-full px-3.5 py-2.5 rounded-lg border border-slate-300 bg-white text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#0f4c81]"
                           />
                         </div>
                       )}
 
                       <div>
-                        <label className="block text-sm font-bold text-slate-700 mb-1">
+                        <label className="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-1">
                           College *
                         </label>
                         <input
                           type="text"
                           value={collegeName}
                           onChange={(e) => setCollegeName(e.target.value)}
-                          className="w-full px-4 py-2.5 rounded-xl border border-slate-300 bg-slate-50 focus:bg-white text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                          className="w-full px-3.5 py-2.5 rounded-lg border border-slate-300 bg-white text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#0f4c81]"
                         />
                       </div>
 
                       <button
                         type="button"
                         onClick={updateuserInfo}
-                        className="w-full py-3 rounded-full font-bold text-white bg-gradient-to-r from-[#4f46e5] to-[#674cee] hover:from-[#4338ca] hover:to-[#5b3fe3] shadow-md transition"
+                        className="w-full py-2.5 rounded-lg text-sm font-semibold text-white bg-[#0f4c81] hover:bg-[#0a3963] transition"
                       >
                         Save Changes
                       </button>
@@ -502,12 +495,12 @@ export default function Dashboard() {
 
                 {currOption === "addFaq" && isAdmin && (
                   <>
-                    <div className="cosmicHeader px-6 py-5 text-white">
-                      <h1 className="text-xl sm:text-2xl font-extrabold">Add New FAQ</h1>
+                    <div className="cosmicHeader px-6 py-4 text-white">
+                      <h1 className="text-lg sm:text-xl font-bold">Add New FAQ</h1>
                     </div>
                     <div className="p-6 sm:p-8 max-w-xl mx-auto space-y-5">
                       <div>
-                        <label className="block text-sm font-bold text-slate-700 mb-2">
+                        <label className="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-2">
                           Category
                         </label>
                         <div className="flex flex-wrap gap-2">
@@ -516,10 +509,10 @@ export default function Dashboard() {
                               key={cat}
                               type="button"
                               onClick={() => setCategory(cat)}
-                              className={`px-4 py-1.5 rounded-full text-xs font-bold border transition ${
+                              className={`px-3.5 py-1.5 rounded-lg text-xs font-semibold border transition ${
                                 category === cat
-                                  ? "bg-indigo-600 text-white border-indigo-600"
-                                  : "bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100"
+                                  ? "bg-[#0f4c81] text-white border-[#0f4c81]"
+                                  : "bg-white text-slate-700 border-slate-200 hover:bg-slate-50"
                               }`}
                             >
                               {cat}
@@ -529,7 +522,7 @@ export default function Dashboard() {
                       </div>
 
                       <div>
-                        <label className="block text-sm font-bold text-slate-700 mb-1">
+                        <label className="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-1">
                           Question
                         </label>
                         <input
@@ -537,12 +530,12 @@ export default function Dashboard() {
                           value={question}
                           onChange={(e) => setQuestion(e.target.value)}
                           placeholder="Enter the FAQ question"
-                          className="w-full px-4 py-2.5 rounded-xl border border-slate-300 bg-slate-50 focus:bg-white text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                          className="w-full px-3.5 py-2.5 rounded-lg border border-slate-300 bg-white text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#0f4c81]"
                         />
                       </div>
 
                       <div>
-                        <label className="block text-sm font-bold text-slate-700 mb-1">
+                        <label className="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-1">
                           Answer
                         </label>
                         <textarea
@@ -550,21 +543,21 @@ export default function Dashboard() {
                           value={answer}
                           onChange={(e) => setAnswer(e.target.value)}
                           placeholder="Enter the FAQ answer"
-                          className="w-full px-4 py-2.5 rounded-xl border border-slate-300 bg-slate-50 focus:bg-white text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                          className="w-full px-3.5 py-2.5 rounded-lg border border-slate-300 bg-white text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#0f4c81]"
                         />
                       </div>
 
                       <button
                         type="button"
                         onClick={addFAQ}
-                        className="w-full py-3 rounded-full font-bold text-white bg-gradient-to-r from-[#4f46e5] to-[#674cee] hover:from-[#4338ca] hover:to-[#5b3fe3] shadow-md transition"
+                        className="w-full py-2.5 rounded-lg text-sm font-semibold text-white bg-[#0f4c81] hover:bg-[#0a3963] transition"
                       >
                         Publish FAQ
                       </button>
                     </div>
                   </>
                 )}
-              </motion.div>
+              </div>
             )}
           </section>
         </div>

@@ -2,21 +2,20 @@
 
 /* Loader container */
 .loader {
-    width: 200px;
-    height: 10px;
-    background: #004643;
-    border-radius: 50px;
-    overflow: hidden;
-  }
-  
-  /* Inner moving loader */
-  .inner_loader {
-    width: 60%;
-    height: 100%;
-    background: #f9bc60;
-    border-radius: 50px;
-    animation: moveLeftRight 3s ease-in-out infinite;
-  }
+  width: 180px;
+  height: 4px;
+  background: #e2e8f0;
+  border-radius: 9999px;
+  overflow: hidden;
+}
+
+.inner_loader {
+  width: 55%;
+  height: 100%;
+  background: #0f4c81;
+  border-radius: 9999px;
+  animation: moveLeftRight 2s ease-in-out infinite;
+}
   
   @keyframes moveLeftRight {
     0% {

@@ -758,8 +758,8 @@ export default function AttemptLive({ params }) {
                                             GATE Mock - {testDetails.title}
                                         </h2>
                                         <div>
-                                            <p className="text-sm bg-purple-100 text-black md:text-lg px-4 rounded-full font-medium border border-neutral-100">
-                                                <span className="font-normal">{testPack}</span>
+                                            <p className="text-sm bg-white/10 text-white md:text-base px-3.5 py-1 rounded-md font-medium border border-white/20">
+                                                <span>{testPack}</span>
                                             </p>
                                         </div>
                                         <div className="flex flex-wrap gap-4 items-center text-neutral-50">

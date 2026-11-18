@@ -176,51 +176,51 @@ export default function AttemptTestLayout({ params }) {
                                     <h2 className="text-2xl md:text-4xl font-normal tracking-wide mb-3">
                                         GATE Mock - {testDetails.title}
                                     </h2>
-                                    <div className="flex flex-wrap gap-4 items-center text-neutral-50">
-                                        <p className="text-md bg-purple-100 text-black md:text-lg px-4 rounded-full font-medium border border-neutral-100">
-                                            <span className="font-normal">{testPack}</span>
+                                    <div className="flex flex-wrap gap-3 items-center text-slate-200">
+                                        <p className="text-sm bg-white/10 text-white px-3 py-1 rounded-md font-medium border border-white/20">
+                                            <span>{testPack}</span>
                                         </p>
 
-                                        <p className="text-md md:text-lg flex gap-2 items-center">
-                                            <span className="text-neutral-300 font-normal text-lg md:text-2xl leading-none flex items-center">•</span>
+                                        <p className="text-sm md:text-base flex gap-2 items-center">
+                                            <span className="text-slate-400">•</span>
                                             {normalizeTestName(testNumber)}
                                         </p>
 
-                                        <p className="text-md md:text-lg font-medium flex gap-2 items-center">
-                                            <span className="text-neutral-300 font-normal text-lg md:text-2xl leading-none flex items-center">•</span>
+                                        <p className="text-sm md:text-base font-medium flex gap-2 items-center">
+                                            <span className="text-slate-400">•</span>
                                             {testDetails.date}
                                         </p>
 
-                                        <p className="font-normal text-md md:text-lg flex items-center gap-2">
-                                            <span className="text-neutral-300 font-normal text-lg md:text-2xl leading-none flex items-center">•</span>
-                                            <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960" width="20px" fill="#e8eaed">
+                                        <p className="font-normal text-sm md:text-base flex items-center gap-2">
+                                            <span className="text-slate-400">•</span>
+                                            <svg xmlns="http://www.w3.org/2000/svg" height="18px" viewBox="0 -960 960 960" width="18px" fill="#e2e8f0">
                                                 <path d="m612-292 56-56-148-148v-184h-80v216l172 172ZM480-80q-83 0-156-31.5T197-197q-54-54-85.5-127T80-480q0-83 31.5-156T197-763q54-54 127-85.5T480-880q83 0 156 31.5T763-763q54 54 85.5 127T880-480q0 83-31.5 156T763-197q-54 54-127 85.5T480-80Zm0-400Zm0 320q133 0 226.5-93.5T800-480q0-133-93.5-226.5T480-800q-133 0-226.5 93.5T160-480q0 133 93.5 226.5T480-160Z" />
                                             </svg>
                                             180 MIN
                                         </p>
 
-                                        <p className="text-md md:text-lg font-medium flex gap-2 items-center">
-                                            <span className="text-neutral-300 font-normal text-lg md:text-2xl leading-none flex items-center">•</span>
-                                            5:30 - 8:30 PM
+                                        <p className="text-sm md:text-base font-medium flex gap-2 items-center">
+                                            <span className="text-slate-400">•</span>
+                                            5:30 - 11:30 PM IST
                                         </p>
                                     </div>
 
                                     <div className="mt-4">
-                                        <p className="flex gap-2 items-center text-md md:text-xl">
+                                        <p className="flex gap-2 items-center text-sm md:text-base">
                                             Test Mode:
-                                            <span className="rounded-md text-sm md:text-md text-green-400 border border-neutral-100 px-2">
-                                                Online
+                                            <span className="rounded-md text-xs md:text-sm text-emerald-300 border border-emerald-400/40 bg-emerald-500/10 px-2.5 py-0.5">
+                                                Online CBT
                                             </span>
                                         </p>
                                     </div>
-                                    <div className="w-full mt-4 text-sm md:text-lg text-neutral-50">
+                                    <div className="w-full mt-4 text-sm md:text-base text-slate-300">
                                         <p>
-                                            Note: Please read all the instructions carefully before attempting the test. Ensure you are in a distraction-free environment before you begin, as timing and accuracy are key. Best of luck, and give it your best shot!
+                                            Note: Please read all the instructions carefully before attempting the test. Ensure you are in a distraction-free environment before you begin, as timing and accuracy are key.
                                         </p>
                                     </div>
-                                    <div className="border border-gray-200 text-sm md:text-lg mt-2 text-purple-100 px-4 py-2 rounded-lg">
+                                    <div className="border border-white/15 bg-white/5 text-sm md:text-base mt-2 text-slate-200 px-4 py-2.5 rounded-lg">
                                         <p>
-                                            You may begin the test at any time between 5:30 - 8:30 PM. The timer will start only when you press &#34;Attempt Test&#34;
+                                            You may begin the test at any time between 5:30 - 11:30 PM IST. The timer will start only when you press &#34;Attempt Test&#34;.
                                         </p>
                                     </div>
                                 </div>

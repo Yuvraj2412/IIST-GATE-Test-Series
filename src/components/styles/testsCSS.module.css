@@ -1,9 +1,7 @@
 .topSection {
   overflow: visible;
-  background:
-    radial-gradient(circle at 18% 25%, rgba(103, 76, 238, 0.34) 0%, transparent 46%),
-    radial-gradient(circle at 84% 28%, rgba(245, 158, 11, 0.18) 0%, transparent 44%),
-    linear-gradient(135deg, #070b18 0%, #111635 55%, #1e1650 100%);
+  background: linear-gradient(180deg, #0b1526 0%, #0f1d33 100%);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 @font-face {

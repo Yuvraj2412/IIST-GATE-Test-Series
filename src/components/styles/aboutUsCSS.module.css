@@ -1,9 +1,7 @@
 .topSection {
   overflow: visible;
-  background:
-    radial-gradient(circle at 20% 25%, rgba(103, 76, 238, 0.34) 0%, transparent 46%),
-    radial-gradient(circle at 85% 30%, rgba(245, 158, 11, 0.18) 0%, transparent 42%),
-    linear-gradient(135deg, #070b18 0%, #111635 55%, #1e1650 100%);
+  background: linear-gradient(180deg, #0b1526 0%, #0f1d33 100%);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 @font-face {
@@ -17,42 +15,28 @@
   font-weight: 700;
 }
 
-/* Social circle buttons */
+/* Social icon buttons */
 .button {
   cursor: pointer;
-  width: 52px;
-  height: 52px;
-  border-radius: 50%;
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  background: linear-gradient(120deg, #833ab4, #fd1d1d, #fcb045);
+  width: 44px;
+  height: 44px;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: rgba(255, 255, 255, 0.05);
   position: relative;
-  z-index: 0;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  transition: background-color 0.2s ease, border-color 0.2s ease;
 }
 
 .button:hover {
-  transform: translateY(-2px) scale(1.06);
-  box-shadow: 0 10px 24px rgba(245, 158, 11, 0.25);
+  background: rgba(255, 255, 255, 0.12);
+  border-color: rgba(255, 255, 255, 0.3);
 }
 
 .button svg {
-  color: white;
-  width: 26px;
-  height: 26px;
-  z-index: 9;
-}
-
-.button:nth-child(2) {
-  background: #0f172a;
-}
-
-.button:nth-child(3) {
-  background: #dc2626;
-}
-
-.button:nth-child(4) {
-  background: #1877f2;
+  color: #f8fafc;
+  width: 20px;
+  height: 20px;
 }

@@ -3,7 +3,6 @@ import NavbarHome from "@/components/NavbarHome.jsx";
 import Footer from "@/components/Footer.jsx";
 import Image from "next/image";
 import Link from "next/link";
-import { motion } from "framer-motion";
 import { useSelector } from "react-redux";
 import tests from "@/data/tests";
 import style from "@/components/styles/homeCSS.module.css";
@@ -13,229 +12,271 @@ export default function Home() {
 
   const features = [
     {
+      num: "01",
       title: "Curated by IIST Rankers & Faculty",
       description:
-        "Every paper is authored and reviewed by top GATE rankers and postgraduate researchers at IIST under faculty guidance.",
-      tag: "Academic Rigor",
+        "Every question paper is authored and peer-reviewed by top GATE rankers and postgraduate researchers at IIST under faculty guidance.",
+      meta: "Academic Standard",
     },
     {
+      num: "02",
       title: "Authentic GATE 2027 Pattern",
       description:
-        "Strict adherence to the 65-question, 100-mark structure across General Aptitude & Core Engineering with MCQ, MSQ, and NAT.",
-      tag: "65 Qs · 180 Mins",
+        "Follows the official 65-question, 100-mark structure across General Aptitude and Core Engineering with MCQ, MSQ, and NAT questions.",
+      meta: "65 Questions · 180 Mins",
     },
     {
-      title: "Student-First Pricing",
+      num: "03",
+      title: "Accessible Student Pricing",
       description:
-        "Access 3 full-length mocks for just ₹120 per pack (50% off) or unlock all 6 mocks in the combo pack at 58% off.",
-      tag: "Starting ₹120",
+        "Attempt 3 full-length mocks for ₹120 per pack (50% off) or unlock all 6 full-length mocks in the combo pack at 58% off.",
+      meta: "From ₹120 per pack",
     },
     {
-      title: "Precision Performance Analytics",
+      num: "04",
+      title: "Post-Test Score & Rank Analytics",
       description:
-        "Section-wise accuracy charts, positive vs negative score breakdown, rank estimates, and full KaTeX solution reviews.",
-      tag: "Instant Insights",
+        "Inspect section-wise accuracy breakdowns, positive vs negative scoring metrics, projected GATE rank bands, and full KaTeX solutions.",
+      meta: "Detailed Reports",
     },
   ];
 
   const enrollmentSteps = [
     {
+      step: "Step 01",
       title: "Create Your Account",
-      description: "Sign up quickly using your verified email OTP or instant Google Sign-In.",
+      description: "Register using email OTP verification or instant Google Sign-In.",
     },
     {
-      title: "Choose Your GATE Stream",
-      description: "Pick ECE & Electrical, Aerospace, or Mechanical Engineering test packages.",
+      step: "Step 02",
+      title: "Select Your Stream",
+      description: "Choose ECE & Electrical, Aerospace, or Mechanical Engineering.",
     },
     {
-      title: "Select Pack & Pay Securely",
-      description: "Choose Pack 1, Pack 2, or Combo Both Packs and pay seamlessly via Razorpay UPI/Cards.",
+      step: "Step 03",
+      title: "Choose a Test Pack",
+      description: "Select Pack 1, Pack 2, or the 6-test Combo and complete Razorpay checkout.",
     },
     {
-      title: "Receive Confirmation",
-      description: "Get instant portal access inside Your Tests plus an official confirmation email.",
+      step: "Step 04",
+      title: "Confirm Schedule Access",
+      description: "Access unlocked mock schedules immediately under Your Tests with email receipt.",
     },
     {
-      title: "Attempt in Live Window",
-      description: "Log in 10 minutes before 5:30 PM IST on exam day from a laptop or tablet.",
+      step: "Step 05",
+      title: "Attempt Live Window",
+      description: "Sign in before the 5:30 PM IST window on exam day via laptop or tablet.",
     },
     {
-      title: "Analyze Your Performance",
-      description: "Review sectional scores, expected GATE rank band, and question-by-question reports.",
+      step: "Step 06",
+      title: "Review Detailed Solutions",
+      description: "Examine accuracy charts, rank estimates, and step-by-step solutions.",
     },
   ];
 
   const calculateDiscountedPrice = (price, rate) => Math.round(price - price * rate);
 
   return (
-    <div className="min-h-screen flex flex-col bg-slate-50">
+    <div className="min-h-screen flex flex-col bg-[#f8fafc] text-slate-900">
       <NavbarHome />
 
       <main className="flex-1 w-full">
-        {/* Hero Section */}
-        <section className={`${style.bgHome} relative overflow-hidden text-white`}>
-          <div className="cosmicGrid absolute inset-0 pointer-events-none opacity-60" />
+        {/* Institutional Hero */}
+        <section className={`${style.bgHome} text-white`}>
+          <div className="max-w-screen-xl mx-auto px-4 sm:px-6 lg:px-8 py-14 sm:py-20 lg:py-24">
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-12 items-center">
+              {/* Left: Editorial Copy */}
+              <div className="lg:col-span-7 space-y-6">
+                <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">
+                  Indian Institute of Space Science &amp; Technology · Dhanak 2027
+                </p>
 
-          <div className="relative max-w-screen-xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-20 lg:py-24">
-            <motion.div
-              initial={{ opacity: 0, y: 18 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.55 }}
-              className="flex flex-col items-center text-center max-w-4xl mx-auto"
-            >
-              {/* Dual Logo Showcase Badge */}
-              <div className="inline-flex items-center gap-3 px-4 py-2 rounded-full bg-white/10 backdrop-blur-md border border-white/15 shadow-lg mb-8">
-                <div className="flex items-center -space-x-2">
-                  <div className="relative w-9 h-9 rounded-full overflow-hidden bg-white ring-2 ring-sky-400/60">
-                    <Image
-                      src="/images/iist-logo.png"
-                      alt="IIST Seal"
-                      fill
-                      sizes="36px"
-                      className="object-cover"
-                      priority
-                    />
-                  </div>
-                  <div className="relative w-9 h-9 rounded-full overflow-hidden bg-black ring-2 ring-amber-400/70">
-                    <Image
-                      src="/images/logo.png"
-                      alt="Dhanak 2027 Phoenix"
-                      fill
-                      sizes="36px"
-                      className="object-cover"
-                      priority
-                    />
-                  </div>
-                </div>
-                <span className="h-4 w-px bg-white/25" />
-                <span className="text-xs sm:text-sm font-semibold tracking-wider uppercase text-amber-200">
-                  Dhanak 2027 · IIST Thiruvananthapuram
-                </span>
-              </div>
+                <h1 className="heroText text-3xl sm:text-5xl font-bold tracking-tight leading-[1.15] text-white">
+                  IGTS — GATE 2027 National Mock Test Series
+                </h1>
 
-              <h1 className="heroText text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight leading-tight">
-                Crack{" "}
-                <span className="bg-gradient-to-r from-amber-300 via-orange-300 to-yellow-200 bg-clip-text text-transparent">
-                  GATE 2027
-                </span>{" "}
-                with Confidence
-              </h1>
+                <p className="text-base sm:text-lg text-slate-300 leading-relaxed max-w-2xl">
+                  Built by IIST Thiruvananthapuram rankers and scholars to replicate official GATE
+                  difficulty, Computer-Based Test timing, and quantitative analysis across
+                  Aerospace, Electronics &amp; Communication, and Mechanical Engineering.
+                </p>
 
-              <p className="mt-4 text-lg sm:text-xl font-semibold text-sky-200">
-                IGTS — IIST GATE Test Series
-              </p>
-
-              <p className="mt-4 text-sm sm:text-base lg:text-lg text-slate-300 max-w-2xl leading-relaxed">
-                Presented by the{" "}
-                <span className="text-white font-semibold">
-                  Indian Institute of Space Science and Technology (IIST)
-                </span>{" "}
-                — An Institution under Department of Space, ISRO. Simulate real exam rigor with
-                topper-curated papers and analytics.
-              </p>
-
-              {/* CTA Buttons */}
-              <div className="mt-9 flex flex-col sm:flex-row items-center justify-center gap-4 w-full sm:w-auto">
-                <Link
-                  href="/tests"
-                  className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-8 py-3.5 rounded-full font-bold text-slate-950 bg-gradient-to-r from-amber-300 via-amber-400 to-orange-400 hover:from-amber-200 hover:to-orange-300 shadow-lg shadow-amber-500/25 transition transform hover:-translate-y-0.5"
-                >
-                  <span>Explore GATE 2027 Mocks</span>
-                  <span>→</span>
-                </Link>
-                <Link
-                  href={uid ? "/dashboard" : "/sign-up"}
-                  className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-8 py-3.5 rounded-full font-semibold text-white bg-white/10 hover:bg-white/15 border border-white/20 backdrop-blur-md transition"
-                >
-                  <span>{uid ? "Open My Dashboard" : "Create Free Account"}</span>
-                </Link>
-              </div>
-
-              {/* Trust / Metrics Strip */}
-              <div className="mt-12 grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4 w-full max-w-3xl">
-                {[
-                  { value: "3 Streams", label: "AE · EC/EE · ME" },
-                  { value: "65 Qs", label: "180 Min CBT Format" },
-                  { value: "₹120/-", label: "50% Off Per Pack" },
-                  { value: "ISRO / IIST", label: "Student & Ranker Built" },
-                ].map((stat) => (
-                  <div
-                    key={stat.value}
-                    className="rounded-2xl bg-white/5 border border-white/10 backdrop-blur-sm px-4 py-3.5 text-center"
+                <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 pt-1">
+                  <Link
+                    href="/tests"
+                    className="inline-flex items-center justify-center px-6 py-3 rounded-lg font-semibold text-sm text-[#0b1526] bg-white hover:bg-slate-100 transition"
                   >
-                    <p className="text-lg sm:text-xl font-extrabold text-white">{stat.value}</p>
-                    <p className="text-xs text-slate-300 mt-0.5">{stat.label}</p>
-                  </div>
-                ))}
+                    Explore GATE 2027 Mocks
+                  </Link>
+                  <Link
+                    href={uid ? "/dashboard" : "/sign-up"}
+                    className="inline-flex items-center justify-center px-6 py-3 rounded-lg font-medium text-sm text-white border border-white/25 hover:bg-white/10 transition"
+                  >
+                    {uid ? "Open Candidate Dashboard" : "Create Candidate Account"}
+                  </Link>
+                </div>
+
+                {/* Hairline Metrics Strip */}
+                <div className="pt-6 border-t border-white/10 grid grid-cols-2 sm:grid-cols-4 gap-6">
+                  {[
+                    { value: "3 Streams", label: "AE · EC/EE · ME" },
+                    { value: "65 Questions", label: "180 Min CBT Format" },
+                    { value: "₹120", label: "Per 3-Mock Pack" },
+                    { value: "Dept. of Space", label: "IIST Initiative" },
+                  ].map((item) => (
+                    <div key={item.value}>
+                      <p className="text-lg font-bold text-white tabular-nums">{item.value}</p>
+                      <p className="text-xs text-slate-400 mt-0.5">{item.label}</p>
+                    </div>
+                  ))}
+                </div>
               </div>
-            </motion.div>
+
+              {/* Right: Institutional Emblem & Stream Directory */}
+              <div className="lg:col-span-5">
+                <div className="bg-[#111e33] border border-white/10 rounded-xl p-6 sm:p-7 space-y-6">
+                  <div className="flex items-center justify-between gap-4 pb-5 border-b border-white/10">
+                    <div className="flex items-center gap-3.5">
+                      <div className="relative w-14 h-14 rounded-full overflow-hidden bg-white border border-white/20 flex-shrink-0">
+                        <Image
+                          src="/images/iist-logo.png"
+                          alt="IIST Seal"
+                          fill
+                          sizes="56px"
+                          className="object-cover"
+                          priority
+                        />
+                      </div>
+                      <div className="relative w-14 h-14 rounded-full overflow-hidden bg-black border border-amber-400/40 flex-shrink-0">
+                        <Image
+                          src="/images/dhanak-logo.png"
+                          alt="Dhanak 2027 Emblem"
+                          fill
+                          sizes="56px"
+                          className="object-cover"
+                          priority
+                        />
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-xs font-semibold uppercase tracking-wider text-amber-300">
+                        Edition 2027
+                      </p>
+                      <p className="text-sm font-semibold text-white mt-0.5">Official Series</p>
+                    </div>
+                  </div>
+
+                  <div className="space-y-3">
+                    <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">
+                      Available Engineering Streams
+                    </p>
+                    <div className="divide-y divide-white/10 border border-white/10 rounded-lg bg-[#0b1526]/60">
+                      {tests.map((t) => {
+                        const price = calculateDiscountedPrice(t.pricePerPack, t.discountRate);
+                        return (
+                          <Link
+                            key={t.id}
+                            href={`/tests/${t.id}`}
+                            className="flex items-center justify-between px-4 py-3 hover:bg-white/5 transition group"
+                          >
+                            <div>
+                              <p className="text-sm font-semibold text-white group-hover:text-sky-300 transition">
+                                {t.shortName}
+                              </p>
+                              <p className="text-xs text-slate-400 mt-0.5">
+                                6 Full-Length Mocks · {t.code}
+                              </p>
+                            </div>
+                            <div className="text-right">
+                              <span className="text-sm font-bold text-white tabular-nums">
+                                ₹{price}
+                              </span>
+                              <span className="block text-[11px] text-slate-400">per pack →</span>
+                            </div>
+                          </Link>
+                        );
+                      })}
+                    </div>
+                  </div>
+
+                  <p className="text-xs text-slate-400 leading-relaxed">
+                    Schedules run December 2026 through January 2027 in a supervised 5:30 PM – 11:30
+                    PM IST exam window.
+                  </p>
+                </div>
+              </div>
+            </div>
           </div>
         </section>
 
-        {/* Test Series Streams Showcase */}
+        {/* Engineering Streams Grid */}
         <section className="max-w-screen-xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-20">
-          <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-10">
+          <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 pb-8 border-b border-slate-200 mb-10">
             <div>
-              <span className="inline-block text-xs font-bold uppercase tracking-widest text-indigo-600 bg-indigo-50 border border-indigo-200 px-3 py-1 rounded-full">
+              <p className="text-xs font-semibold uppercase tracking-[0.14em] text-[#0f4c81]">
                 GATE 2027 Test Series
-              </span>
-              <h2 className="mt-3 text-3xl sm:text-4xl font-extrabold text-slate-900">
-                Choose Your Engineering Branch
+              </p>
+              <h2 className="mt-2 text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight">
+                Select Your Engineering Stream
               </h2>
             </div>
             <Link
               href="/tests"
-              className="inline-flex items-center gap-1.5 text-sm font-bold text-indigo-600 hover:text-indigo-800 transition"
+              className="text-sm font-semibold text-[#0f4c81] hover:text-[#0a3963] transition"
             >
-              <span>View all packages & schedules</span>
-              <span>→</span>
+              View full schedules &amp; combo plans →
             </Link>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 lg:gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {tests.map((test) => {
               const price = calculateDiscountedPrice(test.pricePerPack, test.discountRate);
               return (
                 <Link
                   key={test.id}
                   href={`/tests/${test.id}`}
-                  className="group bg-white rounded-2xl border border-slate-200 hover:border-indigo-300 shadow-sm hover:shadow-xl transition-all duration-300 overflow-hidden flex flex-col justify-between"
+                  className="group bg-white rounded-xl border border-slate-200 hover:border-slate-400 shadow-sm transition-colors flex flex-col justify-between overflow-hidden"
                 >
                   <div>
-                    <div className="relative bg-slate-50 border-b border-slate-100 p-8 flex items-center justify-center">
-                      <span className="absolute top-4 left-4 text-xs font-bold px-2.5 py-1 rounded-full bg-slate-900 text-amber-300">
-                        {test.code}
+                    <div className="bg-slate-50 border-b border-slate-200/80 px-6 py-8 flex items-center justify-between">
+                      <span className="text-xs font-mono font-semibold text-slate-600 uppercase tracking-wider">
+                        {test.code} · GATE 2027
                       </span>
-                      <span className="absolute top-4 right-4 text-xs font-bold px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-800">
-                        {Math.round(test.discountRate * 100)}% OFF
+                      <span className="text-xs font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200 px-2.5 py-0.5 rounded-md">
+                        {Math.round(test.discountRate * 100)}% Off
                       </span>
-                      <Image
-                        src={test.imageUrl}
-                        width={116}
-                        height={116}
-                        alt={test.altText}
-                        className="transition-transform duration-300 group-hover:scale-105"
-                      />
                     </div>
-                    <div className="p-6">
-                      <h3 className="text-xl font-extrabold text-slate-900 group-hover:text-indigo-700 transition">
-                        {test.title}
-                      </h3>
-                      <p className="mt-2 text-sm text-slate-600 leading-relaxed">
-                        {test.tagline}
-                      </p>
+
+                    <div className="p-6 space-y-4">
+                      <div className="flex items-center gap-4">
+                        <div className="w-14 h-14 rounded-lg border border-slate-200 bg-slate-50 flex items-center justify-center flex-shrink-0 p-2">
+                          <Image
+                            src={test.imageUrl}
+                            width={44}
+                            height={44}
+                            alt={test.altText}
+                            className="object-contain"
+                          />
+                        </div>
+                        <h3 className="text-lg font-bold text-slate-900 group-hover:text-[#0f4c81] transition leading-snug">
+                          {test.title}
+                        </h3>
+                      </div>
+
+                      <p className="text-sm text-slate-600 leading-relaxed">{test.tagline}</p>
                     </div>
                   </div>
-                  <div className="px-6 pb-6 pt-3 border-t border-slate-100 flex items-center justify-between">
-                    <div>
+
+                  <div className="px-6 py-4 bg-slate-50/70 border-t border-slate-200/80 flex items-center justify-between">
+                    <div className="tabular-nums">
                       <span className="text-xs text-slate-400 line-through mr-2">
                         ₹{test.pricePerPack}
                       </span>
-                      <span className="text-2xl font-extrabold text-slate-900">₹{price}/-</span>
+                      <span className="text-xl font-bold text-slate-900">₹{price}/-</span>
                       <span className="text-xs text-slate-500 ml-1">/ pack</span>
                     </div>
-                    <span className="inline-flex items-center gap-1 text-sm font-bold text-indigo-600 group-hover:translate-x-1 transition-transform">
-                      Explore →
+                    <span className="text-sm font-semibold text-[#0f4c81] group-hover:underline">
+                      View Details →
                     </span>
                   </div>
                 </Link>
@@ -244,131 +285,130 @@ export default function Home() {
           </div>
         </section>
 
-        {/* Why Choose Our Platform */}
-        <section className="bg-white border-y border-slate-200/80 py-16 sm:py-20">
+        {/* Academic Specification Grid */}
+        <section className="bg-white border-y border-slate-200 py-16 sm:py-20">
           <div className="max-w-screen-xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="text-center max-w-2xl mx-auto mb-12">
-              <span className="text-xs font-bold uppercase tracking-widest text-amber-600">
-                Built For Top Percentiles
-              </span>
-              <h2 className="mt-2 text-3xl sm:text-4xl font-extrabold text-slate-900">
-                Why Aspirants Choose IGTS
+            <div className="max-w-2xl mb-12">
+              <p className="text-xs font-semibold uppercase tracking-[0.14em] text-[#0f4c81]">
+                Program Structure
+              </p>
+              <h2 className="mt-2 text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight">
+                Engineered for Serious GATE Preparation
               </h2>
-              <p className="mt-3 text-slate-600">
-                Designed from the ground up to mirror the exact GATE 2027 testing interface and give
-                you actionable post-test clarity.
+              <p className="mt-2.5 text-sm sm:text-base text-slate-600">
+                Built around the official GATE examination format so your mock practice translates
+                directly to exam-day composure.
               </p>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-              {features.map((feature, idx) => (
-                <motion.div
-                  key={feature.title}
-                  initial={{ opacity: 0, y: 16 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true, amount: 0.2 }}
-                  transition={{ duration: 0.35, delay: idx * 0.07 }}
-                  className="rounded-2xl bg-slate-50 border border-slate-200/90 p-6 hover:bg-white hover:shadow-lg transition-all"
-                >
-                  <span className="inline-block text-xs font-bold text-indigo-700 bg-indigo-100 px-2.5 py-1 rounded-full mb-4">
-                    {feature.tag}
-                  </span>
-                  <h3 className="text-lg font-extrabold text-slate-900 mb-2">{feature.title}</h3>
-                  <p className="text-sm text-slate-600 leading-relaxed">{feature.description}</p>
-                </motion.div>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 border border-slate-200 rounded-xl overflow-hidden divide-y md:divide-y-0 md:divide-x divide-slate-200">
+              {features.map((feature) => (
+                <div key={feature.title} className="p-6 bg-white flex flex-col justify-between">
+                  <div>
+                    <div className="flex items-center justify-between text-xs font-mono text-slate-500 mb-4">
+                      <span>{feature.num}</span>
+                      <span>{feature.meta}</span>
+                    </div>
+                    <h3 className="text-base font-bold text-slate-900 mb-2 leading-snug">
+                      {feature.title}
+                    </h3>
+                    <p className="text-sm text-slate-600 leading-relaxed">{feature.description}</p>
+                  </div>
+                </div>
               ))}
             </div>
           </div>
         </section>
 
-        {/* How It Works Stepper */}
+        {/* Registration & Conduct Workflow */}
         <section className="max-w-screen-xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-20">
-          <div className="text-center max-w-2xl mx-auto mb-12">
-            <span className="text-xs font-bold uppercase tracking-widest text-indigo-600">
-              Simple 6-Step Journey
-            </span>
-            <h2 className="mt-2 text-3xl sm:text-4xl font-extrabold text-slate-900">
-              How It Works &amp; Exam Protocol
-            </h2>
-            <p className="mt-3 text-sm sm:text-base text-slate-600">
-              <strong className="text-slate-900">Exam Device Rule:</strong> Live tests require a
-              laptop or tablet in full-screen mode (mobile phones are disabled during test conduction
-              to maintain GATE fidelity).
+          <div className="max-w-2xl mb-10">
+            <p className="text-xs font-semibold uppercase tracking-[0.14em] text-[#0f4c81]">
+              Enrollment Process
             </p>
+            <h2 className="mt-2 text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight">
+              How It Works
+            </h2>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {enrollmentSteps.map((step, index) => (
-              <motion.div
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+            {enrollmentSteps.map((step) => (
+              <div
                 key={step.title}
-                initial={{ opacity: 0, y: 14 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.35, delay: index * 0.06 }}
-                className="relative bg-white rounded-2xl border border-slate-200 p-6 shadow-sm hover:shadow-md transition"
+                className="bg-white rounded-xl border border-slate-200 p-6 space-y-2"
               >
-                <div className="flex items-center gap-3 mb-3">
-                  <span className="w-9 h-9 rounded-xl bg-gradient-to-br from-[#4f46e5] to-[#674cee] text-white font-extrabold text-sm flex items-center justify-center shadow-sm">
-                    0{index + 1}
-                  </span>
-                  <h3 className="text-lg font-bold text-slate-900">{step.title}</h3>
-                </div>
+                <p className="text-xs font-mono font-semibold text-[#0f4c81] uppercase">
+                  {step.step}
+                </p>
+                <h3 className="text-base font-bold text-slate-900">{step.title}</h3>
                 <p className="text-sm text-slate-600 leading-relaxed">{step.description}</p>
-              </motion.div>
+              </div>
             ))}
+          </div>
+
+          <div className="mt-8 bg-white border border-slate-200 border-l-4 border-l-[#0f4c81] rounded-lg p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div className="text-sm text-slate-700">
+              <strong className="text-slate-900">CBT Device Policy:</strong> Live full-screen mock
+              exams require a laptop, desktop, or tablet browser. Mobile phones are restricted during
+              active exam attempts to preserve authentic GATE testing conditions.
+            </div>
+            <Link
+              href="/faqs"
+              className="text-sm font-semibold text-[#0f4c81] hover:underline flex-shrink-0"
+            >
+              Read Exam FAQs →
+            </Link>
           </div>
         </section>
 
-        {/* Dhanak 2027 Spotlight Banner */}
-        <section className="max-w-screen-xl mx-auto px-4 sm:px-6 lg:px-8 pb-20">
-          <div className="cosmicHeader relative overflow-hidden rounded-3xl border border-slate-800 p-8 sm:p-12 lg:p-14 text-white shadow-2xl">
-            <div className="cosmicGrid absolute inset-0 opacity-40 pointer-events-none" />
-            <div className="relative grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
-              <div className="lg:col-span-8 space-y-5">
-                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-400/15 border border-amber-400/30 text-amber-300 text-xs font-bold uppercase tracking-wider">
-                  IIST Thiruvananthapuram · Cultural &amp; Technical Spirit
-                </div>
-                <h2 className="text-3xl sm:text-4xl font-extrabold leading-tight">
-                  Powered by{" "}
-                  <span className="text-amber-300">Dhanak 2027</span> &amp; IIST Student Community
-                </h2>
-                <p className="text-slate-300 text-base leading-relaxed max-w-2xl">
-                  Dhanak is the annual cultural festival of the Indian Institute of Space Science and
-                  Technology. Every IGTS registration supports student-led innovation and brings
-                  IIST-grade GATE 2027 preparation within reach of engineering aspirants across India.
+        {/* Dhanak 2027 Institutional Callout */}
+        <section className="bg-[#0b1526] text-white border-t border-slate-800">
+          <div className="max-w-screen-xl mx-auto px-4 sm:px-6 lg:px-8 py-14 sm:py-16">
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+              <div className="lg:col-span-8 space-y-4">
+                <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">
+                  IIST Thiruvananthapuram · Student Initiative
                 </p>
-                <div className="flex flex-wrap gap-4 pt-2">
+                <h2 className="text-2xl sm:text-3xl font-bold tracking-tight">
+                  Organised Under Dhanak 2027
+                </h2>
+                <p className="text-slate-300 text-sm sm:text-base leading-relaxed max-w-2xl">
+                  Dhanak is the annual cultural festival of the Indian Institute of Space Science and
+                  Technology. Every IGTS registration supports student-led campus initiatives while
+                  delivering rigorous GATE 2027 preparation across India.
+                </p>
+                <div className="flex flex-wrap gap-3 pt-2">
                   <Link
                     href="/tests"
-                    className="inline-flex items-center gap-2 px-7 py-3 rounded-full font-bold text-slate-950 bg-amber-300 hover:bg-amber-200 transition shadow-lg"
+                    className="inline-flex items-center px-5 py-2.5 rounded-lg text-sm font-semibold text-[#0b1526] bg-white hover:bg-slate-100 transition"
                   >
-                    Register for GATE 2027 →
+                    Register for GATE 2027
                   </Link>
                   <Link
                     href="/about"
-                    className="inline-flex items-center gap-2 px-7 py-3 rounded-full font-semibold text-white bg-white/10 hover:bg-white/20 border border-white/20 transition"
+                    className="inline-flex items-center px-5 py-2.5 rounded-lg text-sm font-medium text-white border border-white/25 hover:bg-white/10 transition"
                   >
-                    Discover Dhanak 2027
+                    About IIST &amp; Dhanak 2027
                   </Link>
                 </div>
               </div>
 
-              <div className="lg:col-span-4 flex items-center justify-center gap-5">
-                <div className="relative w-28 h-28 sm:w-36 sm:h-36 rounded-full overflow-hidden bg-white p-1 ring-4 ring-sky-400/40 shadow-2xl">
+              <div className="lg:col-span-4 flex items-center justify-start lg:justify-end gap-5">
+                <div className="relative w-24 h-24 sm:w-28 sm:h-28 rounded-full overflow-hidden bg-white border border-white/20">
                   <Image
                     src="/images/iist-logo.png"
                     alt="IIST Official Seal"
                     fill
-                    sizes="144px"
-                    className="object-cover rounded-full"
+                    sizes="112px"
+                    className="object-cover"
                   />
                 </div>
-                <div className="relative w-32 h-32 sm:w-40 sm:h-40 rounded-full overflow-hidden bg-black ring-4 ring-amber-400/60 shadow-2xl">
+                <div className="relative w-24 h-24 sm:w-28 sm:h-28 rounded-full overflow-hidden bg-black border border-amber-400/40">
                   <Image
                     src="/images/logo.png"
                     alt="Dhanak 2027 Official Logo"
                     fill
-                    sizes="160px"
+                    sizes="112px"
                     className="object-cover"
                   />
                 </div>

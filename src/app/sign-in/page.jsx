@@ -12,7 +12,6 @@ import {
 } from "@/libs/supabase/authClient";
 import toast from "react-hot-toast";
 import { useRouter } from "next/navigation";
-import { motion } from "framer-motion";
 
 const SignIn = () => {
   const router = useRouter();
@@ -180,31 +179,26 @@ const SignIn = () => {
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-slate-50 topSection">
+    <div className="min-h-screen flex flex-col bg-[#f8fafc] topSection">
       <NavbarLite />
 
       <main className="flex-1 flex items-center justify-center px-4 py-12">
-        <motion.div
-          className="w-full max-w-md"
-          initial={{ opacity: 0, y: 12 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.35 }}
-        >
+        <div className="w-full max-w-md">
           {resetPassword ? (
-            <div className="bg-white rounded-3xl border border-slate-200 shadow-xl overflow-hidden">
+            <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
               <div className="p-7 sm:p-8 space-y-5">
                 <div className="flex justify-center">
                   <BrandLogo variant="light" size="sm" href={null} />
                 </div>
                 <div className="text-center">
-                  <h1 className="text-2xl font-extrabold text-slate-900">Reset Password</h1>
+                  <h1 className="text-xl sm:text-2xl font-bold text-slate-900">Reset Password</h1>
                   <p className="text-sm text-slate-500 mt-1">
                     Enter your registered email to receive a reset link.
                   </p>
                 </div>
 
                 <div>
-                  <label className="block text-sm font-bold text-slate-700 mb-1.5" htmlFor="rEmail">
+                  <label className="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-1.5" htmlFor="rEmail">
                     Email
                   </label>
                   <input
@@ -216,7 +210,7 @@ const SignIn = () => {
                       if (e.key === "Enter") handlePasswordReset();
                     }}
                     placeholder="you@example.com"
-                    className="w-full px-4 py-2.5 rounded-xl border border-slate-300 bg-slate-50 focus:bg-white text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    className="w-full px-3.5 py-2.5 rounded-lg border border-slate-300 bg-white text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#0f4c81] focus:border-[#0f4c81]"
                   />
                 </div>
 
@@ -224,7 +218,7 @@ const SignIn = () => {
                   id="resetpassbtn"
                   type="button"
                   onClick={handlePasswordReset}
-                  className="w-full py-3 rounded-full font-bold text-white bg-gradient-to-r from-[#4f46e5] to-[#674cee] hover:from-[#4338ca] hover:to-[#5b3fe3] shadow-md transition"
+                  className="w-full py-2.5 rounded-lg text-sm font-semibold text-white bg-[#0f4c81] hover:bg-[#0a3963] transition"
                 >
                   Send Reset Link
                 </button>
@@ -234,29 +228,29 @@ const SignIn = () => {
                 <button
                   type="button"
                   onClick={() => setResetPassword(false)}
-                  className="font-bold text-indigo-600 hover:underline"
+                  className="font-semibold text-[#0f4c81] hover:underline"
                 >
                   Sign in
                 </button>
               </div>
             </div>
           ) : (
-            <div className="bg-white rounded-3xl border border-slate-200 shadow-xl overflow-hidden">
+            <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
               <div className="p-7 sm:p-8 space-y-5">
                 <div className="flex justify-center">
                   <BrandLogo variant="light" size="sm" href={null} />
                 </div>
                 <div className="text-center">
-                  <h1 className="text-2xl font-extrabold text-slate-900">Welcome Back</h1>
+                  <h1 className="text-xl sm:text-2xl font-bold text-slate-900">Candidate Sign In</h1>
                   <p className="text-sm text-slate-500 mt-1">
-                    Sign in to your IGTS · Dhanak 2027 account
+                    Sign in to access your IGTS GATE 2027 portal
                   </p>
                 </div>
 
                 {inValidEmailId && (
                   <div
                     role="alert"
-                    className="bg-rose-50 border border-rose-200 text-rose-800 p-3.5 rounded-2xl text-xs leading-relaxed"
+                    className="bg-rose-50 border border-rose-200 text-rose-800 p-3.5 rounded-lg text-xs leading-relaxed"
                   >
                     Incorrect email or password. If you originally signed up with Google, please click{" "}
                     <strong>Continue with Google</strong> below.
@@ -265,7 +259,7 @@ const SignIn = () => {
 
                 <div className="space-y-4">
                   <div>
-                    <label className="block text-sm font-bold text-slate-700 mb-1.5" htmlFor="email">
+                    <label className="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-1.5" htmlFor="email">
                       Email Address
                     </label>
                     <input
@@ -277,19 +271,19 @@ const SignIn = () => {
                         if (e.key === "Enter") handleSignIn();
                       }}
                       placeholder="you@example.com"
-                      className="w-full px-4 py-2.5 rounded-xl border border-slate-300 bg-slate-50 focus:bg-white text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                      className="w-full px-3.5 py-2.5 rounded-lg border border-slate-300 bg-white text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#0f4c81] focus:border-[#0f4c81]"
                     />
                   </div>
 
                   <div>
                     <div className="flex items-center justify-between mb-1.5">
-                      <label className="block text-sm font-bold text-slate-700" htmlFor="password">
+                      <label className="block text-xs font-semibold uppercase tracking-wider text-slate-600" htmlFor="password">
                         Password
                       </label>
                       <button
                         type="button"
                         onClick={() => setResetPassword(true)}
-                        className="text-xs font-bold text-indigo-600 hover:underline"
+                        className="text-xs font-semibold text-[#0f4c81] hover:underline"
                       >
                         Forgot password?
                       </button>
@@ -303,7 +297,7 @@ const SignIn = () => {
                         if (e.key === "Enter") handleSignIn();
                       }}
                       placeholder="Enter your password"
-                      className="w-full px-4 py-2.5 rounded-xl border border-slate-300 bg-slate-50 focus:bg-white text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                      className="w-full px-3.5 py-2.5 rounded-lg border border-slate-300 bg-white text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#0f4c81] focus:border-[#0f4c81]"
                     />
                   </div>
                 </div>
@@ -311,15 +305,15 @@ const SignIn = () => {
                 <button
                   type="button"
                   onClick={handleSignIn}
-                  className="w-full py-3 rounded-full font-bold text-white bg-gradient-to-r from-[#4f46e5] to-[#674cee] hover:from-[#4338ca] hover:to-[#5b3fe3] shadow-md shadow-indigo-500/20 transition"
+                  className="w-full py-2.5 rounded-lg text-sm font-semibold text-white bg-[#0f4c81] hover:bg-[#0a3963] transition"
                 >
                   Sign In
                 </button>
 
                 <div className="relative flex py-1 items-center">
                   <div className="flex-grow border-t border-slate-200" />
-                  <span className="flex-shrink mx-3 text-xs font-semibold text-slate-400 uppercase">
-                    Or continue with
+                  <span className="flex-shrink mx-3 text-xs font-medium text-slate-400 uppercase">
+                    Or
                   </span>
                   <div className="flex-grow border-t border-slate-200" />
                 </div>
@@ -327,9 +321,9 @@ const SignIn = () => {
                 <button
                   type="button"
                   onClick={handleGoogle}
-                  className="w-full py-2.5 px-4 rounded-full border border-slate-300 bg-white hover:bg-slate-50 text-slate-700 font-bold text-sm flex items-center justify-center gap-3 transition shadow-sm"
+                  className="w-full py-2.5 px-4 rounded-lg border border-slate-300 bg-white hover:bg-slate-50 text-slate-700 font-semibold text-sm flex items-center justify-center gap-3 transition"
                 >
-                  <svg className="w-5 h-5" preserveAspectRatio="xMidYMid" viewBox="0 0 256 262">
+                  <svg className="w-4 h-4" preserveAspectRatio="xMidYMid" viewBox="0 0 256 262">
                     <path
                       fill="#4285F4"
                       d="M255.878 133.451c0-10.734-.871-18.567-2.756-26.69H130.55v48.448h71.947c-1.45 12.04-9.283 30.172-26.69 42.356l-.244 1.622 38.755 30.023 2.685.268c24.659-22.774 38.875-56.282 38.875-96.027"
@@ -353,13 +347,13 @@ const SignIn = () => {
 
               <div className="px-6 py-4 bg-slate-50 border-t border-slate-200 text-center text-sm text-slate-600">
                 New to IGTS?{" "}
-                <Link href="/sign-up" className="font-bold text-indigo-600 hover:underline">
+                <Link href="/sign-up" className="font-semibold text-[#0f4c81] hover:underline">
                   Create an account
                 </Link>
               </div>
             </div>
           )}
-        </motion.div>
+        </div>
       </main>
 
       <Footer />

@@ -2,79 +2,77 @@ import Link from "next/link";
 import Image from "next/image";
 
 /**
- * Dual official brand emblem pairing the Indian Institute of Space Science and
- * Technology (IIST) seal with the new Dhanak 2027 Phoenix crest.
+ * Institutional header mark pairing the IIST circular seal with the Dhanak 2027
+ * emblem in a clean side-by-side lockup.
  */
 export default function BrandLogo({ variant = "light", size = "md", href = "/" }) {
   const isDark = variant === "dark";
-  const imgSize = size === "lg" ? 48 : size === "sm" ? 34 : 40;
+  const imgSize = size === "lg" ? 44 : size === "sm" ? 32 : 38;
 
   const content = (
-    <div className="flex items-center gap-2.5 sm:gap-3 group select-none">
-      {/* Dual Logos Cluster */}
-      <div
-        className={`flex items-center gap-1.5 rounded-full p-1 transition-all duration-300 ${
-          isDark
-            ? "bg-white/10 ring-1 ring-white/20 group-hover:ring-amber-400/50"
-            : "bg-slate-900/5 ring-1 ring-slate-200 group-hover:ring-indigo-300"
-        }`}
-      >
+    <div className="flex items-center gap-3 select-none">
+      <div className="flex items-center gap-2">
         <div
-          className="relative rounded-full overflow-hidden bg-white shadow-sm flex-shrink-0 ring-1 ring-sky-400/40"
+          className={`relative rounded-full overflow-hidden bg-white flex-shrink-0 border ${
+            isDark ? "border-white/20" : "border-slate-200"
+          }`}
           style={{ width: imgSize, height: imgSize }}
           title="Indian Institute of Space Science and Technology (IIST)"
         >
           <Image
             src="/images/iist-logo.png"
-            alt="IIST Logo"
+            alt="IIST Official Seal"
             fill
-            sizes="48px"
+            sizes="44px"
             className="object-cover"
             priority
           />
         </div>
         <div
-          className="relative rounded-full overflow-hidden bg-black shadow-sm flex-shrink-0 ring-1 ring-amber-400/60"
+          className={`h-6 w-px ${isDark ? "bg-white/20" : "bg-slate-200"}`}
+          aria-hidden="true"
+        />
+        <div
+          className={`relative rounded-full overflow-hidden bg-black flex-shrink-0 border ${
+            isDark ? "border-amber-400/40" : "border-slate-300"
+          }`}
           style={{ width: imgSize, height: imgSize }}
-          title="Dhanak 2027 — IIST Annual Cultural Festival"
+          title="Dhanak 2027"
         >
           <Image
             src="/images/logo.png"
-            alt="Dhanak 2027 Logo"
+            alt="Dhanak 2027 Emblem"
             fill
-            sizes="48px"
+            sizes="44px"
             className="object-cover"
             priority
           />
         </div>
       </div>
 
-      {/* Wordmark */}
-      <div className="flex flex-col leading-tight">
-        <div className="flex items-center gap-1.5">
+      <div className="flex flex-col leading-none">
+        <div className="flex items-baseline gap-2">
           <span
-            className={`font-extrabold tracking-tight text-base sm:text-lg ${
+            className={`font-bold tracking-tight text-base sm:text-lg ${
               isDark ? "text-white" : "text-slate-900"
             }`}
           >
             IGTS
           </span>
           <span
-            className={`text-[10px] sm:text-[11px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full border ${
-              isDark
-                ? "bg-amber-400/15 text-amber-300 border-amber-400/30"
-                : "bg-amber-50 text-amber-700 border-amber-200"
+            className={`text-xs font-medium ${
+              isDark ? "text-amber-300" : "text-[#0f4c81]"
             }`}
           >
-            Dhanak &apos;27
+            Dhanak 2027
           </span>
         </div>
         <span
-          className={`hidden sm:block text-[11px] font-medium ${
-            isDark ? "text-slate-300" : "text-slate-500"
+          className={`hidden sm:block text-[11px] font-normal mt-1 ${
+            isDark ? "text-slate-400" : "text-slate-500"
           }`}
         >
-          IIST GATE 2027 Mock Series
+          IIST Thiruvananthapuram
         </span>
       </div>
     </div>

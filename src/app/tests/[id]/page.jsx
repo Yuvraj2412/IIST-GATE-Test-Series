@@ -10,7 +10,6 @@ import tests from "@/data/tests";
 import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
 import { useAuthState } from "@/libs/supabase/authClient";
-import { motion } from "framer-motion";
 
 export default function TestDetails({ params }) {
   const [userDetails, setUserDetails] = useState(null);
@@ -110,7 +109,7 @@ export default function TestDetails({ params }) {
 
   if (loadingPage) {
     return (
-      <div className="min-h-screen flex flex-col bg-slate-50">
+      <div className="min-h-screen flex flex-col bg-[#f8fafc]">
         <Navbar />
         <div className="flex-1 flex items-center justify-center py-20">
           <Loader />
@@ -122,16 +121,16 @@ export default function TestDetails({ params }) {
 
   if (!testDetails) {
     return (
-      <div className="min-h-screen flex flex-col bg-slate-50">
+      <div className="min-h-screen flex flex-col bg-[#f8fafc]">
         <Navbar />
         <div className="flex-1 flex flex-col items-center justify-center px-4 text-center py-20">
-          <h1 className="text-3xl font-extrabold text-slate-900">Test Series Not Found</h1>
-          <p className="text-slate-600 mt-2">
+          <h1 className="text-2xl font-bold text-slate-900">Test Series Not Found</h1>
+          <p className="text-slate-600 mt-2 text-sm">
             The requested GATE 2027 mock package does not exist.
           </p>
           <Link
             href="/tests"
-            className="mt-6 px-6 py-3 rounded-full bg-indigo-600 text-white font-bold hover:bg-indigo-700 transition"
+            className="mt-6 px-5 py-2.5 rounded-lg bg-[#0f4c81] text-white text-sm font-semibold hover:bg-[#0a3963] transition"
           >
             Back to All Tests
           </Link>
@@ -149,38 +148,37 @@ export default function TestDetails({ params }) {
   const alreadyOwned = isAlreadyRegistered(selectedPack);
 
   const PurchaseCard = () => (
-    <div className="bg-white text-slate-900 rounded-3xl border border-slate-200 shadow-xl overflow-hidden">
-      <div className="bg-slate-50 border-b border-slate-100 py-8 px-6 flex flex-col items-center justify-center relative">
-        <span className="absolute top-4 left-4 text-xs font-extrabold px-2.5 py-1 rounded-full bg-slate-900 text-amber-300">
-          {testDetails.code}
+    <div className="bg-white text-slate-900 rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+      <div className="bg-slate-50 border-b border-slate-200 px-6 py-4 flex items-center justify-between">
+        <span className="text-xs font-mono font-semibold text-slate-600 uppercase">
+          {testDetails.code} · {testDetails.shortName}
         </span>
-        <span className="text-xs font-bold px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-800 absolute top-4 right-4">
-          {Math.round(discountRate * 100)}% OFF
+        <span className="text-xs font-semibold px-2 py-0.5 rounded-md bg-emerald-50 text-emerald-700 border border-emerald-200">
+          {Math.round(discountRate * 100)}% Off
         </span>
-        <Image
-          src={testDetails.imageUrl}
-          width={120}
-          height={120}
-          alt={testDetails.title}
-        />
       </div>
 
       <div className="p-6 space-y-5">
-        <div>
-          <p className="text-xs font-bold uppercase tracking-wider text-emerald-700">
-            Special Discounted Fee
-          </p>
-          <div className="flex items-baseline gap-3 mt-1">
-            <span className="text-lg text-slate-400 line-through">₹{originalFee}</span>
-            <span className="text-4xl font-extrabold text-slate-900">₹{finalFee}/-</span>
-            <span className="text-xs font-semibold text-slate-500">
-              {selectedPack === "Both Packs" ? "for 6 mocks" : "for 3 mocks"}
-            </span>
+        <div className="flex items-center gap-4 pb-4 border-b border-slate-100">
+          <div className="w-16 h-16 rounded-lg border border-slate-200 bg-slate-50 flex items-center justify-center p-2 flex-shrink-0">
+            <Image src={testDetails.imageUrl} width={48} height={48} alt={testDetails.title} />
+          </div>
+          <div className="tabular-nums">
+            <p className="text-xs text-slate-500">Registration Fee</p>
+            <div className="flex items-baseline gap-2 mt-0.5">
+              <span className="text-sm text-slate-400 line-through">₹{originalFee}</span>
+              <span className="text-3xl font-bold text-slate-900">₹{finalFee}/-</span>
+            </div>
+            <p className="text-xs text-slate-500 mt-0.5">
+              {selectedPack === "Both Packs" ? "Combo (6 full-length mocks)" : "3 full-length mocks"}
+            </p>
           </div>
         </div>
 
-        <div className="space-y-2.5">
-          <p className="text-sm font-bold text-slate-800">Select Your Package</p>
+        <div className="space-y-2">
+          <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">
+            Select Package
+          </p>
           <div className="grid grid-cols-3 gap-2">
             {[
               { id: "Pack 1", label: "Pack 1", sub: "3 Tests" },
@@ -193,18 +191,14 @@ export default function TestDetails({ params }) {
                   key={pkg.id}
                   type="button"
                   onClick={() => setSelectedPack(pkg.id)}
-                  className={`py-2.5 px-2 rounded-xl border text-center transition ${
+                  className={`py-2 px-2 rounded-lg border text-center transition ${
                     active
-                      ? "bg-indigo-600 border-indigo-600 text-white shadow-sm"
-                      : "bg-slate-50 border-slate-200 text-slate-700 hover:border-indigo-300"
+                      ? "bg-[#0f4c81] border-[#0f4c81] text-white"
+                      : "bg-white border-slate-200 text-slate-700 hover:border-slate-400"
                   }`}
                 >
-                  <span className="block text-xs sm:text-sm font-extrabold">{pkg.label}</span>
-                  <span
-                    className={`block text-[11px] ${
-                      active ? "text-indigo-100" : "text-slate-500"
-                    }`}
-                  >
+                  <span className="block text-xs sm:text-sm font-semibold">{pkg.label}</span>
+                  <span className={`block text-[11px] ${active ? "text-slate-200" : "text-slate-500"}`}>
                     {pkg.sub}
                   </span>
                 </button>
@@ -217,52 +211,45 @@ export default function TestDetails({ params }) {
           <button
             type="button"
             onClick={() => router.push("/registered-tests")}
-            className="w-full py-3.5 px-6 rounded-full font-bold text-white bg-emerald-600 hover:bg-emerald-700 transition shadow-md"
+            className="w-full py-3 px-4 rounded-lg text-sm font-semibold text-white bg-emerald-700 hover:bg-emerald-800 transition"
           >
-            Already Registered · Go to Your Tests →
+            Already Enrolled — Open Your Tests
           </button>
         ) : testDetails.isRegistrationOpen ? (
           <button
             type="button"
             onClick={handleEnroll}
-            className="w-full py-3.5 px-6 rounded-full font-bold text-white bg-gradient-to-r from-[#4f46e5] to-[#674cee] hover:from-[#4338ca] hover:to-[#5b3fe3] transition shadow-md shadow-indigo-500/20"
+            className="w-full py-3 px-4 rounded-lg text-sm font-semibold text-white bg-[#0f4c81] hover:bg-[#0a3963] transition tabular-nums"
           >
-            Enroll Now · ₹{finalFee} →
+            Enroll Now · ₹{finalFee}
           </button>
         ) : (
           <button
             type="button"
             disabled
-            className="w-full py-3.5 px-6 rounded-full font-bold text-slate-500 bg-slate-200 cursor-not-allowed"
+            className="w-full py-3 px-4 rounded-lg text-sm font-semibold text-slate-500 bg-slate-200 cursor-not-allowed"
           >
             Registration Closed
           </button>
         )}
 
-        <p className="text-[11px] text-slate-500 text-center">
-          Instant activation via Razorpay UPI / Cards · Laptop or Tablet required for live tests
+        <p className="text-[11px] text-slate-500 text-center leading-relaxed">
+          Razorpay UPI / Cards · Laptop or Tablet required for live tests
         </p>
       </div>
     </div>
   );
 
   return (
-    <div className="min-h-screen flex flex-col bg-slate-50">
+    <div className="min-h-screen flex flex-col bg-[#f8fafc] text-slate-900">
       <Navbar />
 
       <main className="flex-1 w-full pb-20">
-        {/* Top Cosmic Section */}
-        <section className={`${style.topSection} relative overflow-hidden w-full text-white`}>
-          <div className="cosmicGrid absolute inset-0 opacity-50 pointer-events-none" />
-          <div className="relative max-w-screen-xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-14">
-            <motion.div
-              className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start"
-              initial={{ opacity: 0, y: 12 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.35 }}
-            >
-              <div className="lg:col-span-8 space-y-6">
-                <div className="text-xs sm:text-sm flex flex-wrap items-center gap-2 text-slate-300">
+        <section className={`${style.topSection} text-white`}>
+          <div className="max-w-screen-xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+              <div className="lg:col-span-8 space-y-5">
+                <div className="text-xs sm:text-sm flex flex-wrap items-center gap-2 text-slate-400">
                   <Link href="/" className="hover:text-white transition">
                     Home
                   </Link>
@@ -271,59 +258,59 @@ export default function TestDetails({ params }) {
                     GATE 2027 Mock Tests
                   </Link>
                   <span>/</span>
-                  <span className="text-amber-300 font-semibold">{testDetails.shortName}</span>
+                  <span className="text-slate-200 font-medium">{testDetails.shortName}</span>
                 </div>
 
-                <div>
-                  <span className="inline-block text-xs font-bold uppercase tracking-widest text-amber-300 bg-amber-400/15 border border-amber-400/30 px-3 py-1 rounded-full mb-3">
-                    Dhanak 2027 · GATE 2027 Edition
-                  </span>
-                  <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight leading-tight">
-                    GATE Mock for {testDetails.title}
+                <div className="space-y-3">
+                  <p className="text-xs font-mono uppercase tracking-[0.14em] text-amber-300">
+                    Dhanak 2027 · {testDetails.code} Series
+                  </p>
+                  <h1 className="text-2xl sm:text-4xl font-bold tracking-tight leading-tight">
+                    GATE Mock Series — {testDetails.title}
                   </h1>
-                  <p className="mt-3 text-slate-300 text-base sm:text-lg max-w-2xl">
+                  <p className="text-slate-300 text-sm sm:text-base max-w-2xl leading-relaxed">
                     {testDetails.description}
                   </p>
                 </div>
 
                 {/* Mobile Purchase Card */}
-                <div className="lg:hidden">
+                <div className="lg:hidden pt-2">
                   <PurchaseCard />
                 </div>
 
-                {/* Test Schedules (Pack 1 & Pack 2) */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-5 pt-2">
+                {/* Pack Schedules */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-3">
                   {["pack1", "pack2"].map((packKey, index) => {
                     const schedule = testDetails.testSchedule[packKey];
-                    const isHighlighted =
-                      selectedPack === "Both Packs" ||
-                      selectedPack === `Pack ${index + 1}`;
+                    const isSelected =
+                      selectedPack === "Both Packs" || selectedPack === `Pack ${index + 1}`;
                     return (
                       <div
                         key={packKey}
-                        className={`rounded-2xl p-6 transition border backdrop-blur-md ${
-                          isHighlighted
-                            ? "bg-white text-slate-900 border-amber-300 shadow-lg"
-                            : "bg-white/10 text-white border-white/15"
+                        className={`rounded-xl p-5 border transition ${
+                          isSelected
+                            ? "bg-white text-slate-900 border-white shadow-sm"
+                            : "bg-[#111e33] text-slate-100 border-white/15"
                         }`}
                       >
-                        <div className="flex items-center justify-between mb-4">
-                          <span className="text-lg font-extrabold">{`Pack ${index + 1}`}</span>
+                        <div className="flex items-center justify-between mb-3 pb-2.5 border-b border-current/10">
+                          <span className="text-base font-bold">{`Pack ${index + 1}`}</span>
                           <span
-                            className={`text-xs font-bold px-2.5 py-1 rounded-full ${
-                              isHighlighted
-                                ? "bg-indigo-100 text-indigo-700"
-                                : "bg-white/15 text-slate-100"
+                            className={`text-xs font-mono ${
+                              isSelected ? "text-[#0f4c81] font-semibold" : "text-slate-400"
                             }`}
                           >
                             3 Full Mocks
                           </span>
                         </div>
-                        <ul className="space-y-2.5 text-sm">
+                        <ul className="space-y-2 text-sm tabular-nums">
                           {Object.entries(schedule).map(([k, dateVal], idx) => (
-                            <li key={k} className="flex items-center justify-between border-b border-current/10 pb-2 last:border-none last:pb-0">
-                              <span className="font-bold">Test {idx + 1}</span>
-                              <span className={isHighlighted ? "text-slate-600 font-medium" : "text-slate-200"}>
+                            <li
+                              key={k}
+                              className="flex items-center justify-between py-1 border-b border-current/10 last:border-none"
+                            >
+                              <span className="font-medium">Mock Test {idx + 1}</span>
+                              <span className={isSelected ? "text-slate-600" : "text-slate-300"}>
                                 {dateVal}
                               </span>
                             </li>
@@ -335,95 +322,97 @@ export default function TestDetails({ params }) {
                 </div>
               </div>
 
-              {/* Desktop Purchase Card */}
               <div className="hidden lg:block lg:col-span-4">
                 <PurchaseCard />
               </div>
-            </motion.div>
+            </div>
           </div>
         </section>
 
-        {/* Exam Pattern & Marking Scheme */}
-        <section className="max-w-screen-xl mx-auto px-4 sm:px-6 lg:px-8 pt-14 space-y-10">
-          <div className="bg-white rounded-3xl border border-slate-200 shadow-sm p-6 sm:p-10">
-            <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-900 mb-6">
-              GATE 2027 Test Pattern &amp; Structure
+        {/* Pattern & Marking Scheme */}
+        <section className="max-w-screen-xl mx-auto px-4 sm:px-6 lg:px-8 pt-10 space-y-8">
+          <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-6 sm:p-8">
+            <h2 className="text-xl sm:text-2xl font-bold text-slate-900 mb-6">
+              Examination Format &amp; Marking Scheme
             </h2>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 border border-slate-200 rounded-lg divide-y sm:divide-y-0 sm:divide-x divide-slate-200">
               {[
-                { label: "Total Questions", value: "65 Qs (10 GA + 55 Core)" },
+                { label: "Questions", value: "65 (10 GA + 55 Core)" },
                 { label: "Question Types", value: "MCQ, MSQ & NAT" },
-                { label: "Live Test Window", value: "5:30 PM – 11:30 PM IST" },
-                { label: "Test Duration", value: "3 Hours (180 Mins)" },
+                { label: "Exam Window", value: "5:30 PM – 11:30 PM IST" },
+                { label: "Duration", value: "180 Minutes" },
               ].map((stat) => (
-                <div
-                  key={stat.label}
-                  className="rounded-2xl bg-slate-50 border border-slate-200 p-4"
-                >
-                  <p className="text-xs font-bold uppercase tracking-wider text-indigo-600">
+                <div key={stat.label} className="p-4">
+                  <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">
                     {stat.label}
                   </p>
-                  <p className="mt-1 text-base font-bold text-slate-900">{stat.value}</p>
+                  <p className="mt-1 text-sm sm:text-base font-bold text-slate-900">{stat.value}</p>
                 </div>
               ))}
             </div>
 
-            <div className="mt-8 pt-8 border-t border-slate-200">
-              <h3 className="text-xl font-extrabold text-slate-900 mb-4">
-                Marking Scheme Breakdown
-              </h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm sm:text-base text-slate-700">
-                <div className="rounded-2xl bg-slate-50 p-4 border border-slate-200">
-                  <strong>General Aptitude (5 Qs):</strong>{" "}
-                  <span className="text-emerald-700 font-bold">+1</span> correct ·{" "}
-                  <span className="text-rose-600 font-bold">-1/3</span> incorrect
-                </div>
-                <div className="rounded-2xl bg-slate-50 p-4 border border-slate-200">
-                  <strong>General Aptitude (5 Qs):</strong>{" "}
-                  <span className="text-emerald-700 font-bold">+2</span> correct ·{" "}
-                  <span className="text-rose-600 font-bold">-2/3</span> incorrect
-                </div>
-                <div className="rounded-2xl bg-slate-50 p-4 border border-slate-200">
-                  <strong>Core Subject (25 Qs):</strong>{" "}
-                  <span className="text-emerald-700 font-bold">+1</span> correct ·{" "}
-                  <span className="text-rose-600 font-bold">-1/3</span> incorrect
-                </div>
-                <div className="rounded-2xl bg-slate-50 p-4 border border-slate-200">
-                  <strong>Core Subject (30 Qs):</strong>{" "}
-                  <span className="text-emerald-700 font-bold">+2</span> correct ·{" "}
-                  <span className="text-rose-600 font-bold">-2/3</span> incorrect
-                </div>
-              </div>
-              <p className="mt-4 text-sm font-semibold text-indigo-700 bg-indigo-50 border border-indigo-200 rounded-xl px-4 py-3 inline-block">
-                Note: Zero negative marking applies to Multiple Select (MSQ) and Numerical Answer Type (NAT) questions.
-              </p>
+            <div className="mt-8 overflow-x-auto">
+              <table className="w-full text-left border-collapse border border-slate-200 text-sm">
+                <thead className="bg-slate-50 text-slate-700 font-semibold border-b border-slate-200">
+                  <tr>
+                    <th className="py-3 px-4 border-r border-slate-200">Section</th>
+                    <th className="py-3 px-4 border-r border-slate-200">Question Count</th>
+                    <th className="py-3 px-4 border-r border-slate-200">Correct Mark</th>
+                    <th className="py-3 px-4">Negative Marking (MCQ only)</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-200 text-slate-700">
+                  <tr>
+                    <td className="py-3 px-4 border-r border-slate-200 font-medium">General Aptitude</td>
+                    <td className="py-3 px-4 border-r border-slate-200 tabular-nums">5 Questions</td>
+                    <td className="py-3 px-4 border-r border-slate-200 text-emerald-700 font-semibold">+1</td>
+                    <td className="py-3 px-4 text-rose-600 font-semibold">-1/3</td>
+                  </tr>
+                  <tr>
+                    <td className="py-3 px-4 border-r border-slate-200 font-medium">General Aptitude</td>
+                    <td className="py-3 px-4 border-r border-slate-200 tabular-nums">5 Questions</td>
+                    <td className="py-3 px-4 border-r border-slate-200 text-emerald-700 font-semibold">+2</td>
+                    <td className="py-3 px-4 text-rose-600 font-semibold">-2/3</td>
+                  </tr>
+                  <tr>
+                    <td className="py-3 px-4 border-r border-slate-200 font-medium">Core Subject</td>
+                    <td className="py-3 px-4 border-r border-slate-200 tabular-nums">25 Questions</td>
+                    <td className="py-3 px-4 border-r border-slate-200 text-emerald-700 font-semibold">+1</td>
+                    <td className="py-3 px-4 text-rose-600 font-semibold">-1/3</td>
+                  </tr>
+                  <tr>
+                    <td className="py-3 px-4 border-r border-slate-200 font-medium">Core Subject</td>
+                    <td className="py-3 px-4 border-r border-slate-200 tabular-nums">30 Questions</td>
+                    <td className="py-3 px-4 border-r border-slate-200 text-emerald-700 font-semibold">+2</td>
+                    <td className="py-3 px-4 text-rose-600 font-semibold">-2/3</td>
+                  </tr>
+                </tbody>
+              </table>
             </div>
+
+            <p className="mt-4 text-xs sm:text-sm text-slate-600 bg-slate-50 border border-slate-200 border-l-4 border-l-[#0f4c81] rounded-md px-4 py-3">
+              Note: There is zero negative marking for Multiple Select Questions (MSQ) and Numerical
+              Answer Type (NAT) questions.
+            </p>
           </div>
 
-          {/* Why Choose Section */}
-          <div className="bg-white rounded-3xl border border-slate-200 shadow-sm p-6 sm:p-10">
-            <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-900 mb-6">
-              Why Choose Our Test Series?
+          <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-6 sm:p-8">
+            <h2 className="text-xl sm:text-2xl font-bold text-slate-900 mb-5">
+              Series Highlights
             </h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5 text-sm text-slate-700">
               {[
-                "Thorough preparation with a wide spectrum of concept-testing questions.",
-                "Simulated official GATE CBT experience with strict 180-minute timing.",
-                "Detailed section-wise accuracy charts & projected GATE rank analysis.",
-                "Updated content calibrated to the latest GATE 2027 syllabus.",
-                "Full mathematical KaTeX typesetting for clear equations and diagrams.",
-                "Benchmark yourself against engineering peers nationwide.",
-                "Review exact solutions and identify weak areas immediately post-test.",
-                "Organized by IIST students at student-friendly subsidized pricing.",
+                "Wide spectrum of conceptual and application-level questions aligned to GATE 2027.",
+                "Supervised online CBT exam interface with strict 180-minute countdown timer.",
+                "Instant section-wise accuracy charts and projected GATE rank band analytics.",
+                "Calibrated by IIST postgraduate researchers and GATE top rankers.",
+                "Clear KaTeX mathematical typesetting and labelled circuit/system diagrams.",
+                "Review complete solutions and responses anytime from your Candidate Dashboard.",
               ].map((benefit) => (
-                <div
-                  key={benefit}
-                  className="flex items-start gap-3 p-3.5 rounded-2xl bg-slate-50 border border-slate-100"
-                >
-                  <span className="w-6 h-6 rounded-full bg-amber-100 text-amber-700 font-bold text-xs flex items-center justify-center flex-shrink-0 mt-0.5">
-                    ✓
-                  </span>
-                  <span className="text-sm sm:text-base text-slate-700">{benefit}</span>
+                <div key={benefit} className="flex items-start gap-2.5 py-1.5">
+                  <span className="text-[#0f4c81] font-bold">✓</span>
+                  <span>{benefit}</span>
                 </div>
               ))}
             </div>

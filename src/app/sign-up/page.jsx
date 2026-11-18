@@ -12,7 +12,6 @@ import {
 } from "@/libs/supabase/authClient";
 import toast from "react-hot-toast";
 import { useRouter } from "next/navigation";
-import { motion } from "framer-motion";
 
 const SignUp = () => {
   const router = useRouter();
@@ -296,32 +295,27 @@ const SignUp = () => {
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-slate-50 topSection">
+    <div className="min-h-screen flex flex-col bg-[#f8fafc] topSection">
       <NavbarLite />
 
       <main className="flex-1 flex items-center justify-center px-4 py-12">
-        <motion.div
-          className="w-full max-w-md"
-          initial={{ opacity: 0, y: 12 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.35 }}
-        >
+        <div className="w-full max-w-md">
           {/* Step 1: Choose Email or Google */}
           {!showOtpStep && !verified && !googleVerified && (
-            <div className="bg-white rounded-3xl border border-slate-200 shadow-xl overflow-hidden">
+            <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
               <div className="p-7 sm:p-8 space-y-5">
                 <div className="flex justify-center">
                   <BrandLogo variant="light" size="sm" href={null} />
                 </div>
                 <div className="text-center">
-                  <h1 className="text-2xl font-extrabold text-slate-900">Create Account</h1>
+                  <h1 className="text-xl sm:text-2xl font-bold text-slate-900">Create Account</h1>
                   <p className="text-sm text-slate-500 mt-1">
-                    Register for IGTS GATE 2027 Mock Series · Dhanak 2027
+                    Register for IGTS GATE 2027 Mock Series
                   </p>
                 </div>
 
                 <div>
-                  <label className="block text-sm font-bold text-slate-700 mb-1.5" htmlFor="signup-email">
+                  <label className="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-1.5" htmlFor="signup-email">
                     Email Address
                   </label>
                   <input
@@ -333,22 +327,22 @@ const SignUp = () => {
                       if (e.key === "Enter") verifyEmail();
                     }}
                     placeholder="you@example.com"
-                    className="w-full px-4 py-2.5 rounded-xl border border-slate-300 bg-slate-50 focus:bg-white text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    className="w-full px-3.5 py-2.5 rounded-lg border border-slate-300 bg-white text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#0f4c81] focus:border-[#0f4c81]"
                   />
                 </div>
 
                 <button
                   type="button"
                   onClick={verifyEmail}
-                  className="w-full py-3 rounded-full font-bold text-white bg-gradient-to-r from-[#4f46e5] to-[#674cee] hover:from-[#4338ca] hover:to-[#5b3fe3] shadow-md shadow-indigo-500/20 transition"
+                  className="w-full py-2.5 rounded-lg text-sm font-semibold text-white bg-[#0f4c81] hover:bg-[#0a3963] transition"
                 >
                   Send Verification OTP
                 </button>
 
                 <div className="relative flex py-1 items-center">
                   <div className="flex-grow border-t border-slate-200" />
-                  <span className="flex-shrink mx-3 text-xs font-semibold text-slate-400 uppercase">
-                    Or register using
+                  <span className="flex-shrink mx-3 text-xs font-medium text-slate-400 uppercase">
+                    Or
                   </span>
                   <div className="flex-grow border-t border-slate-200" />
                 </div>
@@ -356,9 +350,9 @@ const SignUp = () => {
                 <button
                   type="button"
                   onClick={handleGoogle}
-                  className="w-full py-2.5 px-4 rounded-full border border-slate-300 bg-white hover:bg-slate-50 text-slate-700 font-bold text-sm flex items-center justify-center gap-3 transition shadow-sm"
+                  className="w-full py-2.5 px-4 rounded-lg border border-slate-300 bg-white hover:bg-slate-50 text-slate-700 font-semibold text-sm flex items-center justify-center gap-3 transition"
                 >
-                  <svg className="w-5 h-5" preserveAspectRatio="xMidYMid" viewBox="0 0 256 262">
+                  <svg className="w-4 h-4" preserveAspectRatio="xMidYMid" viewBox="0 0 256 262">
                     <path
                       fill="#4285F4"
                       d="M255.878 133.451c0-10.734-.871-18.567-2.756-26.69H130.55v48.448h71.947c-1.45 12.04-9.283 30.172-26.69 42.356l-.244 1.622 38.755 30.023 2.685.268c24.659-22.774 38.875-56.282 38.875-96.027"
@@ -381,7 +375,7 @@ const SignUp = () => {
               </div>
               <div className="px-6 py-4 bg-slate-50 border-t border-slate-200 text-center text-sm text-slate-600">
                 Already have an account?{" "}
-                <Link href="/sign-in" className="font-bold text-indigo-600 hover:underline">
+                <Link href="/sign-in" className="font-semibold text-[#0f4c81] hover:underline">
                   Sign in
                 </Link>
               </div>
@@ -390,20 +384,20 @@ const SignUp = () => {
 
           {/* Step 2: OTP Verification */}
           {showOtpStep && !verified && (
-            <div className="bg-white rounded-3xl border border-slate-200 shadow-xl p-7 sm:p-8 relative text-center space-y-5">
+            <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-7 sm:p-8 relative text-center space-y-5">
               <button
                 type="button"
                 onClick={() => setShowOtpStep(false)}
                 aria-label="Back"
-                className="absolute top-4 right-4 w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold"
+                className="absolute top-4 right-4 w-8 h-8 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold"
               >
                 ×
               </button>
 
-              <h2 className="text-2xl font-extrabold text-slate-900">Enter Verification Code</h2>
+              <h2 className="text-xl sm:text-2xl font-bold text-slate-900">Enter Verification Code</h2>
               <p className="text-sm text-slate-500">
                 We sent a 4-digit OTP to{" "}
-                <strong className="text-indigo-700">{email}</strong>
+                <strong className="text-[#0f4c81]">{email}</strong>
               </p>
 
               <div className="flex justify-center gap-3">
@@ -419,7 +413,7 @@ const SignUp = () => {
                     onKeyUp={(e) => {
                       if (e.key === "Enter") verifyOTP();
                     }}
-                    className="w-14 h-14 text-center text-2xl font-extrabold rounded-xl border-2 border-slate-300 bg-slate-50 focus:bg-white focus:border-indigo-500 focus:outline-none text-slate-900"
+                    className="w-12 h-12 text-center text-xl font-bold rounded-lg border border-slate-300 bg-white focus:border-[#0f4c81] focus:ring-2 focus:ring-[#0f4c81]/20 focus:outline-none text-slate-900"
                   />
                 ))}
               </div>
@@ -427,7 +421,7 @@ const SignUp = () => {
               <button
                 type="button"
                 onClick={verifyOTP}
-                className="w-full py-3 rounded-full font-bold text-white bg-gradient-to-r from-[#4f46e5] to-[#674cee] hover:from-[#4338ca] hover:to-[#5b3fe3] shadow-md transition"
+                className="w-full py-2.5 rounded-lg text-sm font-semibold text-white bg-[#0f4c81] hover:bg-[#0a3963] transition"
               >
                 Verify Email
               </button>
@@ -439,7 +433,7 @@ const SignUp = () => {
                   <button
                     type="button"
                     onClick={resendEmail}
-                    className="font-bold text-indigo-600 hover:underline"
+                    className="font-semibold text-[#0f4c81] hover:underline"
                   >
                     Resend Code
                   </button>
@@ -450,12 +444,12 @@ const SignUp = () => {
 
           {/* Step 3: Profile Form (Verified Email OR Google OAuth) */}
           {((verified && !showOtpStep) || (!showOtpStep && !verified && googleVerified)) && (
-            <div className="bg-white rounded-3xl border border-slate-200 shadow-xl p-7 sm:p-8 space-y-4">
+            <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-7 sm:p-8 space-y-4">
               <div className="text-center">
-                <span className="text-xs font-bold uppercase tracking-widest text-emerald-600 bg-emerald-50 px-3 py-1 rounded-full">
-                  Email Verified ✓
-                </span>
-                <h1 className="text-2xl font-extrabold text-slate-900 mt-3">Complete Profile</h1>
+                <p className="text-xs font-semibold uppercase tracking-wider text-emerald-700">
+                  Email Verified
+                </p>
+                <h1 className="text-xl sm:text-2xl font-bold text-slate-900 mt-1">Complete Profile</h1>
                 <p className="text-sm text-slate-500 mt-1">
                   Enter your academic details to finish registration.
                 </p>
@@ -463,43 +457,43 @@ const SignUp = () => {
 
               <div className="space-y-3">
                 <div>
-                  <label className="block text-xs font-bold text-slate-700 mb-1">Full Name *</label>
+                  <label className="block text-xs font-semibold text-slate-600 mb-1">Full Name *</label>
                   <input
                     type="text"
                     value={name}
                     onChange={(e) => setName(e.target.value)}
                     placeholder="Full Name"
-                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 bg-slate-50 focus:bg-white text-slate-900 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    className="w-full px-3.5 py-2 rounded-lg border border-slate-300 bg-white text-slate-900 text-sm focus:outline-none focus:ring-2 focus:ring-[#0f4c81]"
                   />
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div>
-                    <label className="block text-xs font-bold text-slate-700 mb-1">Username</label>
+                    <label className="block text-xs font-semibold text-slate-600 mb-1">Username</label>
                     <input
                       type="text"
                       value={username}
                       readOnly
-                      className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 bg-slate-100 text-slate-500 text-sm"
+                      className="w-full px-3.5 py-2 rounded-lg border border-slate-200 bg-slate-100 text-slate-500 text-sm"
                     />
                   </div>
                   <div>
-                    <label className="block text-xs font-bold text-slate-700 mb-1">Email</label>
+                    <label className="block text-xs font-semibold text-slate-600 mb-1">Email</label>
                     <input
                       type="email"
                       value={email}
                       readOnly
-                      className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 bg-slate-100 text-slate-500 text-sm"
+                      className="w-full px-3.5 py-2 rounded-lg border border-slate-200 bg-slate-100 text-slate-500 text-sm"
                     />
                   </div>
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold text-slate-700 mb-1">
+                  <label className="block text-xs font-semibold text-slate-600 mb-1">
                     Mobile Number *
                   </label>
                   <div className="flex">
-                    <span className="px-3 py-2.5 rounded-l-xl border border-r-0 border-slate-300 bg-slate-100 text-slate-600 text-sm font-semibold">
+                    <span className="px-3 py-2 rounded-l-lg border border-r-0 border-slate-300 bg-slate-100 text-slate-600 text-sm font-medium">
                       +91
                     </span>
                     <input
@@ -508,19 +502,19 @@ const SignUp = () => {
                       value={mobileNumber}
                       onChange={(e) => setMobileNumber(e.target.value)}
                       placeholder="10-digit mobile number"
-                      className="w-full px-3.5 py-2.5 rounded-r-xl border border-slate-300 bg-slate-50 focus:bg-white text-slate-900 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                      className="w-full px-3.5 py-2 rounded-r-lg border border-slate-300 bg-white text-slate-900 text-sm focus:outline-none focus:ring-2 focus:ring-[#0f4c81]"
                     />
                   </div>
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold text-slate-700 mb-1">
+                  <label className="block text-xs font-semibold text-slate-600 mb-1">
                     B.Tech Branch *
                   </label>
                   <select
                     value={selectedBranch}
                     onChange={(e) => setSelectedBranch(e.target.value)}
-                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 bg-slate-50 focus:bg-white text-slate-900 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    className="w-full px-3.5 py-2 rounded-lg border border-slate-300 bg-white text-slate-900 text-sm focus:outline-none focus:ring-2 focus:ring-[#0f4c81]"
                   >
                     <option value="">Select Branch</option>
                     <option value="ECE">ECE</option>
@@ -533,7 +527,7 @@ const SignUp = () => {
 
                 {selectedBranch === "other" && (
                   <div>
-                    <label className="block text-xs font-bold text-slate-700 mb-1">
+                    <label className="block text-xs font-semibold text-slate-600 mb-1">
                       Specify Branch *
                     </label>
                     <input
@@ -541,26 +535,26 @@ const SignUp = () => {
                       value={otherBranch}
                       onChange={(e) => setOtherBranch(e.target.value)}
                       placeholder="Enter your branch"
-                      className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 bg-slate-50 focus:bg-white text-slate-900 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                      className="w-full px-3.5 py-2 rounded-lg border border-slate-300 bg-white text-slate-900 text-sm focus:outline-none focus:ring-2 focus:ring-[#0f4c81]"
                     />
                   </div>
                 )}
 
                 <div>
-                  <label className="block text-xs font-bold text-slate-700 mb-1">College Name *</label>
+                  <label className="block text-xs font-semibold text-slate-600 mb-1">College Name *</label>
                   <input
                     type="text"
                     value={collegeName}
                     onChange={(e) => setCollegeName(e.target.value)}
                     placeholder="Enter your college / university"
-                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 bg-slate-50 focus:bg-white text-slate-900 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    className="w-full px-3.5 py-2 rounded-lg border border-slate-300 bg-white text-slate-900 text-sm focus:outline-none focus:ring-2 focus:ring-[#0f4c81]"
                   />
                 </div>
 
                 {verified && !googleVerified && (
                   <>
                     <div>
-                      <label className="block text-xs font-bold text-slate-700 mb-1">
+                      <label className="block text-xs font-semibold text-slate-600 mb-1">
                         Password *
                       </label>
                       <input
@@ -568,11 +562,11 @@ const SignUp = () => {
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
                         placeholder="Min 6 characters"
-                        className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 bg-slate-50 focus:bg-white text-slate-900 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                        className="w-full px-3.5 py-2 rounded-lg border border-slate-300 bg-white text-slate-900 text-sm focus:outline-none focus:ring-2 focus:ring-[#0f4c81]"
                       />
                     </div>
                     <div>
-                      <label className="block text-xs font-bold text-slate-700 mb-1">
+                      <label className="block text-xs font-semibold text-slate-600 mb-1">
                         Confirm Password *
                       </label>
                       <input
@@ -580,7 +574,7 @@ const SignUp = () => {
                         value={confpass}
                         onChange={(e) => setCnfPass(e.target.value)}
                         placeholder="Confirm password"
-                        className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 bg-slate-50 focus:bg-white text-slate-900 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                        className="w-full px-3.5 py-2 rounded-lg border border-slate-300 bg-white text-slate-900 text-sm focus:outline-none focus:ring-2 focus:ring-[#0f4c81]"
                       />
                     </div>
                   </>
@@ -594,9 +588,9 @@ const SignUp = () => {
                   if (googleVerified) saveGoogleUserData();
                   else handleSignUp();
                 }}
-                className="w-full py-3 rounded-full font-bold text-white bg-gradient-to-r from-[#4f46e5] to-[#674cee] hover:from-[#4338ca] hover:to-[#5b3fe3] shadow-md transition"
+                className="w-full py-2.5 rounded-lg text-sm font-semibold text-white bg-[#0f4c81] hover:bg-[#0a3963] transition"
               >
-                Complete Sign Up
+                Complete Registration
               </button>
 
               {googleVerified && (
@@ -609,14 +603,14 @@ const SignUp = () => {
                     setEmail("");
                     setUsername("");
                   }}
-                  className="w-full text-center text-xs font-semibold text-indigo-600 hover:underline pt-1"
+                  className="w-full text-center text-xs font-semibold text-[#0f4c81] hover:underline pt-1"
                 >
                   Use a different Google account
                 </button>
               )}
             </div>
           )}
-        </motion.div>
+        </div>
       </main>
 
       <Footer />

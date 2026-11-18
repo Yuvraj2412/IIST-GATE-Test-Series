@@ -538,7 +538,7 @@ export default function ResultsAnalysis({ params }) {
                         >
                           Test Mode:
                           <span
-                            className={`rounded-sm border text-sm text-purple-500 border-neutral-300 px-2`}
+                            className={`rounded-md border text-sm text-[#0f4c81] border-slate-300 px-2`}
                           >
                             Online
                           </span>
@@ -613,10 +613,10 @@ export default function ResultsAnalysis({ params }) {
                     >
                       {/* Title with gradient color */}
                       <motion.h2
-                        className="text-5xl w-full col-span-2 font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-blue-500 to-purple-600 my-6"
-                        initial={{ scale: 0.8 }}
+                        className="text-3xl sm:text-4xl w-full col-span-2 font-bold text-[#0f4c81] my-4"
+                        initial={{ scale: 0.95 }}
                         animate={{ scale: 1 }}
-                        transition={{ duration: 0.4 }}
+                        transition={{ duration: 0.3 }}
                       >
                         Overall
                       </motion.h2>
@@ -693,10 +693,10 @@ export default function ResultsAnalysis({ params }) {
                     >
                       {/* Title with gradient color */}
                       <motion.h2
-                        className="text-5xl w-full col-span-2 font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-blue-500 to-purple-600 my-6"
-                        initial={{ scale: 0.8 }}
+                        className="text-3xl sm:text-4xl w-full col-span-2 font-bold text-[#0f4c81] my-4"
+                        initial={{ scale: 0.95 }}
                         animate={{ scale: 1 }}
-                        transition={{ duration: 0.4 }}
+                        transition={{ duration: 0.3 }}
                       >
                         Aptitude
                       </motion.h2>
@@ -939,10 +939,10 @@ export default function ResultsAnalysis({ params }) {
                     >
                       {/* Title with gradient color */}
                       <motion.h2
-                        className="text-5xl w-full col-span-2 font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-blue-500 to-purple-600 my-6"
-                        initial={{ scale: 0.8 }}
+                        className="text-3xl sm:text-4xl w-full col-span-2 font-bold text-[#0f4c81] my-4"
+                        initial={{ scale: 0.95 }}
                         animate={{ scale: 1 }}
-                        transition={{ duration: 0.4 }}
+                        transition={{ duration: 0.3 }}
                       >
                         Subject
                       </motion.h2>

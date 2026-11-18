@@ -9,7 +9,6 @@ import tests from "@/data/tests";
 import { useRouter, useSearchParams } from "next/navigation";
 import toast from "react-hot-toast";
 import { useAuthState } from "@/libs/supabase/authClient";
-import { motion } from "framer-motion";
 import confetti from "canvas-confetti";
 
 export default function Enroll({ params }) {
@@ -192,7 +191,7 @@ export default function Enroll({ params }) {
               particleCount: 110,
               spread: 75,
               origin: { x: 0.5, y: 0.5 },
-              colors: ["#f59e0b", "#4f46e5", "#10b981"],
+              colors: ["#d99b26", "#0f4c81", "#10b981"],
             });
           } catch (err) {
             toast.dismiss(t2);
@@ -214,7 +213,7 @@ export default function Enroll({ params }) {
           address: "IIST, Valiamala, Thiruvananthapuram, Kerala, India",
         },
         theme: {
-          color: "#4f46e5",
+          color: "#0f4c81",
         },
       };
 
@@ -233,7 +232,7 @@ export default function Enroll({ params }) {
 
   if (loadingPage || (!userDetails && !authLoading)) {
     return (
-      <div className="min-h-screen flex flex-col bg-slate-50">
+      <div className="min-h-screen flex flex-col bg-[#f8fafc]">
         <NavbarLite />
         <div className="flex-1 flex items-center justify-center py-20">
           <Loader />
@@ -245,16 +244,16 @@ export default function Enroll({ params }) {
 
   if (!testDetails || !isValidPack) {
     return (
-      <div className="min-h-screen flex flex-col bg-slate-50">
+      <div className="min-h-screen flex flex-col bg-[#f8fafc]">
         <NavbarLite />
         <div className="flex-1 flex flex-col items-center justify-center px-4 text-center py-20">
-          <h1 className="text-2xl font-extrabold text-slate-900">Invalid Package Selected</h1>
-          <p className="text-slate-600 mt-2">
+          <h1 className="text-xl sm:text-2xl font-bold text-slate-900">Invalid Package Selected</h1>
+          <p className="text-slate-600 mt-2 text-sm">
             Please select a valid branch and pack from the GATE 2027 tests page.
           </p>
           <Link
             href="/tests"
-            className="mt-6 px-6 py-3 rounded-full bg-indigo-600 text-white font-bold hover:bg-indigo-700 transition"
+            className="mt-6 px-5 py-2.5 rounded-lg bg-[#0f4c81] text-white text-sm font-semibold hover:bg-[#0a3963] transition"
           >
             Browse Test Packages
           </Link>
@@ -266,38 +265,33 @@ export default function Enroll({ params }) {
 
   if (isRegistrationSuccess) {
     return (
-      <div className="min-h-screen flex flex-col bg-slate-50">
+      <div className="min-h-screen flex flex-col bg-[#f8fafc]">
         <Navbar />
         <main className="flex-1 flex items-center justify-center px-4 py-16">
-          <motion.div
-            className="flex flex-col items-center px-8 sm:px-12 py-12 rounded-3xl shadow-xl border border-emerald-200 bg-white max-w-xl w-full text-center"
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.45 }}
-          >
-            <img className="h-20 w-20 mb-4" src="/images/successTick.svg" alt="Success" />
-            <h1 className="text-2xl sm:text-3xl font-extrabold text-emerald-700 mb-2">
-              Registration Successful!
+          <div className="flex flex-col items-center px-8 sm:px-10 py-10 rounded-xl shadow-sm border border-emerald-200 bg-white max-w-xl w-full text-center">
+            <img className="h-16 w-16 mb-4" src="/images/successTick.svg" alt="Success" />
+            <h1 className="text-2xl font-bold text-emerald-700 mb-2">
+              Registration Confirmed
             </h1>
-            <p className="text-slate-600 mb-6">
+            <p className="text-sm text-slate-600 mb-6 leading-relaxed">
               You are enrolled in <strong>{testDetails.title} ({formattedPack})</strong> for GATE 2027.
               A confirmation email has been sent to {userDetails?.email}.
             </p>
             <div className="flex flex-wrap gap-3 justify-center">
               <Link
-                className="px-6 py-3 bg-emerald-600 text-white font-bold rounded-full shadow-md hover:bg-emerald-700 transition"
+                className="px-5 py-2.5 bg-emerald-700 text-white text-sm font-semibold rounded-lg hover:bg-emerald-800 transition"
                 href="/registered-tests"
               >
-                View My Tests →
+                View My Tests
               </Link>
               <Link
-                className="px-6 py-3 bg-slate-100 text-slate-700 font-semibold rounded-full hover:bg-slate-200 transition"
+                className="px-5 py-2.5 bg-slate-100 text-slate-700 text-sm font-semibold rounded-lg hover:bg-slate-200 border border-slate-200 transition"
                 href="/dashboard"
               >
-                Go to Dashboard
+                Open Dashboard
               </Link>
             </div>
-          </motion.div>
+          </div>
         </main>
         <Footer />
       </div>
@@ -309,15 +303,15 @@ export default function Enroll({ params }) {
   );
 
   return (
-    <div className="min-h-screen flex flex-col bg-slate-50">
+    <div className="min-h-screen flex flex-col bg-[#f8fafc] text-slate-900">
       <NavbarLite />
 
       <main className="flex-1 max-w-screen-xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-10">
-        <div className="mb-8">
-          <span className="text-xs font-bold uppercase tracking-widest text-indigo-600">
+        <div className="mb-8 pb-5 border-b border-slate-200">
+          <p className="text-xs font-semibold uppercase tracking-[0.14em] text-[#0f4c81]">
             IGTS · Dhanak 2027 Checkout
-          </span>
-          <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 mt-1">
+          </p>
+          <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 mt-1">
             Confirm Your Enrollment
           </h1>
         </div>
@@ -326,10 +320,10 @@ export default function Enroll({ params }) {
           {/* Left Column */}
           <div className="lg:col-span-8 space-y-6">
             {/* Candidate Details */}
-            <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm">
-              <div className="flex items-center justify-between mb-4">
-                <h2 className="text-lg font-extrabold text-slate-900">1. Candidate Details</h2>
-                <Link href="/dashboard" className="text-xs font-bold text-indigo-600 hover:underline">
+            <div className="bg-white rounded-xl border border-slate-200 p-6 shadow-sm">
+              <div className="flex items-center justify-between mb-4 pb-3 border-b border-slate-100">
+                <h2 className="text-base sm:text-lg font-bold text-slate-900">1. Candidate Details</h2>
+                <Link href="/dashboard" className="text-xs font-semibold text-[#0f4c81] hover:underline">
                   Update Profile
                 </Link>
               </div>
@@ -358,15 +352,15 @@ export default function Enroll({ params }) {
             </div>
 
             {/* Package Details */}
-            <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm">
-              <div className="flex items-center justify-between mb-4">
-                <h2 className="text-lg font-extrabold text-slate-900">2. Selected Package</h2>
-                <Link href={`/tests/${testDetails.id}`} className="text-xs font-bold text-indigo-600 hover:underline">
+            <div className="bg-white rounded-xl border border-slate-200 p-6 shadow-sm">
+              <div className="flex items-center justify-between mb-4 pb-3 border-b border-slate-100">
+                <h2 className="text-base sm:text-lg font-bold text-slate-900">2. Selected Package</h2>
+                <Link href={`/tests/${testDetails.id}`} className="text-xs font-semibold text-[#0f4c81] hover:underline">
                   Change Pack
                 </Link>
               </div>
               <div className="space-y-2 text-sm text-slate-700">
-                <p className="text-base font-extrabold text-indigo-700">
+                <p className="text-base font-bold text-[#0f4c81]">
                   GATE 2027 Mock Test Series — {testDetails.title}
                 </p>
                 <p>
@@ -374,21 +368,21 @@ export default function Enroll({ params }) {
                   <strong className="text-slate-900">{formattedPack}</strong>
                 </p>
                 <p className="text-slate-600">
-                  *Includes {testPack === "Both Packs" ? "6" : "3"} full-length mock tests aligned with
+                  Includes {testPack === "Both Packs" ? "6" : "3"} full-length mock tests aligned with
                   GATE 2027.
                 </p>
               </div>
             </div>
 
             <p className="text-xs text-slate-500 leading-relaxed">
-              After completing payment via Razorpay UPI / Card / Netbanking, you will receive an
+              After completing payment via Razorpay UPI, Card, or Netbanking, you will receive an
               instant confirmation email and access inside <strong>Your Tests</strong>. Please do not
               refresh the browser during payment processing. Need help? Visit{" "}
-              <Link href="/faqs" className="text-indigo-600 underline">
+              <Link href="/faqs" className="text-[#0f4c81] underline">
                 FAQs
               </Link>{" "}
               or{" "}
-              <Link href="/contact-us" className="text-indigo-600 underline">
+              <Link href="/contact-us" className="text-[#0f4c81] underline">
                 Contact Us
               </Link>
               .
@@ -397,26 +391,28 @@ export default function Enroll({ params }) {
 
           {/* Right Column: Payment Summary */}
           <div className="lg:col-span-4">
-            <div className="bg-white rounded-3xl border border-slate-200 shadow-lg overflow-hidden">
+            <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
               <div className="p-6 space-y-5">
-                <h2 className="text-lg font-extrabold text-slate-900">Payment Summary</h2>
+                <h2 className="text-base sm:text-lg font-bold text-slate-900 pb-3 border-b border-slate-100">
+                  Payment Summary
+                </h2>
 
-                <div className="space-y-2 text-sm">
+                <div className="space-y-2.5 text-sm tabular-nums">
                   <div className="flex justify-between text-slate-600">
                     <span>Test Series Fee</span>
                     <span>₹{totalAmount()}.00</span>
                   </div>
-                  <div className="flex justify-between text-emerald-700 font-semibold">
-                    <span>Discount ({appliedDiscountPercent}% OFF)</span>
+                  <div className="flex justify-between text-emerald-700 font-medium">
+                    <span>Discount ({appliedDiscountPercent}% Off)</span>
                     <span>- ₹{discountedAmount()}.00</span>
                   </div>
                 </div>
 
                 <hr className="border-slate-200" />
 
-                <div className="flex items-baseline justify-between">
-                  <span className="text-base font-bold text-slate-900">Total Payable</span>
-                  <span className="text-3xl font-extrabold text-indigo-700">
+                <div className="flex items-baseline justify-between tabular-nums">
+                  <span className="text-sm font-bold text-slate-900">Total Payable</span>
+                  <span className="text-2xl font-bold text-slate-900">
                     ₹{totalAmountAfterDiscount()}.00
                   </span>
                 </div>
@@ -425,24 +421,24 @@ export default function Enroll({ params }) {
                   type="button"
                   disabled={paymentRunning}
                   onClick={handlePayment}
-                  className={`w-full py-3.5 px-6 rounded-full font-bold text-white shadow-md transition flex items-center justify-center gap-2 ${
+                  className={`w-full py-3 px-4 rounded-lg text-sm font-semibold text-white transition flex items-center justify-center ${
                     paymentRunning
-                      ? "bg-indigo-400 cursor-wait"
-                      : "bg-gradient-to-r from-[#4f46e5] to-[#674cee] hover:from-[#4338ca] hover:to-[#5b3fe3]"
+                      ? "bg-[#0f4c81]/70 cursor-wait"
+                      : "bg-[#0f4c81] hover:bg-[#0a3963]"
                   }`}
                 >
-                  <span>{paymentRunning ? "Processing..." : "Pay Securely with Razorpay"}</span>
+                  {paymentRunning ? "Processing..." : "Pay Securely with Razorpay"}
                 </button>
 
                 <p className="text-[11px] text-slate-500 text-center">
                   By enrolling, you agree to our{" "}
-                  <Link href="/privacy-policy" className="text-indigo-600 hover:underline">
+                  <Link href="/privacy-policy" className="text-[#0f4c81] hover:underline">
                     Privacy Policy
                   </Link>
                   .
                 </p>
               </div>
-              <div className="px-6 py-3.5 bg-slate-50 border-t border-slate-200 text-center text-xs text-slate-500">
+              <div className="px-6 py-3 bg-slate-50 border-t border-slate-200 text-center text-xs text-slate-500">
                 256-bit SSL Encrypted Checkout · Powered by Razorpay
               </div>
             </div>
