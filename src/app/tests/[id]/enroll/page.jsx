@@ -4,31 +4,34 @@ import Navbar from "@/components/Navbar.jsx";
 import Footer from "@/components/Footer.jsx";
 import Loader from "@/components/Loader";
 import Link from "next/link";
-import React, { useState, useEffect, useCallback, useMemo } from "react";
+import Image from "next/image";
+import React, { Suspense, useState, useEffect, useCallback, useMemo, useRef } from "react";
 import tests from "@/data/tests";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useParams, useRouter, useSearchParams } from "next/navigation";
 import toast from "react-hot-toast";
 import { useAuthState } from "@/libs/supabase/authClient";
 import confetti from "canvas-confetti";
 
-export default function Enroll({ params }) {
+function EnrollContent() {
   const [userDetails, setUserDetails] = useState(null);
   const [user, authLoading] = useAuthState();
   const searchParams = useSearchParams();
   const testPack = searchParams.get("pack");
 
-  const pageParams = React.use(params);
+  const pageParams = useParams();
+  const pageType = typeof pageParams?.id === "string" ? pageParams.id : "";
   const [testDetails, setTestDetails] = useState(null);
   const [loadingPage, setLoadingPage] = useState(true);
-  const pageType = pageParams.id;
 
   const router = useRouter();
   const [paymentRunning, setPaymentRunning] = useState(false);
   const [checkingPending, setCheckingPending] = useState(false);
   const [isRegistrationSuccess, setIsRegistrationSuccess] = useState(false);
+  const autoCheckedKeyRef = useRef("");
 
   const getUser = useCallback(
     async (id) => {
+      if (!id) return;
       try {
         const res = await fetch("/api/getUser", {
           method: "POST",
@@ -51,7 +54,7 @@ export default function Enroll({ params }) {
   );
 
   useEffect(() => {
-    if (user) {
+    if (user?.uid) {
       getUser(user.uid);
     } else if (!authLoading) {
       toast.error("Please sign up / sign in first");
@@ -67,8 +70,7 @@ export default function Enroll({ params }) {
     setLoadingPage(false);
   }, [pageType]);
 
-  const validPacks = ["Pack 1", "Pack 2", "Both Packs"];
-  const isValidPack = validPacks.includes(testPack);
+  const isValidPack = testPack === "Pack 1" || testPack === "Pack 2" || testPack === "Both Packs";
 
   const formattedPack = (() => {
     if (testPack === "Pack 1") return "Pack 1";
@@ -133,7 +135,7 @@ export default function Enroll({ params }) {
         const data = await res.json();
         if (res.ok && data.recovered) {
           toast.success("Payment verified and registration activated!");
-          await getUser(user.uid);
+          if (user?.uid) await getUser(user.uid);
           triggerSuccessState();
         } else if (!silent) {
           toast("No completed pending payment found for this pack yet.", { icon: "ℹ️" });
@@ -149,11 +151,13 @@ export default function Enroll({ params }) {
     [targetTestString, userDetails, getUser, user, triggerSuccessState]
   );
 
-  // Silently reconcile interrupted payment if student revisits checkout.
+  // Silently reconcile once per candidate + package if checkout was previously interrupted.
   useEffect(() => {
-    if (userDetails && targetTestString && !alreadyOwned && !isRegistrationSuccess) {
-      checkPendingPayment({ silent: true });
-    }
+    if (!userDetails || !targetTestString || alreadyOwned || isRegistrationSuccess) return;
+    const key = `${userDetails._id || userDetails.id || ""}:${targetTestString}`;
+    if (autoCheckedKeyRef.current === key) return;
+    autoCheckedKeyRef.current = key;
+    checkPendingPayment({ silent: true });
   }, [userDetails, targetTestString, alreadyOwned, isRegistrationSuccess, checkPendingPayment]);
 
   function calculateDiscountedPrice(originalPrice, discount) {
@@ -224,11 +228,10 @@ export default function Enroll({ params }) {
         return;
       }
 
-      // If previous interrupted payment had already captured on Razorpay, finalize without re-charging.
       if (initPaymentResponse.alreadyCompleted) {
         toast.success(initPaymentResponse.message || "Enrollment confirmed!");
         setPaymentRunning(false);
-        await getUser(user.uid);
+        if (user?.uid) await getUser(user.uid);
         triggerSuccessState();
         return;
       }
@@ -241,7 +244,8 @@ export default function Enroll({ params }) {
       }
 
       const loaded = await loadScript("https://checkout.razorpay.com/v2/checkout.js");
-      if (!loaded || typeof window.Razorpay === "undefined") {
+      const RazorpayCheckout = typeof window !== "undefined" ? window["Razorpay"] : null;
+      if (!loaded || typeof RazorpayCheckout === "undefined" || !RazorpayCheckout) {
         toast.error("Razorpay Checkout failed to load. Please check your connection.");
         setPaymentRunning(false);
         return;
@@ -282,9 +286,9 @@ export default function Enroll({ params }) {
 
             toast.success("Test registered successfully!");
             setPaymentRunning(false);
-            await getUser(user.uid);
+            if (user?.uid) await getUser(user.uid);
             triggerSuccessState();
-          } catch (err) {
+          } catch {
             toast.dismiss(t2);
             toast.error(
               "Confirmation interrupted. Click 'Verify Pending Payment' if your amount was debited."
@@ -311,13 +315,13 @@ export default function Enroll({ params }) {
         },
       };
 
-      const rzp = new window.Razorpay(options);
+      const rzp = new RazorpayCheckout(options);
       rzp.on("payment.failed", function (rzpError) {
         setPaymentRunning(false);
         toast.error(rzpError?.error?.description || "Payment failed. Please try again.");
       });
       rzp.open();
-    } catch (err) {
+    } catch {
       toast.dismiss(loadingId);
       setPaymentRunning(false);
       toast.error("Unable to reach payment gateway. Please try again.");
@@ -363,7 +367,13 @@ export default function Enroll({ params }) {
         <Navbar />
         <main className="flex-1 flex items-center justify-center px-4 py-16">
           <div className="flex flex-col items-center px-8 sm:px-10 py-10 rounded-xl shadow-sm border border-emerald-200 bg-white max-w-xl w-full text-center">
-            <img className="h-16 w-16 mb-4" src="/images/successTick.svg" alt="Success" />
+            <Image
+              src="/images/successTick.svg"
+              width={64}
+              height={64}
+              alt="Success"
+              className="mb-4"
+            />
             <h1 className="text-2xl font-bold text-emerald-700 mb-2">
               Registration Confirmed
             </h1>
@@ -568,5 +578,23 @@ export default function Enroll({ params }) {
 
       <Footer />
     </div>
+  );
+}
+
+export default function Enroll() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen flex flex-col bg-[#f8fafc]">
+          <NavbarLite />
+          <div className="flex-1 flex items-center justify-center py-20">
+            <Loader />
+          </div>
+          <Footer />
+        </div>
+      }
+    >
+      <EnrollContent />
+    </Suspense>
   );
 }
