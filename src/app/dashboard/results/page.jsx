@@ -1,5 +1,6 @@
 "use client";
 import Navbar from "@/components/Navbar";
+import PortalSubNav from "@/components/PortalSubNav";
 import Footer from "@/components/Footer";
 import Loader from "@/components/Loader";
 import Link from "next/link";
@@ -78,6 +79,7 @@ export default function DashboardResults() {
   return (
     <div className="min-h-screen flex flex-col bg-[#f8fafc] topSection">
       <Navbar />
+      <PortalSubNav />
 
       <main className="flex-1 max-w-screen-xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 lg:py-10">
         {loading ? (

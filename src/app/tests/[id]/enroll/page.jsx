@@ -4,7 +4,7 @@ import Navbar from "@/components/Navbar.jsx";
 import Footer from "@/components/Footer.jsx";
 import Loader from "@/components/Loader";
 import Link from "next/link";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback, useMemo } from "react";
 import tests from "@/data/tests";
 import { useRouter, useSearchParams } from "next/navigation";
 import toast from "react-hot-toast";
@@ -24,27 +24,31 @@ export default function Enroll({ params }) {
 
   const router = useRouter();
   const [paymentRunning, setPaymentRunning] = useState(false);
+  const [checkingPending, setCheckingPending] = useState(false);
   const [isRegistrationSuccess, setIsRegistrationSuccess] = useState(false);
 
-  const getUser = async (id) => {
-    try {
-      const res = await fetch("/api/getUser", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ userId: id }),
-      });
-      const resjson = await res.json();
-      if (res.status === 200 && resjson.user) {
-        setUserDetails(resjson.user);
-      } else if (resjson.msg === "No user found") {
-        router.push("/sign-up?oauth=google");
-      } else {
-        toast.error("Failed to get user details.");
+  const getUser = useCallback(
+    async (id) => {
+      try {
+        const res = await fetch("/api/getUser", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ userId: id }),
+        });
+        const resjson = await res.json();
+        if (res.status === 200 && resjson.user) {
+          setUserDetails(resjson.user);
+        } else if (resjson.msg === "No user found") {
+          router.push("/sign-up?oauth=google");
+        } else {
+          toast.error("Failed to get user details.");
+        }
+      } catch (error) {
+        console.error("Error fetching user details:", error);
       }
-    } catch (error) {
-      console.error("Error fetching user details:", error);
-    }
-  };
+    },
+    [router]
+  );
 
   useEffect(() => {
     if (user) {
@@ -53,7 +57,7 @@ export default function Enroll({ params }) {
       toast.error("Please sign up / sign in first");
       router.push("/sign-in");
     }
-  }, [user, authLoading, router]);
+  }, [user, authLoading, router, getUser]);
 
   useEffect(() => {
     if (!pageType) return;
@@ -72,6 +76,85 @@ export default function Enroll({ params }) {
     if (testPack === "Both Packs") return "Pack 1 + Pack 2 (Both)";
     return testPack || "N/A";
   })();
+
+  const targetTestString =
+    testDetails && isValidPack ? `${testDetails.title}, ${formattedPack}` : null;
+
+  const alreadyOwned = useMemo(() => {
+    if (!userDetails?.registeredTests || !testDetails || !isValidPack) return false;
+    const normalizePack = (pack) => (pack?.includes("Both") ? "Pack 1 + Pack 2" : pack);
+    const selectedNormalized =
+      testPack === "Both Packs" ? "Pack 1 + Pack 2" : normalizePack(testPack);
+
+    for (const reg of userDetails.registeredTests) {
+      const [regName, regPack] = (reg.test || "").split(", ");
+      const regNormalized = normalizePack(regPack || "");
+      if (testDetails.title === regName) {
+        if (
+          selectedNormalized === "Pack 1 + Pack 2" &&
+          (regNormalized === "Pack 1" || regNormalized === "Pack 2")
+        ) {
+          return true;
+        }
+        if (
+          regNormalized === "Pack 1 + Pack 2" &&
+          (selectedNormalized === "Pack 1" || selectedNormalized === "Pack 2")
+        ) {
+          return true;
+        }
+        if (selectedNormalized === regNormalized) {
+          return true;
+        }
+      }
+    }
+    return false;
+  }, [userDetails, testDetails, isValidPack, testPack]);
+
+  const triggerSuccessState = useCallback(() => {
+    setIsRegistrationSuccess(true);
+    confetti({
+      particleCount: 110,
+      spread: 75,
+      origin: { x: 0.5, y: 0.5 },
+      colors: ["#d99b26", "#0f4c81", "#10b981"],
+    });
+  }, []);
+
+  const checkPendingPayment = useCallback(
+    async ({ silent = false } = {}) => {
+      if (!targetTestString || !userDetails) return;
+      if (!silent) setCheckingPending(true);
+      try {
+        const res = await fetch("/api/payments/reconcile", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ test: targetTestString }),
+        });
+        const data = await res.json();
+        if (res.ok && data.recovered) {
+          toast.success("Payment verified and registration activated!");
+          await getUser(user.uid);
+          triggerSuccessState();
+        } else if (!silent) {
+          toast("No completed pending payment found for this pack yet.", { icon: "ℹ️" });
+        }
+      } catch {
+        if (!silent) {
+          toast.error("Unable to verify pending payments right now.");
+        }
+      } finally {
+        if (!silent) setCheckingPending(false);
+      }
+    },
+    [targetTestString, userDetails, getUser, user, triggerSuccessState]
+  );
+
+  // Silently reconcile interrupted payment if student revisits checkout.
+  useEffect(() => {
+    if (userDetails && targetTestString && !alreadyOwned && !isRegistrationSuccess) {
+      checkPendingPayment({ silent: true });
+    }
+  }, [userDetails, targetTestString, alreadyOwned, isRegistrationSuccess, checkPendingPayment]);
 
   function calculateDiscountedPrice(originalPrice, discount) {
     return Math.round(originalPrice - originalPrice * discount);
@@ -112,11 +195,11 @@ export default function Enroll({ params }) {
   }
 
   const handlePayment = async () => {
-    if (paymentRunning || !testDetails || !isValidPack || !userDetails) return;
+    if (paymentRunning || !testDetails || !isValidPack || !userDetails || alreadyOwned) return;
 
     const amount = totalAmountAfterDiscount();
     const receipt = `TEST-${Date.now()}`;
-    const test = `${testDetails.title}, ${formattedPack}`;
+    const test = targetTestString;
 
     setPaymentRunning(true);
     const loadingId = toast.loading("Initializing secure checkout...");
@@ -124,14 +207,10 @@ export default function Enroll({ params }) {
     try {
       const response = await fetch("/api/payments/init", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: "dhanak",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           amount: amount * 100,
           receipt,
-          user: userDetails,
           test,
         }),
       });
@@ -145,23 +224,41 @@ export default function Enroll({ params }) {
         return;
       }
 
-      const loaded = await loadScript("https://checkout.razorpay.com/v2/checkout.js");
-      if (!loaded) {
-        toast.error("Razorpay SDK failed to load. Please check your connection.");
+      // If previous interrupted payment had already captured on Razorpay, finalize without re-charging.
+      if (initPaymentResponse.alreadyCompleted) {
+        toast.success(initPaymentResponse.message || "Enrollment confirmed!");
+        setPaymentRunning(false);
+        await getUser(user.uid);
+        triggerSuccessState();
+        return;
+      }
+
+      const activeKey = initPaymentResponse.keyId || process.env.NEXT_PUBLIC_RAZORPAY_KEY;
+      if (!activeKey || !initPaymentResponse.id) {
+        toast.error("Payment gateway configuration is incomplete. Please contact support.");
         setPaymentRunning(false);
         return;
       }
 
+      const loaded = await loadScript("https://checkout.razorpay.com/v2/checkout.js");
+      if (!loaded || typeof window.Razorpay === "undefined") {
+        toast.error("Razorpay Checkout failed to load. Please check your connection.");
+        setPaymentRunning(false);
+        return;
+      }
+
+      const cleanMobile = String(userDetails.mobile || "").replace(/\D/g, "").slice(-10);
+
       const options = {
-        key: process.env.NEXT_PUBLIC_RAZORPAY_KEY,
-        amount: amount * 100,
-        currency: "INR",
+        key: activeKey,
+        amount: initPaymentResponse.amount || amount * 100,
+        currency: initPaymentResponse.currency || "INR",
         name: "IGTS Registration - Dhanak 2027",
-        description: `GATE 2027 Mock Test (${testDetails.shortName})`,
+        description: `GATE 2027 Mock Test (${testDetails.shortName} · ${formattedPack})`,
         image: `${window.location.origin}/images/logo.png`,
         order_id: initPaymentResponse.id,
         handler: async function (rzpResponse) {
-          const t2 = toast.loading("Locking in your registration, please hold on...");
+          const t2 = toast.loading("Confirming your enrollment, please hold on...");
           try {
             const verifyRes = await fetch("/api/test/registerTest", {
               method: "POST",
@@ -172,7 +269,6 @@ export default function Enroll({ params }) {
                 signature: rzpResponse.razorpay_signature,
                 name: userDetails.name,
                 test,
-                userId: user.uid,
               }),
             });
             const rdata = await verifyRes.json();
@@ -186,16 +282,13 @@ export default function Enroll({ params }) {
 
             toast.success("Test registered successfully!");
             setPaymentRunning(false);
-            setIsRegistrationSuccess(true);
-            confetti({
-              particleCount: 110,
-              spread: 75,
-              origin: { x: 0.5, y: 0.5 },
-              colors: ["#d99b26", "#0f4c81", "#10b981"],
-            });
+            await getUser(user.uid);
+            triggerSuccessState();
           } catch (err) {
             toast.dismiss(t2);
-            toast.error("Verification request failed. Please contact support if amount was debited.");
+            toast.error(
+              "Confirmation interrupted. Click 'Verify Pending Payment' if your amount was debited."
+            );
             setPaymentRunning(false);
           }
         },
@@ -205,11 +298,12 @@ export default function Enroll({ params }) {
           },
         },
         prefill: {
-          name: userDetails.name,
-          email: userDetails.email,
-          contact: String(userDetails.mobile || ""),
+          name: userDetails.name || "",
+          email: userDetails.email || "",
+          ...(cleanMobile.length === 10 ? { contact: cleanMobile } : {}),
         },
         notes: {
+          test,
           address: "IIST, Valiamala, Thiruvananthapuram, Kerala, India",
         },
         theme: {
@@ -220,7 +314,7 @@ export default function Enroll({ params }) {
       const rzp = new window.Razorpay(options);
       rzp.on("payment.failed", function (rzpError) {
         setPaymentRunning(false);
-        toast.error(rzpError?.error?.description || "Payment failed.");
+        toast.error(rzpError?.error?.description || "Payment failed. Please try again.");
       });
       rzp.open();
     } catch (err) {
@@ -282,13 +376,13 @@ export default function Enroll({ params }) {
                 className="px-5 py-2.5 bg-emerald-700 text-white text-sm font-semibold rounded-lg hover:bg-emerald-800 transition"
                 href="/registered-tests"
               >
-                View My Tests
+                Open My Mock Tests
               </Link>
               <Link
                 className="px-5 py-2.5 bg-slate-100 text-slate-700 text-sm font-semibold rounded-lg hover:bg-slate-200 border border-slate-200 transition"
                 href="/dashboard"
               >
-                Open Dashboard
+                Go to Dashboard
               </Link>
             </div>
           </div>
@@ -308,10 +402,22 @@ export default function Enroll({ params }) {
 
       <main className="flex-1 max-w-screen-xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-10">
         <div className="mb-8 pb-5 border-b border-slate-200">
-          <p className="text-xs font-semibold uppercase tracking-[0.14em] text-[#0f4c81]">
-            IGTS · Dhanak 2027 Checkout
-          </p>
-          <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 mt-1">
+          <div className="text-xs sm:text-sm flex flex-wrap items-center gap-2 text-slate-500 mb-2">
+            <Link href="/" className="hover:text-slate-900">
+              Home
+            </Link>
+            <span>/</span>
+            <Link href="/tests" className="hover:text-slate-900">
+              Mock Tests
+            </Link>
+            <span>/</span>
+            <Link href={`/tests/${testDetails.id}`} className="hover:text-slate-900">
+              {testDetails.shortName}
+            </Link>
+            <span>/</span>
+            <span className="text-slate-900 font-medium">Checkout</span>
+          </div>
+          <h1 className="text-2xl sm:text-3xl font-bold text-slate-900">
             Confirm Your Enrollment
           </h1>
         </div>
@@ -374,19 +480,20 @@ export default function Enroll({ params }) {
               </div>
             </div>
 
-            <p className="text-xs text-slate-500 leading-relaxed">
-              After completing payment via Razorpay UPI, Card, or Netbanking, you will receive an
-              instant confirmation email and access inside <strong>Your Tests</strong>. Please do not
-              refresh the browser during payment processing. Need help? Visit{" "}
-              <Link href="/faqs" className="text-[#0f4c81] underline">
-                FAQs
-              </Link>{" "}
-              or{" "}
-              <Link href="/contact-us" className="text-[#0f4c81] underline">
-                Contact Us
-              </Link>
-              .
-            </p>
+            <div className="bg-white rounded-xl border border-slate-200 p-5 text-xs text-slate-600 leading-relaxed flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <p>
+                Already debited via UPI/Card during an interrupted checkout? Click to verify and
+                unlock immediately without paying again.
+              </p>
+              <button
+                type="button"
+                disabled={checkingPending}
+                onClick={() => checkPendingPayment({ silent: false })}
+                className="px-4 py-2 rounded-lg border border-slate-300 bg-slate-50 hover:bg-slate-100 text-slate-800 font-semibold whitespace-nowrap transition disabled:opacity-60"
+              >
+                {checkingPending ? "Checking..." : "Verify Pending Payment"}
+              </button>
+            </div>
           </div>
 
           {/* Right Column: Payment Summary */}
@@ -417,22 +524,35 @@ export default function Enroll({ params }) {
                   </span>
                 </div>
 
-                <button
-                  type="button"
-                  disabled={paymentRunning}
-                  onClick={handlePayment}
-                  className={`w-full py-3 px-4 rounded-lg text-sm font-semibold text-white transition flex items-center justify-center ${
-                    paymentRunning
-                      ? "bg-[#0f4c81]/70 cursor-wait"
-                      : "bg-[#0f4c81] hover:bg-[#0a3963]"
-                  }`}
-                >
-                  {paymentRunning ? "Processing..." : "Pay Securely with Razorpay"}
-                </button>
+                {alreadyOwned ? (
+                  <Link
+                    href="/registered-tests"
+                    className="w-full py-3 px-4 rounded-lg text-sm font-semibold text-white bg-emerald-700 hover:bg-emerald-800 transition flex items-center justify-center"
+                  >
+                    Already Enrolled · Go to My Mock Tests
+                  </Link>
+                ) : (
+                  <button
+                    type="button"
+                    disabled={paymentRunning}
+                    onClick={handlePayment}
+                    className={`w-full py-3 px-4 rounded-lg text-sm font-semibold text-white transition flex items-center justify-center ${
+                      paymentRunning
+                        ? "bg-[#0f4c81]/70 cursor-wait"
+                        : "bg-[#0f4c81] hover:bg-[#0a3963]"
+                    }`}
+                  >
+                    {paymentRunning ? "Processing..." : "Pay Securely with Razorpay"}
+                  </button>
+                )}
 
-                <p className="text-[11px] text-slate-500 text-center">
+                <p className="text-[11px] text-slate-500 text-center leading-relaxed">
                   By enrolling, you agree to our{" "}
-                  <Link href="/privacy-policy" className="text-[#0f4c81] hover:underline">
+                  <Link href="/terms-of-use" className="text-[#0f4c81] hover:underline font-medium">
+                    Terms of Use &amp; Refund Policy
+                  </Link>{" "}
+                  and{" "}
+                  <Link href="/privacy-policy" className="text-[#0f4c81] hover:underline font-medium">
                     Privacy Policy
                   </Link>
                   .

@@ -1,5 +1,6 @@
 "use client";
 import NavbarTestPage from "@/components/NavbarTestPage.jsx";
+import PortalSubNav from "@/components/PortalSubNav";
 import Footer from "@/components/Footer";
 import { useAuthState } from "@/libs/supabase/authClient";
 import toast from "react-hot-toast";
@@ -152,6 +153,7 @@ export default function RegisteredTests() {
   return (
     <div className="min-h-screen flex flex-col bg-[#f8fafc] topSection">
       <NavbarTestPage />
+      <PortalSubNav />
 
       <main className="flex-1 max-w-screen-xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 lg:py-10">
         {userDetails ? (

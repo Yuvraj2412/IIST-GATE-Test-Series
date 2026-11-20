@@ -6,6 +6,7 @@ import toast from "react-hot-toast";
 import { useRouter } from "next/navigation";
 import { useEffect, useState, useCallback } from "react";
 import Loader from "@/components/Loader";
+import PortalSubNav from "@/components/PortalSubNav";
 import Link from "next/link";
 
 const STANDARD_BRANCHES = ["ECE", "Aerospace", "Mechanical", "Physics"];
@@ -157,6 +158,7 @@ export default function Dashboard() {
   return (
     <div className="min-h-screen flex flex-col bg-[#f8fafc] topSection">
       <Navbar />
+      <PortalSubNav />
 
       <main className="flex-1 max-w-screen-xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 lg:py-10">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-start">

@@ -1,144 +1,91 @@
 import { NextResponse } from "next/server";
-import crypto from "crypto";
-import { getSupabaseAdmin, withId } from "@/libs/supabase/admin";
+import { getSupabaseAdmin } from "@/libs/supabase/admin";
 import { requireProfile } from "@/libs/supabase/server";
-import { findOverlappingRegistration } from "@/libs/supabase/testAccess";
-import { sendMail } from "@/libs/mail";
-import { registrationEmail } from "@/components/registrationEmail";
+import {
+  finalizeVerifiedOrderRegistration,
+  findCapturedPaymentForOrder,
+  verifyRazorpayOrderSignature,
+} from "@/libs/razorpay";
 
 export async function POST(req) {
-    try {
-        const { profile, response: authResponse } = await requireProfile();
-        if (authResponse) return authResponse;
+  try {
+    const { profile, response: authResponse } = await requireProfile();
+    if (authResponse) return authResponse;
 
-        // Parse and validate the incoming request body
-        const body = await req.json();
-        const requiredFields = ["pid", "oid", "signature", "name", "test"];
-        for (const field of requiredFields) {
-            if (!body[field]) {
-                return NextResponse.json({ message: `${field} is required.` }, { status: 400 });
-            }
-        }
-
-        const { pid, oid, signature, name, test } = body;
-        const supabase = getSupabaseAdmin();
-
-        // Fetch the payment object using the order ID and verify ownership
-        const { data: payment, error: payErr } = await supabase
-            .from("payments")
-            .select("*")
-            .eq("orderId", oid)
-            .eq("user", profile.id)
-            .maybeSingle();
-        if (payErr) throw payErr;
-
-        if (!payment) {
-            return NextResponse.json({ message: "Payment record not found." }, { status: 404 });
-        }
-
-        if (payment.test && payment.test !== test) {
-            return NextResponse.json(
-                { message: "Test mismatch with payment order." },
-                { status: 400 }
-            );
-        }
-
-        // Check if an exact or overlapping registration already exists for the user
-        const existingRegistration = await findOverlappingRegistration(profile.id, test);
-        if (existingRegistration) {
-            return NextResponse.json(
-                { message: "User is already registered for this test." },
-                { status: 409 }
-            );
-        }
-
-        const generatedSign = crypto
-            .createHmac("sha256", process.env.RAZORPAY_SECRET)
-            .update(`${oid}|${pid}`)
-            .digest("hex");
-
-        const sigBuf = Buffer.from(String(signature), "utf8");
-        const genBuf = Buffer.from(generatedSign, "utf8");
-        if (sigBuf.length !== genBuf.length || !crypto.timingSafeEqual(sigBuf, genBuf)) {
-            return NextResponse.json(
-                { message: "Invalid payment signature." },
-                { status: 400 }
-            );
-        }
-
-        // Update the payment object
-        const { error: updErr } = await supabase
-            .from("payments")
-            .update({
-                paymentId: pid,
-                signature,
-                status: "paid",
-                updatedTime: new Date().toISOString(),
-            })
-            .eq("id", payment.id);
-        if (updErr) throw updErr;
-
-        // Create a new test registration object
-        const { data: newRegistration, error: insErr } = await supabase
-            .from("test_registrations")
-            .insert({
-                pid,
-                oid,
-                signature,
-                name,
-                test,
-                userId: profile.id,
-                payment: payment.id,
-            })
-            .select()
-            .single();
-        if (insErr) {
-            if (insErr.code === "23505") {
-                return NextResponse.json(
-                    { message: "User is already registered for this test." },
-                    { status: 409 }
-                );
-            }
-            throw insErr;
-        }
-
-        const [testName, pack] = test.split(",").map((part) => part.trim());
-        const adminCopies = (process.env.ADMIN_NOTIFICATION_EMAILS || "")
-            .split(",")
-            .map((e) => e.trim())
-            .filter(Boolean);
-        const recipients = [profile.email, ...adminCopies].join(", ");
-
-        try {
-            await sendMail({
-                to: recipients,
-                name: profile.name,
-                subject: "IGTS Dhanak 2027 · Registration Confirmed",
-                body: registrationEmail(name, pid, testName, pack, payment.amount, profile.email),
-            });
-        } catch (mailError) {
-            console.error("Confirmation email failed (non-fatal):", mailError);
-        }
-
-        return NextResponse.json(
-            {
-                message: "Test registration successful.",
-                registration: withId(newRegistration),
-            },
-            { status: 200 }
-        );
-    } catch (error) {
-        console.error("Error handling test registration request:", error);
-        return NextResponse.json(
-            { message: "Failed to process the request.", error: error.message },
-            { status: 500 }
-        );
+    const body = await req.json();
+    const requiredFields = ["pid", "oid", "signature", "name", "test"];
+    for (const field of requiredFields) {
+      if (!body[field]) {
+        return NextResponse.json({ message: `${field} is required.` }, { status: 400 });
+      }
     }
+
+    const { pid, oid, signature, name, test } = body;
+    const supabase = getSupabaseAdmin();
+
+    const { data: payment, error: payErr } = await supabase
+      .from("payments")
+      .select("*")
+      .eq("orderId", oid)
+      .eq("user", profile.id)
+      .maybeSingle();
+    if (payErr) throw payErr;
+
+    if (!payment) {
+      return NextResponse.json({ message: "Payment record not found." }, { status: 404 });
+    }
+
+    let verifiedSignature = verifyRazorpayOrderSignature({
+      orderId: oid,
+      paymentId: pid,
+      signature,
+    });
+
+    // If client signature validation fails, double-check directly with Razorpay Orders API.
+    if (!verifiedSignature) {
+      const apiCaptured = await findCapturedPaymentForOrder(
+        oid,
+        Math.round(Number(payment.amount || 0) * 100)
+      );
+      if (!apiCaptured || apiCaptured.id !== pid) {
+        return NextResponse.json(
+          { message: "Invalid payment signature." },
+          { status: 400 }
+        );
+      }
+      verifiedSignature = true;
+    }
+
+    const { registration, alreadyFinalized } = await finalizeVerifiedOrderRegistration({
+      profile,
+      payment,
+      pid,
+      signature,
+      name,
+      test,
+    });
+
+    return NextResponse.json(
+      {
+        message: alreadyFinalized
+          ? "Test registration already confirmed."
+          : "Test registration successful.",
+        registration,
+      },
+      { status: 200 }
+    );
+  } catch (error) {
+    console.error("Error handling test registration request:", error);
+    return NextResponse.json(
+      { message: error.message || "Failed to process the request." },
+      { status: error.status || 500 }
+    );
+  }
 }
 
 export async function OPTIONS() {
-    return NextResponse.json(
-        { message: "Preflight request is successful" },
-        { status: 200 }
-    );
+  return NextResponse.json(
+    { message: "Preflight request is successful" },
+    { status: 200 }
+  );
 }

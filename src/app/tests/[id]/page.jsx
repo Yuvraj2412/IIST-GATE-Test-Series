@@ -18,6 +18,7 @@ export default function TestDetails({ params }) {
   const [testDetails, setTestDetails] = useState(null);
   const [loadingPage, setLoadingPage] = useState(true);
   const [selectedPack, setSelectedPack] = useState("Pack 2");
+  const [activeTab, setActiveTab] = useState("schedule");
 
   const pageType = pageParams.id;
   const router = useRouter();
@@ -147,21 +148,25 @@ export default function TestDetails({ params }) {
   const finalFee = calculateDiscountedPrice(originalFee, discountRate);
   const alreadyOwned = isAlreadyRegistered(selectedPack);
 
+  const activeScheduleKey =
+    selectedPack === "Pack 1" ? "pack1" : selectedPack === "Pack 2" ? "pack2" : "pack1pack2both";
+  const activeScheduleEntries = Object.entries(testDetails.testSchedule[activeScheduleKey] || {});
+
   const PurchaseCard = () => (
     <div className="bg-white text-slate-900 rounded-xl border border-slate-200 shadow-sm overflow-hidden">
       <div className="bg-slate-50 border-b border-slate-200 px-6 py-4 flex items-center justify-between">
         <span className="text-xs font-mono font-semibold text-slate-600 uppercase">
           {testDetails.code} · {testDetails.shortName}
         </span>
-        <span className="text-xs font-semibold px-2 py-0.5 rounded-md bg-emerald-50 text-emerald-700 border border-emerald-200">
+        <span className="text-xs font-semibold text-emerald-700">
           {Math.round(discountRate * 100)}% Off
         </span>
       </div>
 
       <div className="p-6 space-y-5">
         <div className="flex items-center gap-4 pb-4 border-b border-slate-100">
-          <div className="w-16 h-16 rounded-lg border border-slate-200 bg-slate-50 flex items-center justify-center p-2 flex-shrink-0">
-            <Image src={testDetails.imageUrl} width={48} height={48} alt={testDetails.title} />
+          <div className="w-14 h-14 rounded-lg border border-slate-200 bg-slate-50 flex items-center justify-center p-2 flex-shrink-0">
+            <Image src={testDetails.imageUrl} width={44} height={44} alt={testDetails.title} />
           </div>
           <div className="tabular-nums">
             <p className="text-xs text-slate-500">Registration Fee</p>
@@ -213,7 +218,7 @@ export default function TestDetails({ params }) {
             onClick={() => router.push("/registered-tests")}
             className="w-full py-3 px-4 rounded-lg text-sm font-semibold text-white bg-emerald-700 hover:bg-emerald-800 transition"
           >
-            Already Enrolled — Open Your Tests
+            Already Enrolled — Open My Tests
           </button>
         ) : testDetails.isRegistrationOpen ? (
           <button
@@ -246,175 +251,242 @@ export default function TestDetails({ params }) {
 
       <main className="flex-1 w-full pb-20">
         <section className={`${style.topSection} text-white`}>
-          <div className="max-w-screen-xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-              <div className="lg:col-span-8 space-y-5">
-                <div className="text-xs sm:text-sm flex flex-wrap items-center gap-2 text-slate-400">
-                  <Link href="/" className="hover:text-white transition">
-                    Home
-                  </Link>
-                  <span>/</span>
-                  <Link href="/tests" className="hover:text-white transition">
-                    GATE 2027 Mock Tests
-                  </Link>
-                  <span>/</span>
-                  <span className="text-slate-200 font-medium">{testDetails.shortName}</span>
-                </div>
+          <div className="max-w-screen-xl mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-12">
+            <div className="text-xs sm:text-sm flex flex-wrap items-center gap-2 text-slate-400 mb-5">
+              <Link href="/" className="hover:text-white transition">
+                Home
+              </Link>
+              <span>/</span>
+              <Link href="/tests" className="hover:text-white transition">
+                GATE 2027 Mock Tests
+              </Link>
+              <span>/</span>
+              <span className="text-slate-200 font-medium">{testDetails.shortName}</span>
+            </div>
 
-                <div className="space-y-3">
-                  <p className="text-xs font-mono uppercase tracking-[0.14em] text-amber-300">
-                    Dhanak 2027 · {testDetails.code} Series
-                  </p>
-                  <h1 className="text-2xl sm:text-4xl font-bold tracking-tight leading-tight">
-                    GATE Mock Series — {testDetails.title}
-                  </h1>
-                  <p className="text-slate-300 text-sm sm:text-base max-w-2xl leading-relaxed">
-                    {testDetails.description}
-                  </p>
-                </div>
-
-                {/* Mobile Purchase Card */}
-                <div className="lg:hidden pt-2">
-                  <PurchaseCard />
-                </div>
-
-                {/* Pack Schedules */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-3">
-                  {["pack1", "pack2"].map((packKey, index) => {
-                    const schedule = testDetails.testSchedule[packKey];
-                    const isSelected =
-                      selectedPack === "Both Packs" || selectedPack === `Pack ${index + 1}`;
-                    return (
-                      <div
-                        key={packKey}
-                        className={`rounded-xl p-5 border transition ${
-                          isSelected
-                            ? "bg-white text-slate-900 border-white shadow-sm"
-                            : "bg-[#111e33] text-slate-100 border-white/15"
-                        }`}
-                      >
-                        <div className="flex items-center justify-between mb-3 pb-2.5 border-b border-current/10">
-                          <span className="text-base font-bold">{`Pack ${index + 1}`}</span>
-                          <span
-                            className={`text-xs font-mono ${
-                              isSelected ? "text-[#0f4c81] font-semibold" : "text-slate-400"
-                            }`}
-                          >
-                            3 Full Mocks
-                          </span>
-                        </div>
-                        <ul className="space-y-2 text-sm tabular-nums">
-                          {Object.entries(schedule).map(([k, dateVal], idx) => (
-                            <li
-                              key={k}
-                              className="flex items-center justify-between py-1 border-b border-current/10 last:border-none"
-                            >
-                              <span className="font-medium">Mock Test {idx + 1}</span>
-                              <span className={isSelected ? "text-slate-600" : "text-slate-300"}>
-                                {dateVal}
-                              </span>
-                            </li>
-                          ))}
-                        </ul>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-
-              <div className="hidden lg:block lg:col-span-4">
-                <PurchaseCard />
+            <div className="max-w-3xl space-y-3">
+              <p className="text-xs font-mono uppercase tracking-[0.14em] text-amber-300">
+                Dhanak 2027 · {testDetails.code} Series
+              </p>
+              <h1 className="text-2xl sm:text-4xl font-bold tracking-tight leading-tight">
+                GATE Mock Series — {testDetails.title}
+              </h1>
+              <p className="text-slate-300 text-sm sm:text-base leading-relaxed">
+                {testDetails.description}
+              </p>
+              <div className="pt-2 flex flex-wrap gap-x-6 gap-y-2 text-xs text-slate-300 font-mono">
+                <span>65 QUESTIONS</span>
+                <span>·</span>
+                <span>180 MINUTES</span>
+                <span>·</span>
+                <span>5:30 PM – 11:30 PM IST WINDOW</span>
               </div>
             </div>
           </div>
         </section>
 
-        {/* Pattern & Marking Scheme */}
-        <section className="max-w-screen-xl mx-auto px-4 sm:px-6 lg:px-8 pt-10 space-y-8">
-          <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-6 sm:p-8">
-            <h2 className="text-xl sm:text-2xl font-bold text-slate-900 mb-6">
-              Examination Format &amp; Marking Scheme
-            </h2>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 border border-slate-200 rounded-lg divide-y sm:divide-y-0 sm:divide-x divide-slate-200">
-              {[
-                { label: "Questions", value: "65 (10 GA + 55 Core)" },
-                { label: "Question Types", value: "MCQ, MSQ & NAT" },
-                { label: "Exam Window", value: "5:30 PM – 11:30 PM IST" },
-                { label: "Duration", value: "180 Minutes" },
-              ].map((stat) => (
-                <div key={stat.label} className="p-4">
-                  <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">
-                    {stat.label}
-                  </p>
-                  <p className="mt-1 text-sm sm:text-base font-bold text-slate-900">{stat.value}</p>
-                </div>
-              ))}
-            </div>
-
-            <div className="mt-8 overflow-x-auto">
-              <table className="w-full text-left border-collapse border border-slate-200 text-sm">
-                <thead className="bg-slate-50 text-slate-700 font-semibold border-b border-slate-200">
-                  <tr>
-                    <th className="py-3 px-4 border-r border-slate-200">Section</th>
-                    <th className="py-3 px-4 border-r border-slate-200">Question Count</th>
-                    <th className="py-3 px-4 border-r border-slate-200">Correct Mark</th>
-                    <th className="py-3 px-4">Negative Marking (MCQ only)</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-200 text-slate-700">
-                  <tr>
-                    <td className="py-3 px-4 border-r border-slate-200 font-medium">General Aptitude</td>
-                    <td className="py-3 px-4 border-r border-slate-200 tabular-nums">5 Questions</td>
-                    <td className="py-3 px-4 border-r border-slate-200 text-emerald-700 font-semibold">+1</td>
-                    <td className="py-3 px-4 text-rose-600 font-semibold">-1/3</td>
-                  </tr>
-                  <tr>
-                    <td className="py-3 px-4 border-r border-slate-200 font-medium">General Aptitude</td>
-                    <td className="py-3 px-4 border-r border-slate-200 tabular-nums">5 Questions</td>
-                    <td className="py-3 px-4 border-r border-slate-200 text-emerald-700 font-semibold">+2</td>
-                    <td className="py-3 px-4 text-rose-600 font-semibold">-2/3</td>
-                  </tr>
-                  <tr>
-                    <td className="py-3 px-4 border-r border-slate-200 font-medium">Core Subject</td>
-                    <td className="py-3 px-4 border-r border-slate-200 tabular-nums">25 Questions</td>
-                    <td className="py-3 px-4 border-r border-slate-200 text-emerald-700 font-semibold">+1</td>
-                    <td className="py-3 px-4 text-rose-600 font-semibold">-1/3</td>
-                  </tr>
-                  <tr>
-                    <td className="py-3 px-4 border-r border-slate-200 font-medium">Core Subject</td>
-                    <td className="py-3 px-4 border-r border-slate-200 tabular-nums">30 Questions</td>
-                    <td className="py-3 px-4 border-r border-slate-200 text-emerald-700 font-semibold">+2</td>
-                    <td className="py-3 px-4 text-rose-600 font-semibold">-2/3</td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-
-            <p className="mt-4 text-xs sm:text-sm text-slate-600 bg-slate-50 border border-slate-200 border-l-4 border-l-[#0f4c81] rounded-md px-4 py-3">
-              Note: There is zero negative marking for Multiple Select Questions (MSQ) and Numerical
-              Answer Type (NAT) questions.
-            </p>
+        {/* Tab Navigation Strip (Unacademy-inspired Section Switcher) */}
+        <div className="bg-white border-b border-slate-200">
+          <div className="max-w-screen-xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center gap-6 overflow-x-auto">
+            {[
+              { id: "schedule", label: "Schedule & Packages" },
+              { id: "pattern", label: "Exam Pattern & Marking" },
+              { id: "highlights", label: "Highlights & Rules" },
+            ].map((tab) => {
+              const active = activeTab === tab.id;
+              return (
+                <button
+                  key={tab.id}
+                  type="button"
+                  onClick={() => setActiveTab(tab.id)}
+                  className={`py-3.5 text-sm font-medium border-b-2 whitespace-nowrap transition ${
+                    active
+                      ? "border-[#0f4c81] text-[#0f4c81] font-semibold"
+                      : "border-transparent text-slate-600 hover:text-slate-900"
+                  }`}
+                >
+                  {tab.label}
+                </button>
+              );
+            })}
           </div>
+        </div>
 
-          <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-6 sm:p-8">
-            <h2 className="text-xl sm:text-2xl font-bold text-slate-900 mb-5">
-              Series Highlights
-            </h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5 text-sm text-slate-700">
-              {[
-                "Wide spectrum of conceptual and application-level questions aligned to GATE 2027.",
-                "Supervised online CBT exam interface with strict 180-minute countdown timer.",
-                "Instant section-wise accuracy charts and projected GATE rank band analytics.",
-                "Calibrated by IIST postgraduate researchers and GATE top rankers.",
-                "Clear KaTeX mathematical typesetting and labelled circuit/system diagrams.",
-                "Review complete solutions and responses anytime from your Candidate Dashboard.",
-              ].map((benefit) => (
-                <div key={benefit} className="flex items-start gap-2.5 py-1.5">
-                  <span className="text-[#0f4c81] font-bold">✓</span>
-                  <span>{benefit}</span>
+        {/* Focused Two-Column Body */}
+        <section className="max-w-screen-xl mx-auto px-4 sm:px-6 lg:px-8 pt-8">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+            {/* Left Tabbed Workspace */}
+            <div className="lg:col-span-8 space-y-6">
+              {activeTab === "schedule" && (
+                <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-6 sm:p-8 space-y-6">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-200">
+                    <div>
+                      <h2 className="text-lg sm:text-xl font-bold text-slate-900">
+                        Test Schedule — {selectedPack === "Both Packs" ? "Combo (All 6 Mocks)" : selectedPack}
+                      </h2>
+                      <p className="text-xs sm:text-sm text-slate-500 mt-0.5">
+                        Switch pack filter below to inspect dates and update your enrollment selection.
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Interactive Pack Filter synced with PurchaseCard */}
+                  <div className="flex flex-wrap gap-2">
+                    {[
+                      { id: "Pack 1", label: "Pack 1 (Tests 1–3)" },
+                      { id: "Pack 2", label: "Pack 2 (Tests 1–3)" },
+                      { id: "Both Packs", label: "Combo Both (All 6 Tests)" },
+                    ].map((opt) => (
+                      <button
+                        key={opt.id}
+                        type="button"
+                        onClick={() => setSelectedPack(opt.id)}
+                        className={`px-3.5 py-1.5 rounded-lg text-xs sm:text-sm font-semibold border transition ${
+                          selectedPack === opt.id
+                            ? "bg-[#0f4c81] text-white border-[#0f4c81]"
+                            : "bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100"
+                        }`}
+                      >
+                        {opt.label}
+                      </button>
+                    ))}
+                  </div>
+
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-left border-collapse border border-slate-200 text-sm">
+                      <thead className="bg-slate-50 text-slate-700 font-semibold border-b border-slate-200">
+                        <tr>
+                          <th className="py-3 px-4 border-r border-slate-200">Paper</th>
+                          <th className="py-3 px-4 border-r border-slate-200">Exam Date</th>
+                          <th className="py-3 px-4">Live Access Window</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-slate-200 tabular-nums">
+                        {activeScheduleEntries.map(([k, dateVal], idx) => (
+                          <tr key={k} className="hover:bg-slate-50/60">
+                            <td className="py-3 px-4 border-r border-slate-200 font-medium text-slate-900">
+                              Mock Test {idx + 1}
+                            </td>
+                            <td className="py-3 px-4 border-r border-slate-200 font-semibold text-[#0f4c81]">
+                              {dateVal}
+                            </td>
+                            <td className="py-3 px-4 text-slate-600">5:30 PM – 11:30 PM IST (180 mins)</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
                 </div>
-              ))}
+              )}
+
+              {activeTab === "pattern" && (
+                <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-6 sm:p-8 space-y-6">
+                  <div>
+                    <h2 className="text-lg sm:text-xl font-bold text-slate-900">
+                      GATE 2027 Examination Pattern &amp; Marking
+                    </h2>
+                    <p className="text-sm text-slate-600 mt-1">
+                      Identical question distribution, virtual CBT timing, and marking rules as GATE
+                      2027.
+                    </p>
+                  </div>
+
+                  <div className="grid grid-cols-2 sm:grid-cols-4 border border-slate-200 rounded-lg divide-y sm:divide-y-0 sm:divide-x divide-slate-200">
+                    {[
+                      { label: "Total Questions", value: "65 Qs" },
+                      { label: "Total Marks", value: "100 Marks" },
+                      { label: "Duration", value: "180 Mins" },
+                      { label: "Format", value: "MCQ, MSQ, NAT" },
+                    ].map((stat) => (
+                      <div key={stat.label} className="p-4">
+                        <p className="text-xs font-medium text-slate-500">{stat.label}</p>
+                        <p className="mt-1 text-base font-bold text-slate-900">{stat.value}</p>
+                      </div>
+                    ))}
+                  </div>
+
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-left border-collapse border border-slate-200 text-sm">
+                      <thead className="bg-slate-50 text-slate-700 font-semibold border-b border-slate-200">
+                        <tr>
+                          <th className="py-3 px-4 border-r border-slate-200">Section</th>
+                          <th className="py-3 px-4 border-r border-slate-200">Count</th>
+                          <th className="py-3 px-4 border-r border-slate-200">Correct</th>
+                          <th className="py-3 px-4">Incorrect (MCQ only)</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-slate-200 text-slate-700 tabular-nums">
+                        <tr>
+                          <td className="py-3 px-4 border-r border-slate-200 font-medium">General Aptitude</td>
+                          <td className="py-3 px-4 border-r border-slate-200">5 Qs</td>
+                          <td className="py-3 px-4 border-r border-slate-200 text-emerald-700 font-semibold">+1</td>
+                          <td className="py-3 px-4 text-rose-600 font-semibold">-1/3</td>
+                        </tr>
+                        <tr>
+                          <td className="py-3 px-4 border-r border-slate-200 font-medium">General Aptitude</td>
+                          <td className="py-3 px-4 border-r border-slate-200">5 Qs</td>
+                          <td className="py-3 px-4 border-r border-slate-200 text-emerald-700 font-semibold">+2</td>
+                          <td className="py-3 px-4 text-rose-600 font-semibold">-2/3</td>
+                        </tr>
+                        <tr>
+                          <td className="py-3 px-4 border-r border-slate-200 font-medium">Core Subject</td>
+                          <td className="py-3 px-4 border-r border-slate-200">25 Qs</td>
+                          <td className="py-3 px-4 border-r border-slate-200 text-emerald-700 font-semibold">+1</td>
+                          <td className="py-3 px-4 text-rose-600 font-semibold">-1/3</td>
+                        </tr>
+                        <tr>
+                          <td className="py-3 px-4 border-r border-slate-200 font-medium">Core Subject</td>
+                          <td className="py-3 px-4 border-r border-slate-200">30 Qs</td>
+                          <td className="py-3 px-4 border-r border-slate-200 text-emerald-700 font-semibold">+2</td>
+                          <td className="py-3 px-4 text-rose-600 font-semibold">-2/3</td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+
+                  <p className="text-xs sm:text-sm text-slate-600 bg-slate-50 border border-slate-200 border-l-4 border-l-[#0f4c81] rounded-md px-4 py-3">
+                    Zero negative marking applies to Multiple Select (MSQ) and Numerical Answer Type
+                    (NAT) questions.
+                  </p>
+                </div>
+              )}
+
+              {activeTab === "highlights" && (
+                <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-6 sm:p-8 space-y-6">
+                  <h2 className="text-lg sm:text-xl font-bold text-slate-900">
+                    Series Highlights &amp; Attempt Guidelines
+                  </h2>
+
+                  <ul className="space-y-3 text-sm text-slate-700">
+                    {[
+                      "Fresh concept-driven questions curated by top GATE rankers and researchers at IIST.",
+                      "Supervised 180-minute full-screen Computer-Based Test window from 5:30 PM – 11:30 PM IST.",
+                      "Requires a desktop, laptop, or tablet browser; mobile browsers are restricted during live attempts.",
+                      "Full KaTeX mathematical rendering and diagrams across question statements and answer review.",
+                      "Detailed section-wise score breakdown, accuracy chart, and estimated GATE rank range post-test.",
+                    ].map((benefit) => (
+                      <li key={benefit} className="flex items-start gap-2.5">
+                        <span className="text-[#0f4c81] font-bold">✓</span>
+                        <span>{benefit}</span>
+                      </li>
+                    ))}
+                  </ul>
+
+                  <div className="pt-4 border-t border-slate-100 flex flex-wrap gap-4 text-sm">
+                    <Link href="/faqs" className="font-semibold text-[#0f4c81] hover:underline">
+                      Read All FAQs →
+                    </Link>
+                    <Link href="/terms-of-use" className="font-semibold text-slate-700 hover:underline">
+                      Terms of Use &amp; Refund Policy →
+                    </Link>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Right Sticky Checkout Card */}
+            <div className="lg:col-span-4 lg:sticky lg:top-24">
+              <PurchaseCard />
             </div>
           </div>
         </section>

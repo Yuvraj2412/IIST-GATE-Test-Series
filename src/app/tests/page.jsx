@@ -14,6 +14,16 @@ export default function Tests() {
     return Math.round(originalPrice - originalPrice * discountRate);
   }
 
+  const scheduleRows = Object.entries(tests[0].testSchedule.pack1pack2both).map(
+    ([testKey, date], idx) => ({
+      label: `Mock Test ${idx + 1}`,
+      pack: idx < 3 ? "Pack 1 & Combo" : "Pack 2 & Combo",
+      date,
+      window: "5:30 PM – 11:30 PM IST",
+      duration: "180 Minutes",
+    })
+  );
+
   return (
     <div className="min-h-screen flex flex-col bg-[#f8fafc] text-slate-900">
       <Navbar />
@@ -35,24 +45,46 @@ export default function Tests() {
               </h1>
 
               <p className="text-sm sm:text-base text-slate-300 leading-relaxed">
-                Curated by top GATE rankers and researchers at the Indian Institute of Space Science
-                and Technology (IIST) for Dhanak 2027. Each package adheres strictly to the official
-                GATE syllabus, marking scheme, and 180-minute CBT workflow.
+                Select your engineering branch below to inspect exact mock schedules, exam pattern,
+                and discounted single-pack (₹120) or combo (₹200) plans.
               </p>
 
-              <div className="pt-2 flex flex-wrap gap-x-6 gap-y-2 text-xs font-mono text-slate-300">
-                <span>65 QUESTIONS PER MOCK</span>
-                <span>·</span>
-                <span>180 MINUTES CBT</span>
-                <span>·</span>
-                <span>UP TO 58% COMBO SAVINGS</span>
+              <div className="pt-2 flex flex-wrap gap-3 text-xs font-medium">
+                <a
+                  href="#streams"
+                  className="px-3.5 py-1.5 rounded-md bg-white/10 text-white border border-white/20 hover:bg-white/15 transition"
+                >
+                  Engineering Streams
+                </a>
+                <a
+                  href="#schedule"
+                  className="px-3.5 py-1.5 rounded-md bg-transparent text-slate-300 border border-white/15 hover:bg-white/10 hover:text-white transition"
+                >
+                  Master Exam Schedule
+                </a>
+                <Link
+                  href="/faqs"
+                  className="px-3.5 py-1.5 rounded-md bg-transparent text-slate-300 border border-white/15 hover:bg-white/10 hover:text-white transition"
+                >
+                  Exam FAQs
+                </Link>
               </div>
             </div>
           </div>
         </section>
 
-        <section className="max-w-screen-xl mx-auto px-4 sm:px-6 lg:px-8 mt-10">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {/* Stream Cards */}
+        <section id="streams" className="max-w-screen-xl mx-auto px-4 sm:px-6 lg:px-8 mt-12">
+          <div className="mb-6">
+            <h2 className="text-xl sm:text-2xl font-bold text-slate-900">
+              1. Choose Your Engineering Branch
+            </h2>
+            <p className="text-sm text-slate-600 mt-1">
+              Click any stream card to view Pack 1, Pack 2, Combo pricing, and full marking scheme.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-7">
             {tests.map((test) => {
               const singlePrice = calculateDiscountedPrice(test.pricePerPack, test.discountRate);
               const comboPrice = calculateDiscountedPrice(
@@ -66,16 +98,16 @@ export default function Tests() {
                   className="group cursor-pointer bg-white rounded-xl border border-slate-200 hover:border-slate-400 shadow-sm transition-colors flex flex-col justify-between overflow-hidden"
                 >
                   <div>
-                    <div className="bg-slate-50 border-b border-slate-200/80 px-6 py-4 flex items-center justify-between">
+                    <div className="bg-slate-50 border-b border-slate-200/80 px-6 py-3.5 flex items-center justify-between">
                       <span className="text-xs font-mono font-semibold text-slate-600 uppercase tracking-wider">
                         {test.code} · GATE 2027
                       </span>
-                      <span className="text-xs font-semibold px-2.5 py-0.5 rounded-md bg-emerald-50 text-emerald-700 border border-emerald-200">
+                      <span className="text-xs font-semibold text-emerald-700">
                         {Math.round(test.discountRate * 100)}% Off
                       </span>
                     </div>
 
-                    <div className="p-6 space-y-5">
+                    <div className="p-7 space-y-5">
                       <div className="flex items-start gap-4">
                         <div className="w-16 h-16 rounded-lg border border-slate-200 bg-slate-50 flex items-center justify-center flex-shrink-0 p-2">
                           <Image
@@ -87,16 +119,16 @@ export default function Tests() {
                           />
                         </div>
                         <div>
-                          <h2 className="text-lg font-bold text-slate-900 group-hover:text-[#0f4c81] transition leading-snug">
+                          <h3 className="text-lg font-bold text-slate-900 group-hover:text-[#0f4c81] transition leading-snug">
                             {test.title}
-                          </h2>
+                          </h3>
                           <p className="mt-1.5 text-sm text-slate-600 leading-relaxed">
                             {test.tagline}
                           </p>
                         </div>
                       </div>
 
-                      <ul className="space-y-2 text-xs sm:text-sm text-slate-700 pt-2 border-t border-slate-100">
+                      <ul className="space-y-2 text-xs sm:text-sm text-slate-700 pt-3 border-t border-slate-100">
                         {test.highlights?.map((item) => (
                           <li key={item} className="flex items-start gap-2.5">
                             <span className="text-[#0f4c81] font-bold leading-5">•</span>
@@ -107,10 +139,10 @@ export default function Tests() {
                     </div>
                   </div>
 
-                  <div className="px-6 py-5 border-t border-slate-200/80 bg-slate-50/70 space-y-4">
+                  <div className="px-7 py-5 border-t border-slate-200/80 bg-slate-50/70 space-y-4">
                     <div className="flex items-baseline justify-between tabular-nums">
                       <div>
-                        <p className="text-xs text-slate-500">Single Pack (3 Mocks)</p>
+                        <p className="text-xs text-slate-500">Pack 1 / Pack 2 (3 Mocks)</p>
                         <div className="flex items-baseline gap-2 mt-0.5">
                           <span className="text-sm text-slate-400 line-through">
                             ₹{test.pricePerPack}
@@ -131,6 +163,55 @@ export default function Tests() {
                 </div>
               );
             })}
+          </div>
+        </section>
+
+        {/* Master Examination Schedule Calendar */}
+        <section id="schedule" className="max-w-screen-xl mx-auto px-4 sm:px-6 lg:px-8 mt-14">
+          <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-6 sm:p-8 space-y-6">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-slate-200">
+              <div>
+                <h2 className="text-xl sm:text-2xl font-bold text-slate-900">
+                  2. Master GATE 2027 Examination Calendar
+                </h2>
+                <p className="text-sm text-slate-600 mt-1">
+                  Synchronized across Aerospace (AE), Electronics &amp; Communication (EC/EE), and
+                  Mechanical (ME).
+                </p>
+              </div>
+              <span className="text-xs font-mono font-semibold text-[#0f4c81] bg-slate-100 border border-slate-200 px-3 py-1.5 rounded-md self-start">
+                5:30 PM – 11:30 PM IST Window
+              </span>
+            </div>
+
+            <div className="overflow-x-auto">
+              <table className="w-full text-left border-collapse border border-slate-200 text-sm">
+                <thead className="bg-slate-50 text-slate-700 font-semibold border-b border-slate-200">
+                  <tr>
+                    <th className="py-3 px-4 border-r border-slate-200">Paper</th>
+                    <th className="py-3 px-4 border-r border-slate-200">Included In</th>
+                    <th className="py-3 px-4 border-r border-slate-200">Exam Date</th>
+                    <th className="py-3 px-4 border-r border-slate-200">Live Window</th>
+                    <th className="py-3 px-4">Duration</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-200 text-slate-700 tabular-nums">
+                  {scheduleRows.map((row) => (
+                    <tr key={row.label} className="hover:bg-slate-50/70">
+                      <td className="py-3 px-4 border-r border-slate-200 font-semibold text-slate-900">
+                        {row.label}
+                      </td>
+                      <td className="py-3 px-4 border-r border-slate-200">{row.pack}</td>
+                      <td className="py-3 px-4 border-r border-slate-200 font-medium text-[#0f4c81]">
+                        {row.date}
+                      </td>
+                      <td className="py-3 px-4 border-r border-slate-200">{row.window}</td>
+                      <td className="py-3 px-4">{row.duration}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </div>
         </section>
       </main>

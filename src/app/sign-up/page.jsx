@@ -373,11 +373,24 @@ const SignUp = () => {
                   <span>Continue with Google</span>
                 </button>
               </div>
-              <div className="px-6 py-4 bg-slate-50 border-t border-slate-200 text-center text-sm text-slate-600">
-                Already have an account?{" "}
-                <Link href="/sign-in" className="font-semibold text-[#0f4c81] hover:underline">
-                  Sign in
-                </Link>
+              <div className="px-6 py-4 bg-slate-50 border-t border-slate-200 text-center space-y-2 text-xs sm:text-sm text-slate-600">
+                <p>
+                  Already have an account?{" "}
+                  <Link href="/sign-in" className="font-semibold text-[#0f4c81] hover:underline">
+                    Sign in
+                  </Link>
+                </p>
+                <p className="text-[11px] text-slate-500">
+                  By registering, you agree to our{" "}
+                  <Link href="/terms-of-use" className="text-[#0f4c81] hover:underline">
+                    Terms of Use
+                  </Link>{" "}
+                  &amp;{" "}
+                  <Link href="/privacy-policy" className="text-[#0f4c81] hover:underline">
+                    Privacy Policy
+                  </Link>
+                  .
+                </p>
               </div>
             </div>
           )}
