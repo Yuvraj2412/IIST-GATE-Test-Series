@@ -203,7 +203,7 @@ function EnrollContent() {
 
     const amount = totalAmountAfterDiscount();
     const receipt = `TEST-${Date.now()}`;
-    const test = targetTestString;
+    const selectedTestLabel = targetTestString;
 
     setPaymentRunning(true);
     const loadingId = toast.loading("Initializing secure checkout...");
@@ -215,7 +215,7 @@ function EnrollContent() {
         body: JSON.stringify({
           amount: amount * 100,
           receipt,
-          test,
+          test: selectedTestLabel,
         }),
       });
 
@@ -262,7 +262,7 @@ function EnrollContent() {
         image: `${window.location.origin}/images/logo.png`,
         order_id: initPaymentResponse.id,
         handler: async function (rzpResponse) {
-          const t2 = toast.loading("Confirming your enrollment, please hold on...");
+          const confirmToastId = toast.loading("Confirming your enrollment, please hold on...");
           try {
             const verifyRes = await fetch("/api/test/registerTest", {
               method: "POST",
@@ -272,11 +272,11 @@ function EnrollContent() {
                 oid: rzpResponse.razorpay_order_id,
                 signature: rzpResponse.razorpay_signature,
                 name: userDetails.name,
-                test,
+                test: selectedTestLabel,
               }),
             });
             const rdata = await verifyRes.json();
-            toast.dismiss(t2);
+            toast.dismiss(confirmToastId);
 
             if (!verifyRes.ok) {
               toast.error(rdata?.message || "Payment verification failed.");
@@ -289,7 +289,7 @@ function EnrollContent() {
             if (user?.uid) await getUser(user.uid);
             triggerSuccessState();
           } catch {
-            toast.dismiss(t2);
+            toast.dismiss(confirmToastId);
             toast.error(
               "Confirmation interrupted. Click 'Verify Pending Payment' if your amount was debited."
             );
@@ -307,7 +307,7 @@ function EnrollContent() {
           ...(cleanMobile.length === 10 ? { contact: cleanMobile } : {}),
         },
         notes: {
-          test,
+          test: selectedTestLabel,
           address: "IIST, Valiamala, Thiruvananthapuram, Kerala, India",
         },
         theme: {
