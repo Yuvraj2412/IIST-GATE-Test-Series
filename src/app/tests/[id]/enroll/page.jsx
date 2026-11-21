@@ -546,11 +546,10 @@ function EnrollContent() {
                     type="button"
                     disabled={paymentRunning}
                     onClick={handlePayment}
-                    className={`w-full py-3 px-4 rounded-lg text-sm font-semibold text-white transition flex items-center justify-center ${
-                      paymentRunning
-                        ? "bg-[#0f4c81]/70 cursor-wait"
-                        : "bg-[#0f4c81] hover:bg-[#0a3963]"
-                    }`}
+                    className={`w-full py-3 px-4 rounded-lg text-sm font-semibold text-white transition flex items-center justify-center ${paymentRunning
+                      ? "bg-[#0f4c81]/70 cursor-wait"
+                      : "bg-[#0f4c81] hover:bg-[#0a3963]"
+                      }`}
                   >
                     {paymentRunning ? "Processing..." : "Pay Securely with Razorpay"}
                   </button>

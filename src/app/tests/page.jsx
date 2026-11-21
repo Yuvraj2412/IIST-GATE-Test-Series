@@ -15,7 +15,7 @@ export default function Tests() {
   }
 
   const scheduleRows = Object.entries(tests[0].testSchedule.pack1pack2both).map(
-    ([testKey, date], idx) => ({
+    ([, date], idx) => ({
       label: `Mock Test ${idx + 1}`,
       pack: idx < 3 ? "Pack 1 & Combo" : "Pack 2 & Combo",
       date,
@@ -37,7 +37,7 @@ export default function Tests() {
                   Home
                 </Link>
                 <span>/</span>
-                <span className="text-slate-200 font-medium">GATE 2027 Mock Tests</span>
+                <span className="text-slate-200 font-medium">Mock Tests</span>
               </div>
 
               <h1 className="text-3xl sm:text-4xl font-bold tracking-tight">
@@ -48,43 +48,30 @@ export default function Tests() {
                 Select your engineering branch below to inspect exact mock schedules, exam pattern,
                 and discounted single-pack (₹120) or combo (₹200) plans.
               </p>
-
-              <div className="pt-2 flex flex-wrap gap-3 text-xs font-medium">
-                <a
-                  href="#streams"
-                  className="px-3.5 py-1.5 rounded-md bg-white/10 text-white border border-white/20 hover:bg-white/15 transition"
-                >
-                  Engineering Streams
-                </a>
-                <a
-                  href="#schedule"
-                  className="px-3.5 py-1.5 rounded-md bg-transparent text-slate-300 border border-white/15 hover:bg-white/10 hover:text-white transition"
-                >
-                  Master Exam Schedule
-                </a>
-                <Link
-                  href="/faqs"
-                  className="px-3.5 py-1.5 rounded-md bg-transparent text-slate-300 border border-white/15 hover:bg-white/10 hover:text-white transition"
-                >
-                  Exam FAQs
-                </Link>
-              </div>
             </div>
           </div>
         </section>
 
         {/* Stream Cards */}
         <section id="streams" className="max-w-screen-xl mx-auto px-4 sm:px-6 lg:px-8 mt-12">
-          <div className="mb-6">
-            <h2 className="text-xl sm:text-2xl font-bold text-slate-900">
-              1. Choose Your Engineering Branch
-            </h2>
-            <p className="text-sm text-slate-600 mt-1">
-              Click any stream card to view Pack 1, Pack 2, Combo pricing, and full marking scheme.
-            </p>
+          <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-8">
+            <div>
+              <h2 className="text-2xl font-bold text-slate-900">
+                1. Engineering Streams
+              </h2>
+              <p className="text-sm sm:text-base text-slate-600 mt-1">
+                Click any branch to choose Pack 1, Pack 2, or the 6-Mock Combo.
+              </p>
+            </div>
+            <a
+              href="#schedule"
+              className="text-sm font-semibold text-[#0f4c81] hover:underline whitespace-nowrap"
+            >
+              Jump to Exam Calendar ↓
+            </a>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-7">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {tests.map((test) => {
               const singlePrice = calculateDiscountedPrice(test.pricePerPack, test.discountRate);
               const comboPrice = calculateDiscountedPrice(
@@ -128,7 +115,7 @@ export default function Tests() {
                         </div>
                       </div>
 
-                      <ul className="space-y-2 text-xs sm:text-sm text-slate-700 pt-3 border-t border-slate-100">
+                      <ul className="space-y-2 text-sm text-slate-700 pt-3 border-t border-slate-100">
                         {test.highlights?.map((item) => (
                           <li key={item} className="flex items-start gap-2.5">
                             <span className="text-[#0f4c81] font-bold leading-5">•</span>
@@ -152,7 +139,7 @@ export default function Tests() {
                       </div>
                       <div className="text-right">
                         <p className="text-xs text-slate-500">Combo (6 Mocks)</p>
-                        <p className="text-sm font-bold text-[#0f4c81] mt-0.5">₹{comboPrice}/-</p>
+                        <p className="text-base font-bold text-[#0f4c81] mt-0.5">₹{comboPrice}/-</p>
                       </div>
                     </div>
 
@@ -167,7 +154,7 @@ export default function Tests() {
         </section>
 
         {/* Master Examination Schedule Calendar */}
-        <section id="schedule" className="max-w-screen-xl mx-auto px-4 sm:px-6 lg:px-8 mt-14">
+        <section id="schedule" className="max-w-screen-xl mx-auto px-4 sm:px-6 lg:px-8 mt-16">
           <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-6 sm:p-8 space-y-6">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-slate-200">
               <div>
@@ -175,8 +162,8 @@ export default function Tests() {
                   2. Master GATE 2027 Examination Calendar
                 </h2>
                 <p className="text-sm text-slate-600 mt-1">
-                  Synchronized across Aerospace (AE), Electronics &amp; Communication (EC/EE), and
-                  Mechanical (ME).
+                  Synchronized dates across Aerospace (AE), Electronics &amp; Communication (EC/EE),
+                  and Mechanical (ME).
                 </p>
               </div>
               <span className="text-xs font-mono font-semibold text-[#0f4c81] bg-slate-100 border border-slate-200 px-3 py-1.5 rounded-md self-start">
@@ -188,25 +175,25 @@ export default function Tests() {
               <table className="w-full text-left border-collapse border border-slate-200 text-sm">
                 <thead className="bg-slate-50 text-slate-700 font-semibold border-b border-slate-200">
                   <tr>
-                    <th className="py-3 px-4 border-r border-slate-200">Paper</th>
-                    <th className="py-3 px-4 border-r border-slate-200">Included In</th>
-                    <th className="py-3 px-4 border-r border-slate-200">Exam Date</th>
-                    <th className="py-3 px-4 border-r border-slate-200">Live Window</th>
-                    <th className="py-3 px-4">Duration</th>
+                    <th className="py-3.5 px-4 border-r border-slate-200">Paper</th>
+                    <th className="py-3.5 px-4 border-r border-slate-200">Included In</th>
+                    <th className="py-3.5 px-4 border-r border-slate-200">Exam Date</th>
+                    <th className="py-3.5 px-4 border-r border-slate-200">Live Window</th>
+                    <th className="py-3.5 px-4">Duration</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-200 text-slate-700 tabular-nums">
                   {scheduleRows.map((row) => (
                     <tr key={row.label} className="hover:bg-slate-50/70">
-                      <td className="py-3 px-4 border-r border-slate-200 font-semibold text-slate-900">
+                      <td className="py-3.5 px-4 border-r border-slate-200 font-semibold text-slate-900">
                         {row.label}
                       </td>
-                      <td className="py-3 px-4 border-r border-slate-200">{row.pack}</td>
-                      <td className="py-3 px-4 border-r border-slate-200 font-medium text-[#0f4c81]">
+                      <td className="py-3.5 px-4 border-r border-slate-200">{row.pack}</td>
+                      <td className="py-3.5 px-4 border-r border-slate-200 font-medium text-[#0f4c81]">
                         {row.date}
                       </td>
-                      <td className="py-3 px-4 border-r border-slate-200">{row.window}</td>
-                      <td className="py-3 px-4">{row.duration}</td>
+                      <td className="py-3.5 px-4 border-r border-slate-200">{row.window}</td>
+                      <td className="py-3.5 px-4">{row.duration}</td>
                     </tr>
                   ))}
                 </tbody>

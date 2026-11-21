@@ -285,9 +285,9 @@ export default function TestDetails({ params }) {
           </div>
         </section>
 
-        {/* Tab Navigation Strip (Unacademy-inspired Section Switcher) */}
+        {/* Tab Navigation Strip */}
         <div className="bg-white border-b border-slate-200">
-          <div className="max-w-screen-xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center gap-6 overflow-x-auto">
+          <div className="max-w-screen-xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center gap-8 overflow-x-auto">
             {[
               { id: "schedule", label: "Schedule & Packages" },
               { id: "pattern", label: "Exam Pattern & Marking" },
@@ -299,7 +299,7 @@ export default function TestDetails({ params }) {
                   key={tab.id}
                   type="button"
                   onClick={() => setActiveTab(tab.id)}
-                  className={`py-3.5 text-sm font-medium border-b-2 whitespace-nowrap transition ${
+                  className={`py-4 text-sm sm:text-base font-medium border-b-2 whitespace-nowrap transition ${
                     active
                       ? "border-[#0f4c81] text-[#0f4c81] font-semibold"
                       : "border-transparent text-slate-600 hover:text-slate-900"
